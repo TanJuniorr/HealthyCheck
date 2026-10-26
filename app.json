@@ -1,11 +1,12 @@
 {
   "expo": {
-    "name": "HealthyCheck",
+    "name": "Healthy Check",
     "slug": "HealthyCheck",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "healthycheck",
     "ios": {
       "supportsTablet": true
     },
@@ -19,7 +20,11 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
