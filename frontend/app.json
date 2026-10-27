@@ -27,7 +27,8 @@
       "expo-router",
       "expo-sqlite",
       "expo-font",
-      "expo-localization"
+      "expo-localization",
+      "@react-native-community/datetimepicker"
     ]
   }
 }

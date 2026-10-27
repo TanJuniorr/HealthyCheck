@@ -84,7 +84,7 @@ test('failed bulk meals never report success',async () => {
 });
 test('sleep partial updates validate against existing endpoints and use optimistic timestamp filters',async () => {
  const current={ id:B,user_id:A,sleep_start:'2026-10-26T22:00:00Z',sleep_end:'2026-10-27T06:00:00Z' };
- const f=fixture(request => ({data:[{...current,...(request.body ?? {})}]}));
+ const f=fixture(request => ({data:request.url.searchParams.get('select') === 'id' ? [] : [{...current,...(request.body ?? {})}]}));
  const service=f.load('src/services/sleepService');
  await assert.rejects(service.updateSleepRecord(B,{sleep_end:'2026-10-26T21:00:00Z'}),error => error.code==='INVALID_INPUT');
  assert.equal(f.calls.some(request => request.method==='PATCH'),false);
@@ -152,13 +152,124 @@ test('meal update and delete scope both ID and owner, and missing by-id is null'
 });
 test('sleep add/delete use valid timestamps and owned row filters',async () => {
  const payload={sleep_start:'2026-10-26T22:00:00Z',sleep_end:'2026-10-27T06:00:00Z',quality_rating:4};
- const f=fixture(() => ({data:[{id:B,user_id:A,...payload}]})); const service=f.load('src/services/sleepService');
+ const f=fixture(request => ({data:request.method === 'GET' ? [] : [{id:B,user_id:A,...payload}]})); const service=f.load('src/services/sleepService');
  await service.addSleepRecord(payload); await service.deleteSleepRecord(B);
- assert.equal(f.calls[0].body.user_id,A); assert.equal(f.calls[1].url.searchParams.get('id'),'eq.'+B); assert.equal(f.calls[1].url.searchParams.get('user_id'),'eq.'+A);
+ const write=f.calls.find(request=>request.method==='POST'), remove=f.calls.find(request=>request.method==='DELETE');
+ assert.equal(write.body.user_id,A); assert.equal(remove.url.searchParams.get('id'),'eq.'+B); assert.equal(remove.url.searchParams.get('user_id'),'eq.'+A);
 });
 test('network errors are classified and missing count metadata is never a fabricated total',async () => {
  const f=fixture(() => ({status:400,data:{message:'Network unavailable'}}));
  await assert.rejects(f.load('src/services/foodsService').getAllFoods(),error=>error.code==='NETWORK');
  const page=await f.load('src/services/queryCore').readPages(async()=>({data:[{id:A}],error:null}),{page:2,pageSize:1});
  assert.equal(page.total,null); assert.equal(page.hasMore,true);
+});
+const sleepPayload = {sleep_start:'2020-10-26T16:00:00Z',sleep_end:'2020-10-27T00:00:00Z',quality_rating:4,notes:null};
+
+test('sleep rejects future/invalid intervals and owner spoofing before database writes',async()=>{
+ const f=fixture(()=>{throw Error('Unexpected request');}),service=f.load('src/services/sleepService');
+ const start=new Date(Date.now()+3600000).toISOString(),end=new Date(Date.now()+7200000).toISOString();
+ await assert.rejects(service.addSleepRecord({sleep_start:start,sleep_end:end}),e=>e.message==='sleep.futureTimes');
+ await assert.rejects(service.addSleepRecord({...sleepPayload,sleep_end:sleepPayload.sleep_start}),e=>e.code==='INVALID_INPUT');
+ await assert.rejects(service.addSleepRecord({...sleepPayload,user_id:B}),e=>e.code==='INVALID_INPUT');
+ f.setOwner(null); await assert.rejects(service.addSleepRecord(sleepPayload),e=>e.code==='UNAUTHENTICATED');
+ assert.equal(f.calls.length,0);
+});
+
+test('overlapping or duplicate sleep is rejected with an owner-scoped interval query',async()=>{
+ const f=fixture(()=>({data:[{id:B}]})),service=f.load('src/services/sleepService');
+ await assert.rejects(service.addSleepRecord(sleepPayload),e=>e.message==='sleep.overlap');
+ assert.equal(f.calls.length,1);
+ const query=f.calls[0].url.searchParams;
+ assert.equal(query.get('user_id'),'eq.'+A);
+ assert.equal(query.get('sleep_start'),'lt.'+new Date(sleepPayload.sleep_end).toISOString());
+ assert.equal(query.get('sleep_end'),'gt.'+new Date(sleepPayload.sleep_start).toISOString());
+});
+
+test('successful sleep writes publish invalidation only after confirmed database responses',async()=>{
+ const current={...sleepPayload,id:B,user_id:A};
+ const f=fixture(request=>({data:request.method==='GET' && request.url.searchParams.get('select')==='id'?[]:[{...current,...request.body}]}));
+ const service=f.load('src/services/sleepService'),events=f.load('src/lib/healthQueryEvents'),notifications=[];
+ const unsubscribe=events.subscribeSleepChanges(owner=>notifications.push(owner));
+ await service.addSleepRecord(sleepPayload); assert.deepEqual(notifications,[A]);
+ await service.updateSleepRecord(B,{sleep_end:'2020-10-27T01:00:00Z'}); assert.deepEqual(notifications,[A,A]);
+ await service.deleteSleepRecord(B); assert.deepEqual(notifications,[A,A,A]);
+ unsubscribe();
+ for(const key of ['sleep:2020','sleep-records:2020','overview:2020','weekly-overview:2020']) assert.ok(events.dependsOnSleep(key));
+ assert.equal(events.dependsOnSleep('water:2020'),false);
+ const update=f.calls.find(r=>r.method==='PATCH');
+ assert.equal(update.url.searchParams.get('id'),'eq.'+B);assert.equal(update.url.searchParams.get('user_id'),'eq.'+A);
+});
+
+test('failed sleep create, update and delete never notify success or discard request errors',async()=>{
+ for(const operation of ['add','update','delete']) {
+  const f=fixture(request=>request.method==='GET'?{data:request.url.searchParams.get('select')==='id'?[]:[{...sleepPayload,id:B,user_id:A}]}:{status:403,data:{code:'42501'}});
+  let notified=0; f.load('src/lib/healthQueryEvents').subscribeSleepChanges(()=>notified++);
+  const service=f.load('src/services/sleepService');
+  const action=operation==='add'?()=>service.addSleepRecord(sleepPayload):operation==='update'?()=>service.updateSleepRecord(B,{notes:'Keep me'}):()=>service.deleteSleepRecord(B);
+  await assert.rejects(action,e=>e.code==='PERMISSION_DENIED'); assert.equal(notified,0);
+ }
+ const empty=fixture(()=>({data:[]}));
+ await assert.rejects(empty.load('src/services/sleepService').deleteSleepRecord(B),e=>e.code==='NOT_FOUND');
+});
+
+test('sleep refuses missing/foreign edit targets and scopes reads and delete to the session owner',async()=>{
+ const f=fixture(()=>({data:[]})),service=f.load('src/services/sleepService');
+ assert.equal(await service.getSleepRecordById(B),null);
+ await assert.rejects(service.updateSleepRecord(B,{notes:'Forbidden'}),e=>e.code==='NOT_FOUND');
+ await assert.rejects(service.deleteSleepRecord(B),e=>e.code==='NOT_FOUND');
+ assert.ok(f.calls.every(r=>r.url.searchParams.get('user_id')==='eq.'+A));
+ assert.equal(f.calls.some(r=>r.method==='PATCH'),false);
+});
+
+test('concurrent sleep submissions produce one insert and release the lock after errors',async()=>{
+ let release,started;
+ const ready=new Promise(resolve=>{started=resolve;});
+ const f=fixture(async request=>{
+  if(request.method==='GET'){started();await new Promise(resolve=>{release=resolve;});return {data:[]};}
+  return {data:[{...request.body,id:B}]};
+ });
+ const service=f.load('src/services/sleepService');
+ const first=service.addSleepRecord(sleepPayload);await ready;
+ await assert.rejects(service.addSleepRecord(sleepPayload),e=>e.message==='sleep.busy');
+ release();await first;
+ assert.equal(f.calls.filter(r=>r.method==='POST').length,1);
+});
+
+test('sleep mutations refresh daily and weekly Dashboard values after add, edit and delete',async()=>{
+ let rows=[];
+ const f=fixture(request=>{
+  if(!request.url.pathname.endsWith('/sleep_records')) return {data:[]};
+  if(request.method==='POST'){rows=[{...request.body,id:B}];return {data:rows};}
+  if(request.method==='PATCH'){rows=[{...rows[0],...request.body}];return {data:rows};}
+  if(request.method==='DELETE'){const removed=rows;rows=[];return {data:removed};}
+  if(request.url.searchParams.get('select')==='id') return {data:[]};
+  return {data:rows,total:rows.length};
+ });
+ const service=f.load('src/services/sleepService'),dashboard=f.load('src/services/dashboardService');
+ const day=f.load('src/lib/dateUtils').timestampDateKey(sleepPayload.sleep_end);
+ assert.equal((await dashboard.getDashboardSummary(day)).sleep.minutes,null);
+ await service.addSleepRecord(sleepPayload);
+ assert.equal((await dashboard.getDashboardSummary(day)).sleep.minutes,480);
+ await service.updateSleepRecord(B,{sleep_end:'2020-10-27T01:00:00Z'});
+ assert.equal((await dashboard.getDashboardSummary(day)).sleep.minutes,540);
+ assert.equal((await dashboard.getWeeklyDashboardSummary(day)).find(d=>d.date===day).sleep.minutes,540);
+ await service.deleteSleepRecord(B);
+ assert.equal((await dashboard.getDashboardSummary(day)).sleep.minutes,null);
+ assert.equal((await dashboard.getWeeklyDashboardSummary(day)).find(d=>d.date===day).sleep.minutes,null);
+});
+
+test('sleep rejects unconfirmed INSERT/UPDATE responses and expired or changed ownership before writing',async()=>{
+ for(const method of ['POST','PATCH']) {
+  const f=fixture(request=>request.method==='GET'?{data:request.url.searchParams.get('select')==='id'?[]:[{...sleepPayload,id:B,user_id:A}]}:{data:[]});
+  const service=f.load('src/services/sleepService');let success=false;
+  f.load('src/lib/healthQueryEvents').subscribeSleepChanges(()=>{success=true;});
+  await assert.rejects(method==='POST'?service.addSleepRecord(sleepPayload):service.updateSleepRecord(B,{notes:'Unconfirmed'}));
+  assert.equal(success,false);
+ }
+ let release,started;
+ const ready=new Promise(resolve=>{started=resolve;});
+ const f=fixture(async()=>{started();await new Promise(resolve=>{release=resolve;});return {data:[]};});
+ const operation=f.load('src/services/sleepService').addSleepRecord(sleepPayload);await ready;
+ f.setOwner(B);release();await assert.rejects(operation,e=>e.code==='AUTH_CHANGED');
+ assert.equal(f.calls.some(r=>r.method==='POST'),false);
 });

@@ -1,10 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { formatNumber } from '../../i18n/formatting';
-import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 import Svg, { Rect, Text as SvgText } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
-import { Spacing } from '../../constants/spacing';
 
 interface BarDataItem {
   label: string;
@@ -34,14 +33,14 @@ export function WeeklyBarChart({
   unit = '',
 }: WeeklyBarChartProps) {
   useTranslation();
+  const [totalWidth, setTotalWidth] = useState(0);
   const max = maxValue && maxValue > 0 ? maxValue : Math.max(1,...data.map((d) => d.value)) * 1.1;
   const chartHeight = height - 30; // Reserve space for labels
-  const screenWidth = Dimensions.get('window').width - Spacing.screenPadding * 2;
-  const totalWidth = screenWidth;
+  barWidth = Math.min(barWidth, totalWidth / Math.max(1, data.length * 1.7));
   const gap = (totalWidth - barWidth * data.length) / (data.length + 1);
 
   return (
-    <View style={[styles.container, { height }]}>
+    <View style={[styles.container, { height }]} onLayout={event => setTotalWidth(event.nativeEvent.layout.width)}>
       <Svg width={totalWidth} height={height}>
         {data.map((item, index) => {
           const barHeight = (item.value / max) * chartHeight;

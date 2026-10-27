@@ -1,167 +1,188 @@
 import { useTranslation } from 'react-i18next';
-import { formatNumber,formatTime,formatDuration,formatDayLabel } from '../../src/i18n/formatting';
-import { localizeStaticData } from '../../src/i18n/localize';
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { formatNumber, formatTime, formatDuration, formatDayLabel, formatDate } from '../../src/i18n/formatting';
+import { localizeStaticData, localizeMessage } from '../../src/i18n/localize';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { AppHeader } from '../../src/components/common/AppHeader';
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
+import { PrimaryButton, TextButton } from '../../src/components/common/Buttons';
 import { WeeklyBarChart } from '../../src/components/charts/WeeklyBarChart';
+import { SleepRecordForm } from '../../src/components/health/SleepRecordForm';
+import { SleepDateTimeField } from '../../src/components/health/SleepDateTimeField';
 import { sleepTips as rawSleepTips } from '../../src/data/sleep';
-import { useSleep } from '../../src/hooks/healthHooks';
-import { getWeekRange } from '../../src/lib/dateUtils';
+import { useSleepRecords, useHealthGoals } from '../../src/hooks/healthHooks';
+import { useAuth } from '../../src/contexts/AuthContext';
+import { getWeekRange, getMonthRange, shiftDay, toLocalDateKey, timestampDateKey, parseLocalDate } from '../../src/lib/dateUtils';
+import { aggregateSleep, sleepDurationMinutes } from '../../src/lib/healthCalculations';
+import { deleteSleepRecord } from '../../src/services/sleepService';
+import { dataError } from '../../src/lib/dataErrors';
+import type { SleepRecordRow } from '../../src/types/database';
 import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 
 export default function SleepScreen() {
+  const { user } = useAuth();
+  return <SleepContent key={user?.id ?? 'signed-out'} />;
+}
+
+function SleepContent() {
   const { t } = useTranslation();
-  const sleepTips = localizeStaticData(rawSleepTips);
-
   const router = useRouter();
-
-  const query = useSleep(getWeekRange());
-  const formatMinutes = (minutes: number | null | undefined) => formatDuration(minutes);
-  const latest = query.data?.latestSession;
-  const sleepData = { average:formatMinutes(query.data?.averageDailyMinutes),quality:(query.data?.averageQualityRating == null ? undefined : formatNumber(query.data?.averageQualityRating,1)) ?? '—',deepSleep:'—',awake:'—',bedtime:latest ? formatTime(new Date(latest.sleep_start),{ hour:'2-digit',minute:'2-digit' }) : '—',wakeUp:latest ? formatTime(new Date(latest.sleep_end),{ hour:'2-digit',minute:'2-digit' }) : '—' };
-  const weeklyChartData = (query.data?.daily ?? []).filter(day => day.minutes !== null).map(day => ({ label:formatDayLabel(day.date),value:(day.minutes ?? 0)/60 }));
-
-  return (
-    <View style={styles.container}>
-      <AppHeader title={t("health.sleep")} showBack={true} />
-      <ScreenContainer scrollable={true} padded={true}>
-        <DataFeedback {...query} empty={!query.data?.latestSession} />
-        {/* Main Summary Card (Blue-tinted) */}
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryHeader}>
-            <View style={styles.summaryIconCircle}>
-              <Ionicons name="moon" size={20} color={Colors.blue} />
-            </View>
-            <Text style={styles.summaryBadge}>{t("overview.recordedSleep")}</Text>
+  const [date, setDate] = useState(toLocalDateKey());
+  const [period, setPeriod] = useState<'week' | 'month'>('week');
+  const [editing, setEditing] = useState<SleepRecordRow | null | undefined>(undefined);
+  const [deleting, setDeleting] = useState<SleepRecordRow | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const deleteLock = useRef(false), mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  const week = getWeekRange(date), month = getMonthRange(date);
+  const range = period === 'week' ? week : month;
+  // One range query supplies history, weekly chart and both averages.
+  const query = useSleepRecords({ start: week.start < month.start ? week.start : month.start, end: week.end > month.end ? week.end : month.end });
+  const goals = useHealthGoals(date);
+  const rows = query.data ?? [];
+  const weekly = aggregateSleep(rows, week.start, week.end), monthly = aggregateSleep(rows, month.start, month.end);
+  const summary = period === 'week' ? weekly : monthly;
+  const latest = summary.latestSession;
+  const history = rows.filter(row => { const key = timestampDateKey(row.sleep_end); return key >= range.start && key <= range.end; })
+    .sort((a, b) => Date.parse(b.sleep_end) - Date.parse(a.sleep_end) || b.id.localeCompare(a.id));
+  const chart = weekly.daily.filter(day => day.minutes !== null).map(day => ({ label: formatDayLabel(day.date), value: (day.minutes ?? 0) / 60 }));
+  const move = (direction: number) => {
+    if (period === 'week') setDate(shiftDay(date, direction * 7));
+    else { const next = parseLocalDate(month.start); next.setMonth(next.getMonth() + direction); setDate(toLocalDateKey(next)); }
+    setNotice(null);
+  };
+  const remove = async () => {
+    if (!deleting || deleteLock.current) return;
+    deleteLock.current = true; setBusy(true); setDeleteError(null);
+    try {
+      await deleteSleepRecord(deleting.id);
+      if (mounted.current) { setDeleting(null); setNotice('sleep.deleted'); }
+    } catch (error) { if (mounted.current) setDeleteError(dataError(error).message); }
+    finally { deleteLock.current = false; if (mounted.current) setBusy(false); }
+  };
+  const openForm = (record: SleepRecordRow | null) => { setNotice(null); setEditing(record); };
+  return <View style={styles.container}>
+    <AppHeader title={t('health.sleep')} showBack />
+    <ScreenContainer>
+      <View style={styles.controls}>
+        <PrimaryButton title={t('sleep.addRecord')} onPress={() => openForm(null)} />
+        <SleepDateTimeField label={t('sleep.selectedDate')} date={date} onChange={value => { if (value) { try { setDate(toLocalDateKey(value)); setNotice(null); } catch { /* Keep the last valid filter. */ } } }} />
+        <View style={styles.controlsRow}>
+          <TextButton title={t('sleep.weekView')} onPress={() => setPeriod('week')} disabled={period === 'week'} />
+          <TextButton title={t('sleep.monthView')} onPress={() => setPeriod('month')} disabled={period === 'month'} />
+        </View>
+        <View style={styles.controlsRow}>
+          <TextButton title={t('sleep.previousPeriod')} onPress={() => move(-1)} />
+          <TextButton title={t('period.today')} onPress={() => setDate(toLocalDateKey())} />
+          <TextButton title={t('sleep.nextPeriod')} onPress={() => move(1)} />
+        </View>
+        <Text style={styles.cardSubtitle}>{t('sleep.dateRange', { start: formatDate(range.start), end: formatDate(range.end) })}</Text>
+      </View>
+      {notice && <Text accessibilityRole="alert" style={styles.success}>{t(notice)}</Text>}
+      <DataFeedback {...query} empty={!summary.latestSession} />
+      <View style={styles.summaryCard}>
+        <View style={styles.summaryHeader}>
+          <View style={styles.summaryIconCircle}><Ionicons name="moon" size={20} color={Colors.blue} /></View>
+          <Text style={styles.summaryBadge}>{t('overview.recordedSleep')}</Text>
+        </View>
+        <Text style={styles.summaryLabel}>{t('sleep.weekAverage')}</Text>
+        <Text style={styles.summaryValue}>{formatDuration(query.data ? weekly.averageDailyMinutes : null)}</Text>
+        <View style={styles.summaryRow}>
+          <View style={styles.summaryCol}>
+            <Text style={styles.summaryColLabel}>{t('sleep.monthAverage')}</Text>
+            <Text style={styles.summaryColValue}>{formatDuration(query.data ? monthly.averageDailyMinutes : null)}</Text>
           </View>
-
-          <Text style={styles.summaryLabel}>{t("sleep.average")}</Text>
-          <Text style={styles.summaryValue}>{sleepData.average}</Text>
-
-          <View style={styles.summaryRow}>
-            <View style={styles.summaryCol}>
-              <Text style={styles.summaryColLabel}>{t("sleep.quality")}</Text>
-              <View style={styles.summaryColValueRow}>
-                <Ionicons name="star" size={14} color="#F4A261" style={styles.starIcon} />
-                <Text style={styles.summaryColValue}>{sleepData.quality}/5</Text>
-              </View>
-            </View>
-            <View style={styles.summaryDivider} />
-            <View style={styles.summaryCol}>
-              <Text style={styles.summaryColLabel}>{t("sleep.deep")}</Text>
-              <Text style={styles.summaryColValue}>{sleepData.deepSleep}</Text>
-            </View>
-            <View style={styles.summaryDivider} />
-            <View style={styles.summaryCol}>
-              <Text style={styles.summaryColLabel}>{t("sleep.awake")}</Text>
-              <Text style={styles.summaryColValue}>{sleepData.awake}</Text>
-            </View>
+          <View style={styles.summaryDivider} />
+          <View style={styles.summaryCol}>
+            <Text style={styles.summaryColLabel}>{t('sleep.recordedDays')}</Text>
+            <Text style={styles.summaryColValue}>{query.data ? formatNumber(summary.daily.filter(day => day.sessionCount > 0).length) : '—'}</Text>
           </View>
         </View>
-
-        {/* Sleep Phases Breakdown */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.cardTitle}>{t("sleep.phases")}</Text>
-          <Text style={styles.cardSubtitle}>{t('sleep.weekTotal',{duration:formatMinutes(query.data?.totalMinutes)})}</Text>
-
-          <View style={styles.phasesList}>
-            <Text style={styles.cardSubtitle}>{t("sleep.phasesUnavailable")}</Text>
-          </View>
-        </View>
-
-        {/* Weekly Bar Chart */}
-        <View style={styles.sectionCard}>
-          <View style={styles.chartHeader}>
-            <View>
-              <Text style={styles.cardTitle}>{t("sleep.weekly")}</Text>
-              <Text style={styles.cardSubtitle}>{t("sleep.grouping")}</Text>
-            </View>
-            <View style={styles.legendBadge}>
-              <View style={[styles.legendDot, { backgroundColor: '#3A5BC7' }]} />
-              <Text style={styles.legendText}>{t("sleep.recordedNights")}</Text>
-            </View>
-          </View>
-
-          <View style={styles.chartWrapper}>
-            <WeeklyBarChart
-              data={weeklyChartData}
-              maxValue={10}
-              color={Colors.blue}
-              highlightColor="#3A5BC7"
-              height={170}
-              barWidth={26}
-              showValues={true}
-              unit={t("units.hourShort")}
-            />
-          </View>
-        </View>
-
-        {/* Sleep Schedule Section */}
-        <View style={styles.sectionCard}>
-          <View style={styles.scheduleHeader}>
-            <Text style={styles.cardTitle}>{t("sleep.latest")}</Text>
-            <TouchableOpacity
-              onPress={() => router.push('/sleep-schedule')}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              style={styles.editButton}
-            >
-              <Text style={styles.editText}>{t("common.edit")}</Text>
-              <Ionicons name="chevron-forward" size={14} color={Colors.primary} />
-            </TouchableOpacity>
-          </View>
-
+        <Text style={styles.cardSubtitle}>{t('sleep.averageRule')}</Text>
+      </View>
+      <View style={styles.sectionCard}>
+        <Text style={styles.cardTitle}>{t('sleep.periodTotal', { duration: formatDuration(query.data ? summary.totalMinutes : null) })}</Text>
+        <Text style={styles.cardSubtitle}>{t('sleep.qualityValue', { value: formatNumber(summary.averageQualityRating, 1) })}</Text>
+        <DataFeedback {...goals} />
+        <Text style={styles.cardSubtitle}>{t('sleep.goalValue', { duration: formatDuration(goals.data?.target_sleep_minutes) })}</Text>
+        {summary.averageDailyMinutes !== null && goals.data?.target_sleep_minutes != null && goals.data.target_sleep_minutes > 0 &&
+          <Text style={styles.cardSubtitle}>{t('sleep.goalProgress', { value: formatNumber(summary.averageDailyMinutes / goals.data.target_sleep_minutes * 100, 0) })}</Text>}
+      </View>
+      <View style={styles.sectionCard}>
+        <Text style={styles.cardTitle}>{t('sleep.weekly')}</Text>
+        <Text style={styles.cardSubtitle}>{t('sleep.grouping')}</Text>
+        {chart.length > 0 ? <View style={styles.chartWrapper} accessible accessibilityLabel={t('sleep.chartDescription', { values: weekly.daily.filter(day => day.minutes !== null).map(day => `${formatDate(day.date)}: ${formatDuration(day.minutes)}`).join('; ') })}>
+          <WeeklyBarChart data={chart} color={Colors.blue} height={180} barWidth={22} showValues unit={t('units.hourShort')} />
+        </View> : <Text style={styles.cardSubtitle}>{t('sleep.emptyChart')}</Text>}
+      </View>
+      <View style={styles.sectionCard}>
+        <Text style={styles.cardTitle}>{t('sleep.latest')}</Text>
+        {latest ? <>
+          <Text style={styles.cardSubtitle}>{t('sleep.recordDate', { date: formatDate(latest.sleep_end) })}</Text>
           <View style={styles.scheduleRow}>
-            {/* Bedtime */}
-            <View style={styles.scheduleItem}>
-              <View style={[styles.scheduleIconBg, { backgroundColor: '#EDF3FF' }]}>
-                <Ionicons name="moon" size={20} color={Colors.blue} />
-              </View>
-              <View>
-                <Text style={styles.scheduleLabel}>{t("sleep.bedtime")}</Text>
-                <Text style={styles.scheduleTime}>{sleepData.bedtime}</Text>
-              </View>
+            <View style={styles.scheduleItem}><Ionicons name="moon" size={20} color={Colors.blue} />
+              <View style={styles.flex}><Text style={styles.scheduleLabel}>{t('sleep.bedtime')}</Text><Text style={styles.scheduleTime}>{formatTime(latest.sleep_start)}</Text><Text style={styles.scheduleLabel}>{formatDate(latest.sleep_start)}</Text></View>
             </View>
-
-            <View style={styles.scheduleArrow}>
-              <Ionicons name="arrow-forward" size={16} color={Colors.textMuted} />
-            </View>
-
-            {/* Wake up */}
-            <View style={styles.scheduleItem}>
-              <View style={[styles.scheduleIconBg, { backgroundColor: '#FFF2E6' }]}>
-                <Ionicons name="sunny" size={20} color={Colors.orange} />
-              </View>
-              <View>
-                <Text style={styles.scheduleLabel}>{t("sleep.wakeUp")}</Text>
-                <Text style={styles.scheduleTime}>{sleepData.wakeUp}</Text>
-              </View>
+            <View style={styles.scheduleItem}><Ionicons name="sunny" size={20} color={Colors.orange} />
+              <View style={styles.flex}><Text style={styles.scheduleLabel}>{t('sleep.wakeUp')}</Text><Text style={styles.scheduleTime}>{formatTime(latest.sleep_end)}</Text><Text style={styles.scheduleLabel}>{formatDate(latest.sleep_end)}</Text></View>
             </View>
           </View>
-        </View>
-
-        {/* Sleep Tip Card */}
-        <View style={styles.tipCard}>
-          <View style={styles.tipIconBg}>
-            <Ionicons name="bulb-outline" size={20} color={Colors.blue} />
+          <Text style={styles.duration}>{formatDuration(sleepDurationMinutes(latest.sleep_start, latest.sleep_end))}</Text>
+          <TextButton title={t('sleep.editRecord')} onPress={() => openForm(latest)} />
+        </> : <Text style={styles.cardSubtitle}>{t('sleep.emptyHistory')}</Text>}
+        <TextButton title={t('schedule.title')} onPress={() => router.push('/sleep-schedule')} />
+      </View>
+      <View style={styles.sectionCard}>
+        <Text style={styles.cardTitle}>{t('sleep.history')}</Text>
+        {!history.length && !query.isLoading && !query.error && <Text style={styles.cardSubtitle}>{t('sleep.emptyHistory')}</Text>}
+        {history.map(record => <View key={record.id} style={styles.historyRecord}>
+          <Text style={styles.cardTitle}>{formatDate(record.sleep_end)}</Text>
+          <Text style={styles.duration}>{formatDuration(sleepDurationMinutes(record.sleep_start, record.sleep_end))}</Text>
+          <Text style={styles.cardSubtitle}>{t('sleep.timeEndpoint', { field: t('sleep.bedtime'), date: formatDate(record.sleep_start), time: formatTime(record.sleep_start) })}</Text>
+          <Text style={styles.cardSubtitle}>{t('sleep.timeEndpoint', { field: t('sleep.wakeUp'), date: formatDate(record.sleep_end), time: formatTime(record.sleep_end) })}</Text>
+          {record.quality_rating !== null && <Text style={styles.cardSubtitle}>{t('sleep.ratingValue', { value: formatNumber(record.quality_rating) })}</Text>}
+          {record.notes && <Text style={styles.cardSubtitle}>{record.notes}</Text>}
+          <View style={styles.controlsRow}>
+            <TextButton title={t('common.edit')} onPress={() => openForm(record)} disabled={busy} />
+            <TextButton title={t('sleep.deleteRecord')} color={Colors.error} disabled={busy} onPress={() => { setDeleteError(null); setDeleting(record); }} />
           </View>
-          <View style={styles.tipTextContainer}>
-            <Text style={styles.tipHeading}>{t("sleep.insight")}</Text>
-            <Text style={styles.tipText}>{sleepTips[0]}</Text>
-          </View>
-        </View>
-      </ScreenContainer>
-    </View>
-  );
+        </View>)}
+      </View>
+      <View style={styles.tipCard}>
+        <Ionicons name="bulb-outline" size={20} color={Colors.blue} />
+        <View style={styles.tipTextContainer}><Text style={styles.tipHeading}>{t('sleep.insight')}</Text><Text style={styles.tipText}>{localizeStaticData(rawSleepTips)[0]}</Text></View>
+      </View>
+    </ScreenContainer>
+    {editing !== undefined && <SleepRecordForm record={editing} onClose={() => setEditing(undefined)} onSaved={wakeDate => { setDate(wakeDate); setEditing(undefined); setNotice('sleep.saved'); }} />}
+    <Modal visible={deleting !== null} transparent animationType="fade" onRequestClose={() => { if (!deleteLock.current) setDeleting(null); }}>
+      <View style={styles.backdrop}><View accessibilityViewIsModal style={styles.dialog}>
+        <Text accessibilityRole="header" style={styles.cardTitle}>{t('sleep.deleteRecord')}</Text>
+        <Text style={styles.cardSubtitle}>{t('sleep.deleteConfirmation', { date: deleting ? formatDate(deleting.sleep_end) : '' })}</Text>
+        {deleteError && <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(deleteError)}</Text>}
+        <PrimaryButton title={t(busy ? 'sleep.deleting' : 'sleep.deleteRecord')} loading={busy} onPress={remove} />
+        <TextButton title={t('common.cancel')} disabled={busy} onPress={() => setDeleting(null)} />
+      </View></View>
+    </Modal>
+  </View>;
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  controls: { gap: Spacing.sm, marginTop: Spacing.md },
+  controlsRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  success: { ...Typography.bodySmall, color: Colors.success, paddingVertical: Spacing.md },
+  error: { ...Typography.bodySmall, color: Colors.error },
+  duration: { ...Typography.cardTitle, color: Colors.blue, marginTop: Spacing.sm },
+  historyRecord: { paddingVertical: Spacing.md, borderBottomWidth: 1, borderBottomColor: Colors.divider },
+  backdrop: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Spacing.screenPadding, backgroundColor: 'rgba(0,0,0,0.45)' },
+  dialog: { width: '100%', maxWidth: 480, backgroundColor: Colors.white, borderRadius: Radius.xl, padding: Spacing.xl, gap: Spacing.md },
   container: {
     flex: 1,
     backgroundColor: Colors.background,
@@ -224,19 +245,14 @@ const styles = StyleSheet.create({
     ...Typography.labelSmall,
     color: Colors.textMuted,
     marginBottom: 2,
-  },
-  summaryColValueRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  starIcon: {
-    marginRight: 3,
+    textAlign: 'center',
   },
   summaryColValue: {
     ...Typography.cardTitle,
     fontSize: 15,
     fontWeight: '700',
     color: Colors.textPrimary,
+    textAlign: 'center',
   },
   summaryDivider: {
     width: 1,
@@ -261,57 +277,9 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     marginTop: 2,
   },
-  phasesList: {
-    marginTop: Spacing.lg,
-    gap: Spacing.md,
-  },
-  phaseItem: {
-    width: '100%',
-  },
-  chartHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: Spacing.md,
-  },
-  legendBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.background,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: Radius.sm,
-    gap: 4,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  legendText: {
-    ...Typography.labelSmall,
-    color: Colors.textSecondary,
-  },
   chartWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  scheduleHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
-  },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  editText: {
-    ...Typography.buttonSmall,
-    color: Colors.primary,
   },
   scheduleRow: {
     flexDirection: 'row',
@@ -320,18 +288,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     borderRadius: Radius.lg,
     padding: Spacing.md,
+    gap: Spacing.md,
+    flexWrap: 'wrap',
   },
   scheduleItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
-  },
-  scheduleIconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: Radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexGrow: 1,
+    flexBasis: 130,
+    flexShrink: 1,
   },
   scheduleLabel: {
     ...Typography.labelSmall,
@@ -343,9 +309,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: 2,
   },
-  scheduleArrow: {
-    paddingHorizontal: Spacing.xs,
-  },
   tipCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -356,17 +319,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DCE7FD',
   },
-  tipIconBg: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: Colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Spacing.md,
-  },
   tipTextContainer: {
     flex: 1,
+    marginLeft: Spacing.md,
   },
   tipHeading: {
     ...Typography.label,

@@ -26,6 +26,13 @@ export function aggregateSteps(rows: StepRecordRow[], start: string, end: string
 }
 export function sleepDurationMinutes(start: string, end: string) { const duration = (Date.parse(timestamp(end)) - Date.parse(timestamp(start))) / 60000; if (!Number.isFinite(duration) || duration <= 0) throw new DataAccessError('INVALID_INPUT','Giấc ngủ cần thời điểm bắt đầu/kết thúc hợp lệ.'); return duration; }
 export function aggregateSleep(rows: SleepRecordRow[], start: string, end: string): SleepSummary {
+ // Count repeated copies of a row/interval only once; retain distinct naps on a day.
+ const seenIds = new Set<string>(), seenIntervals = new Set<string>();
+ rows = rows.filter(row => {
+  const interval = `${row.user_id}:${Date.parse(row.sleep_start)}:${Date.parse(row.sleep_end)}`;
+  if (seenIds.has(row.id) || seenIntervals.has(interval)) return false;
+  seenIds.add(row.id); seenIntervals.add(interval); return true;
+ });
  const daily = getDaysInRange(start,end).map(date => { const records = rows.filter(row => timestampDateKey(row.sleep_end) === date); return { date, minutes: records.length ? records.reduce((sum,row) => sum + sleepDurationMinutes(row.sleep_start,row.sleep_end),0) : null, sessionCount: records.length }; });
  const included = rows.filter(row => { const date = timestampDateKey(row.sleep_end); return date >= start && date <= end; });
  const totalMinutes = daily.reduce((sum,row) => sum + (row.minutes ?? 0),0); const qualities = included.filter(row => row.quality_rating !== null);

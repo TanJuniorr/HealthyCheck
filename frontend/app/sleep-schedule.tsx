@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { localizeStaticData } from '../src/i18n/localize';
 import React, { useState } from 'react';
@@ -7,7 +8,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Switch,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
@@ -30,6 +30,7 @@ const rawDAYS_OF_WEEK = [
 
 export default function SleepScheduleScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const sleepData = localizeStaticData(rawSleepData);
   const sleepTips = localizeStaticData(rawSleepTips);
   const DAYS_OF_WEEK = localizeStaticData(rawDAYS_OF_WEEK);
@@ -73,9 +74,7 @@ export default function SleepScheduleScreen() {
     }
   };
 
-  const handleSaveSchedule = () => {
-    Alert.alert(t("common.comingSoon"), t("schedule.unavailable"));
-  };
+
 
   return (
     <View style={styles.container}>
@@ -244,9 +243,8 @@ export default function SleepScheduleScreen() {
         {/* Save Schedule Button */}
         <View style={styles.actionContainer}>
           <PrimaryButton
-            title={t("schedule.savingSoon")}
-            disabled
-            onPress={handleSaveSchedule}
+            title={t("schedule.manageRecords")}
+            onPress={() => router.push('/health/sleep')}
             style={styles.saveButton}
           />
         </View>

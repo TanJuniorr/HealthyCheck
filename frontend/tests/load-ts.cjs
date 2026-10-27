@@ -6,7 +6,8 @@ const ts = require('typescript');
 module.exports = function createLoader(overrides = {}) {
  const cache = new Map();
  function load(filename) {
-  const absolute = path.resolve(__dirname,'..',filename.endsWith('.ts') || filename.endsWith('.tsx') || filename.endsWith('.json') ? filename : filename+'.ts');
+  let absolute = path.resolve(__dirname,'..',filename.endsWith('.ts') || filename.endsWith('.tsx') || filename.endsWith('.json') ? filename : filename+'.ts');
+  if (!fs.existsSync(absolute) && absolute.endsWith('.ts')) absolute = absolute.slice(0,-3)+'.tsx';
   if (absolute in overrides) return overrides[absolute];
   if (absolute.endsWith('.json')) return JSON.parse(fs.readFileSync(absolute,'utf8'));
   if (cache.has(absolute)) return cache.get(absolute).exports;
