@@ -1,4 +1,6 @@
 import React from 'react';
+import { useEffect } from "react";
+import { fetchFoods } from "../../src/lib/healthData";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,7 +20,16 @@ import { mockUser } from '../../src/data/user';
 export default function OverviewScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-
+  useEffect(() => {
+  fetchFoods()
+    .then((foods) => {
+      console.log("FOODS FROM SUPABASE:", foods.length);
+      console.log("FOOD DATA:", foods);
+    })
+    .catch((error) => {
+      console.error("FOODS LOAD ERROR:", error);
+    });
+}, []);
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <ScrollView

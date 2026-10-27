@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from '../src/lib/supabase';
 import {
   View,
   Text,
@@ -16,18 +17,63 @@ import { Typography } from '../src/constants/typography';
 import { Spacing, Radius } from '../src/constants/spacing';
 import { AppTextInput } from '../src/components/common/AppTextInput';
 import { PrimaryButton } from '../src/components/common/Buttons';
-import { mockUser } from '../src/data/user';
 
 export default function LoginScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const [email, setEmail] = useState(mockUser.email);
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSignIn = () => {
-    // Visual auth only — navigate directly to main tabs
-    router.replace('/(tabs)');
+  const handleSignIn = async () => {
+    if (isSubmitting) return;
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail || !password) {
+      setFeedback('Vui lòng nhập email và mật khẩu.');
+      return;
+    }
+
+    setFeedback('');
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      });
+
+      if (error) {
+        const lowerMessage = error.message.toLowerCase();
+        if (lowerMessage.includes('email not confirmed')) {
+          setFeedback('Email của tài khoản chưa được xác nhận. Hãy kiểm tra hộp thư đến.');
+        } else if (
+          lowerMessage.includes('invalid login credentials') ||
+          lowerMessage.includes('invalid_credentials')
+        ) {
+          setFeedback('Email hoặc mật khẩu không đúng. Hãy kiểm tra lại thông tin.');
+        } else if (
+          lowerMessage.includes('too many requests') ||
+          lowerMessage.includes('rate limit')
+        ) {
+          setFeedback('Bạn đã thử đăng nhập quá nhiều lần. Hãy chờ một lúc rồi thử lại.');
+        } else {
+          setFeedback(`Đăng nhập thất bại: ${error.message}`);
+        }
+        return;
+      }
+
+      // Supabase has established the session; go straight to the app.
+      router.replace('/(tabs)');
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : 'Lỗi không xác định';
+      setFeedback(`Không thể kết nối Supabase: ${detail}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSocialLogin = (_provider: string) => {
@@ -93,9 +139,16 @@ export default function LoginScreen() {
             <Text style={styles.forgotPasswordText}>Forgot password?</Text>
           </TouchableOpacity>
 
+          {/* Inline feedback also works on Expo Web; Alert.alert may be invisible there. */}
+          {feedback ? (
+            <Text accessibilityRole="alert" style={styles.feedbackText}>
+              {feedback}
+            </Text>
+          ) : null}
+
           {/* Primary Sign In Button */}
           <PrimaryButton
-            title="Sign In"
+            title={isSubmitting ? 'Signing in...' : 'Sign In'}
             onPress={handleSignIn}
             style={styles.signInButton}
           />
@@ -216,6 +269,15 @@ const styles = StyleSheet.create({
     ...Typography.buttonSmall,
     color: Colors.primary,
     fontWeight: '500',
+  },
+  feedbackText: {
+    ...Typography.body,
+    color: '#B42318',
+    backgroundColor: '#FEF3F2',
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    marginBottom: Spacing.sm,
   },
   signInButton: {
     marginTop: Spacing.xs,

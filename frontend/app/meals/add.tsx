@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 import { AppHeader } from '../../src/components/common/AppHeader';
 import { PrimaryButton } from '../../src/components/common/Buttons';
-import { quickAddFoods } from '../../src/data/nutrition';
+import { fetchFoods, type Food } from '../../src/lib/healthData';
 
 const MEAL_TYPES = [
   { id: 'Breakfast', label: 'Breakfast', icon: 'sunny-outline' },
@@ -31,17 +31,44 @@ export default function AddMealScreen() {
   const [selectedMealType, setSelectedMealType] = useState('Dinner');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState<Record<string, number>>({});
+  const [foods, setFoods] = useState<Food[]>([]);
+  const [isLoadingFoods, setIsLoadingFoods] = useState(true);
+  const [foodsError, setFoodsError] = useState<string | null>(null);
 
-  // Filter foods by search query
+  // Load the food catalogue from Supabase instead of the local mock list.
+  const loadFoods = useCallback(async () => {
+    setIsLoadingFoods(true);
+    setFoodsError(null);
+
+    try {
+      const rows = await fetchFoods();
+      setFoods(rows);
+    } catch (error) {
+      setFoodsError(
+        error instanceof Error
+          ? error.message
+          : 'Không tải được danh sách thực phẩm từ database.'
+      );
+    } finally {
+      setIsLoadingFoods(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadFoods();
+  }, [loadFoods]);
+
+  // Filter database foods by name or serving size.
   const filteredFoods = useMemo(() => {
-    if (!searchQuery.trim()) return quickAddFoods;
-    const query = searchQuery.toLowerCase();
-    return quickAddFoods.filter(
-      (f) =>
-        f.name.toLowerCase().includes(query) ||
-        f.serving.toLowerCase().includes(query)
+    const query = searchQuery.trim().toLocaleLowerCase();
+    if (!query) return foods;
+
+    return foods.filter((food) =>
+      food.name.toLocaleLowerCase().includes(query) ||
+      (food.serving_size ?? '').toLocaleLowerCase().includes(query) ||
+      (food.category ?? '').toLocaleLowerCase().includes(query)
     );
-  }, [searchQuery]);
+  }, [foods, searchQuery]);
 
   // Add or increment item
   const handleAddItem = (name: string) => {
@@ -67,10 +94,11 @@ export default function AddMealScreen() {
   // Calculate totals
   const totalCalories = useMemo(() => {
     return Object.entries(selectedItems).reduce((sum, [name, qty]) => {
-      const food = quickAddFoods.find((f) => f.name === name);
-      return sum + (food ? food.calories * qty : 0);
+      const food = foods.find((f) => f.name === name);
+      const calories = Number(food?.calories ?? food?.calories_per_100g ?? 0);
+      return sum + calories * qty;
     }, 0);
-  }, [selectedItems]);
+  }, [selectedItems, foods]);
 
   const totalCount = useMemo(() => {
     return Object.values(selectedItems).reduce((sum, qty) => sum + qty, 0);
@@ -150,11 +178,37 @@ export default function AddMealScreen() {
           <Text style={styles.itemCountText}>{filteredFoods.length} items</Text>
         </View>
 
-        {filteredFoods.length === 0 ? (
+        {isLoadingFoods ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="cloud-download-outline" size={32} color={Colors.textMuted} />
+            <Text style={styles.emptyTitle}>Loading foods...</Text>
+            <Text style={styles.emptySubtitle}>Đang tải danh sách thực phẩm từ Supabase.</Text>
+          </View>
+        ) : foodsError ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="cloud-offline-outline" size={36} color={Colors.textMuted} />
+            <Text style={styles.emptyTitle}>Không tải được thực phẩm</Text>
+            <Text style={styles.emptySubtitle}>{foodsError}</Text>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => void loadFoods()}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="refresh-outline" size={16} color={Colors.primary} />
+              <Text style={styles.addButtonText}>Thử lại</Text>
+            </TouchableOpacity>
+          </View>
+        ) : filteredFoods.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="restaurant-outline" size={36} color={Colors.textMuted} />
-            <Text style={styles.emptyTitle}>No food found</Text>
-            <Text style={styles.emptySubtitle}>Try searching for a different food or brand.</Text>
+            <Text style={styles.emptyTitle}>
+              {foods.length === 0 ? 'Chưa có thực phẩm trong database' : 'No food found'}
+            </Text>
+            <Text style={styles.emptySubtitle}>
+              {foods.length === 0
+                ? 'Hãy kiểm tra bảng public.foods trong Supabase.'
+                : 'Try searching for a different food or brand.'}
+            </Text>
           </View>
         ) : (
           filteredFoods.map((item) => {
@@ -170,8 +224,10 @@ export default function AddMealScreen() {
                 <View style={styles.foodInfo}>
                   <Text style={styles.foodName}>{item.name}</Text>
                   <Text style={styles.foodServing}>
-                    {item.serving} •{' '}
-                    <Text style={styles.foodCalories}>{item.calories} kcal</Text>
+                    {item.serving_size || 'Khẩu phần chưa xác định'} •{' '}
+                    <Text style={styles.foodCalories}>
+                      {Number(item.calories ?? item.calories_per_100g ?? 0)} kcal
+                    </Text>
                   </Text>
                 </View>
 
@@ -227,7 +283,7 @@ export default function AddMealScreen() {
             title={`Log ${selectedMealType}`}
             onPress={handleLogMeal}
             style={styles.logButton}
-            size="small"
+         
           />
         </View>
       </View>

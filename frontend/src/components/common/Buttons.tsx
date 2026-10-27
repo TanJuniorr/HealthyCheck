@@ -1,131 +1,88 @@
+
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, ActivityIndicator } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ViewStyle,
+} from 'react-native';
+
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { Radius, Spacing } from '../../constants/spacing';
 
-interface PrimaryButtonProps {
+type PrimaryButtonProps = {
   title: string;
-  onPress: () => void;
+  onPress: () => void | Promise<void>;
+  style?: StyleProp<ViewStyle>;
   disabled?: boolean;
   loading?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
-  size?: 'default' | 'small';
-}
+};
 
 export function PrimaryButton({
   title,
   onPress,
+  style,
   disabled = false,
   loading = false,
-  style,
-  textStyle,
-  size = 'default',
 }: PrimaryButtonProps) {
+  const isBusy = disabled || loading;
+
   return (
     <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{
+        disabled: isBusy,
+        busy: loading,
+      }}
+      activeOpacity={0.8}
+      onPress={onPress}
+      disabled={isBusy}
       style={[
-        styles.button,
-        size === 'small' && styles.buttonSmall,
-        disabled && styles.disabled,
+        styles.primaryButton,
+        isBusy && styles.disabledButton,
         style,
       ]}
-      onPress={onPress}
-      disabled={disabled || loading}
-      activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator color={Colors.white} size="small" />
-      ) : (
-        <Text style={[styles.text, size === 'small' && styles.textSmall, textStyle]}>
-          {title}
-        </Text>
-      )}
-    </TouchableOpacity>
-  );
-}
+        <ActivityIndicator
+          size="small"
+          color={Colors.white}
+          style={styles.spinner}
+        />
+      ) : null}
 
-interface SecondaryButtonProps {
-  title: string;
-  onPress: () => void;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
-}
-
-export function SecondaryButton({ title, onPress, style, textStyle }: SecondaryButtonProps) {
-  return (
-    <TouchableOpacity
-      style={[styles.secondaryButton, style]}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <Text style={[styles.secondaryText, textStyle]}>{title}</Text>
-    </TouchableOpacity>
-  );
-}
-
-interface TextButtonProps {
-  title: string;
-  onPress: () => void;
-  color?: string;
-  style?: ViewStyle;
-}
-
-export function TextButton({ title, onPress, color = Colors.primary, style }: TextButtonProps) {
-  return (
-    <TouchableOpacity style={[styles.textButton, style]} onPress={onPress} activeOpacity={0.7}>
-      <Text style={[styles.textButtonLabel, { color }]}>{title}</Text>
+      <Text style={styles.buttonText}>
+        {title}
+      </Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    backgroundColor: Colors.primary,
+  primaryButton: {
+    minHeight: 50,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
     borderRadius: Radius.lg,
-    paddingVertical: 16,
-    paddingHorizontal: Spacing.xxl,
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 52,
   },
-  buttonSmall: {
-    paddingVertical: 12,
-    paddingHorizontal: Spacing.lg,
-    minHeight: 44,
-  },
-  disabled: {
-    backgroundColor: Colors.textMuted,
+  disabledButton: {
     opacity: 0.6,
   },
-  text: {
+  spinner: {
+    marginRight: Spacing.sm,
+  },
+  buttonText: {
     ...Typography.button,
     color: Colors.white,
-  },
-  textSmall: {
-    ...Typography.buttonSmall,
-  },
-  secondaryButton: {
-    borderRadius: Radius.lg,
-    paddingVertical: 16,
-    paddingHorizontal: Spacing.xxl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 52,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-  },
-  secondaryText: {
-    ...Typography.button,
-    color: Colors.primary,
-  },
-  textButton: {
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.xs,
-  },
-  textButtonLabel: {
-    ...Typography.buttonSmall,
-    color: Colors.primary,
+    fontWeight: '700',
+    textAlign: 'center',
   },
 });
