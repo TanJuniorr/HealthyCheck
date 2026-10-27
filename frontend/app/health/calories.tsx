@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { formatNumber,formatDayLabel } from '../../src/i18n/formatting';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,25 +11,26 @@ import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 
-const weeklyCalorieData = [
-  { label: 'Mon', value: 520 },
-  { label: 'Tue', value: 430 },
-  { label: 'Wed', value: 580 },
-  { label: 'Thu', value: 490 },
-  { label: 'Fri', value: 510 },
-  { label: 'Sat', value: 620 },
-  { label: 'Sun', value: 487, highlighted: true },
-];
+import { useNutrition, useHealthGoals } from '../../src/hooks/healthHooks';
+import { getWeekRange, toLocalDateKey } from '../../src/lib/dateUtils';
+import { DataFeedback } from '../../src/components/common/DataFeedback';
 
 export default function CaloriesScreen() {
-  const current = 487;
-  const goal = 600;
-  const progress = 487 / 600; // ~0.81
+  const { t } = useTranslation();
+
+  const today = toLocalDateKey(); const query = useNutrition(getWeekRange(today));
+  const goals = useHealthGoals(today);
+  const day = query.data?.daily.find(item => item.date === today);
+  const current = day?.calories ?? null;
+  const goal = goals.data?.daily_calories ?? null;
+  const progress = current !== null && goal && goal > 0 ? Math.min(1,current/goal) : 0;
+  const weeklyCalorieData = (query.data?.daily ?? []).filter(item => item.hasRecords).map(item => ({ label:formatDayLabel(item.date),value:item.calories }));
 
   return (
     <View style={styles.container}>
-      <AppHeader title="Calories Burned" showBack={true} />
+      <AppHeader title={t("calories.eaten")} showBack={true} />
       <ScreenContainer scrollable={true} padded={true}>
+        <DataFeedback {...query} empty={!query.data?.hasRecords} />
         {/* Main Progress Hero Card */}
         <View style={styles.heroCard}>
           <ProgressRing
@@ -41,67 +44,65 @@ export default function CaloriesScreen() {
               <View style={styles.ringIconBg}>
                 <Ionicons name="flame" size={24} color={Colors.orange} />
               </View>
-              <Text style={styles.ringStat}>{current}</Text>
+              <Text style={styles.ringStat}>{(current == null ? undefined : formatNumber(current,0)) ?? '—'}</Text>
               <Text style={styles.ringUnit}>kcal</Text>
-              <Text style={styles.ringLabel}>of {goal} kcal goal</Text>
+              <Text style={styles.ringLabel}>{t('calories.goal',{value:formatNumber(goal)})}</Text>
             </View>
           </ProgressRing>
 
           {/* Quick Stats Summary */}
           <View style={styles.quickSummaryRow}>
             <View style={styles.quickSummaryItem}>
-              <Text style={styles.quickSummaryLabel}>Remaining</Text>
-              <Text style={styles.quickSummaryValue}>{goal - current} <Text style={styles.quickSummaryUnit}>kcal</Text></Text>
+              <Text style={styles.quickSummaryLabel}>{t("nutrition.remaining")}</Text>
+              <Text style={styles.quickSummaryValue}>{goal !== null && current !== null ? formatNumber(Math.max(0,goal-current),0) : '—'} <Text style={styles.quickSummaryUnit}>kcal</Text></Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.quickSummaryItem}>
-              <Text style={styles.quickSummaryLabel}>Progress</Text>
+              <Text style={styles.quickSummaryLabel}>{t("calories.progress")}</Text>
               <Text style={[styles.quickSummaryValue, { color: Colors.orange }]}>
-                {Math.round(progress * 100)}%
+                {goal !== null && goal > 0 ? `${formatNumber(Math.round(progress*100))}%` : '—'}
               </Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.quickSummaryItem}>
-              <Text style={styles.quickSummaryLabel}>Daily Avg</Text>
-              <Text style={styles.quickSummaryValue}>520 <Text style={styles.quickSummaryUnit}>kcal</Text></Text>
+              <Text style={styles.quickSummaryLabel}>{t("calories.average")}</Text>
+              <Text style={styles.quickSummaryValue}>{query.data ? formatNumber((query.data.calories/query.data.daily.length),0) : '—'} <Text style={styles.quickSummaryUnit}>kcal</Text></Text>
             </View>
           </View>
         </View>
 
         {/* Activity Breakdown Section */}
         <View style={styles.sectionCard}>
-          <Text style={styles.cardTitle}>Activity Breakdown</Text>
-          <Text style={styles.cardSubtitle}>Total energy expenditure distribution</Text>
+          <Text style={styles.cardTitle}>{t("calories.breakdown")}</Text>
+          <Text style={styles.cardSubtitle}>{t("calories.expenditureUnsupported")}</Text>
 
           <View style={styles.barsContainer}>
             {/* Active Calories */}
             <View style={styles.barItem}>
               <ProgressBar
-                progress={340 / goal}
+                progress={0}
                 color={Colors.orange}
                 trackColor="#F5EFEA"
                 height={10}
-                label="Active Calories"
-                value="340 kcal"
+                label={t("calories.active")}
+                value={t("common.unavailable")}
               />
               <Text style={styles.barDescription}>
-                Energy burned through intentional movements, steps, and exercise
-              </Text>
+                {t("calories.activeHint")}</Text>
             </View>
 
             {/* Resting Calories */}
             <View style={styles.barItem}>
               <ProgressBar
-                progress={147 / goal}
+                progress={0}
                 color={Colors.blue}
                 trackColor="#EEF4FF"
                 height={10}
-                label="Resting Calories"
-                value="147 kcal"
+                label={t("calories.resting")}
+                value={t("common.unavailable")}
               />
               <Text style={styles.barDescription}>
-                Energy expended by your body at rest to maintain essential vitals
-              </Text>
+                {t("calories.restingHint")}</Text>
             </View>
           </View>
         </View>
@@ -110,19 +111,19 @@ export default function CaloriesScreen() {
         <View style={styles.sectionCard}>
           <View style={styles.chartHeader}>
             <View>
-              <Text style={styles.cardTitle}>Weekly Calories Burned</Text>
-              <Text style={styles.cardSubtitle}>Daily active output vs target</Text>
+              <Text style={styles.cardTitle}>{t("calories.weekly")}</Text>
+              <Text style={styles.cardSubtitle}>{t("calories.intake")}</Text>
             </View>
             <View style={styles.chartLegend}>
               <View style={[styles.chartDot, { backgroundColor: '#E76F51' }]} />
-              <Text style={styles.chartLegendText}>Today</Text>
+              <Text style={styles.chartLegendText}>{t("period.today")}</Text>
             </View>
           </View>
 
           <View style={styles.chartWrapper}>
             <WeeklyBarChart
               data={weeklyCalorieData}
-              maxValue={700}
+              maxValue={Math.max(1,...weeklyCalorieData.map(row => row.value))}
               color={Colors.orange}
               highlightColor="#E76F51"
               height={170}
@@ -142,8 +143,7 @@ export default function CaloriesScreen() {
             style={styles.infoIcon}
           />
           <Text style={styles.infoText}>
-            Calorie estimates are approximate and for tracking purposes only.
-          </Text>
+            {t("calories.notice")}</Text>
         </View>
       </ScreenContainer>
     </View>

@@ -1,0 +1,10 @@
+import type { FoodRow, MealRecordRow, SleepRecordRow, WeightRecordRow } from './database';
+export type DailyStepsSummary = { date: string; totalSteps: number; hasRecords: boolean; recordCount: number; distanceKm: number | null; activeMinutes: number | null; goal: number | null; progressPercent: number | null };
+export type WeeklyStepsSummary = { startDate: string; endDate: string; daily: DailyStepsSummary[]; totalSteps: number; averageDailySteps: number; daysWithRecords: number; daysWithActivity: number; bestDay: DailyStepsSummary | null };
+export type SleepSummary = { totalMinutes: number; averageDurationMinutes: number | null; averageDailyMinutes: number | null; latestSession: SleepRecordRow | null; averageQualityRating: number | null; daily: { date: string; minutes: number | null; sessionCount: number }[] };
+export type MealWithFood = MealRecordRow & { food: FoodRow | null };
+export type Nutrition = { calories: number; protein: number; carbs: number; fat: number };
+export type NutritionSummary = Nutrition & { hasRecords: boolean; recordCount: number; byMealType: Record<MealRecordRow['meal_type'], Nutrition>; daily: (Nutrition & { date: string; hasRecords: boolean })[]; calorieGoal: number | null; progressPercent: number | null };
+export type WaterSummary = { totalMl: number; hasRecords: boolean; goalMl: number | null; progressPercent: number | null; daily: { date: string; totalMl: number; hasRecords: boolean }[] };
+export type WeightTrend = { points: { date: string; weightKg: number }[]; latest: WeightRecordRow | null; changeKg: number | null };
+export type DashboardSummary = { date: string; steps: { total: number; hasRecords: boolean; goal: number | null; progressPercent: number | null }; sleep: { minutes: number | null; goalMinutes: number | null }; nutrition: Nutrition & { hasRecords: boolean; calorieGoal: number | null }; water: { totalMl: number; hasRecords: boolean; goalMl: number | null }; weight: { latestKg: number | null; bmi: number | null } };

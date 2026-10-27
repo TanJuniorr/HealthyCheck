@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { localizeMessage } from '../src/i18n/localize';
 
 import React, { useRef, useState } from 'react';
 import {
@@ -18,10 +20,14 @@ import { Typography } from '../src/constants/typography';
 import { Spacing, Radius } from '../src/constants/spacing';
 import { AppTextInput } from '../src/components/common/AppTextInput';
 import { PrimaryButton } from '../src/components/common/Buttons';
-import { supabase } from '../src/lib/supabase';
+import { useAuth } from '../src/contexts/AuthContext';
+import { authErrorMessage } from '../src/lib/authErrors';
 
 export default function SignUpScreen() {
+  const { t } = useTranslation();
+
   const router = useRouter();
+  const { signUp, initializationError } = useAuth();
   const insets = useSafeAreaInsets();
 
   const [fullName, setFullName] = useState('');
@@ -53,85 +59,38 @@ export default function SignUpScreen() {
     setFeedback('');
 
     if (!normalizedName || !normalizedEmail || !password || !confirmPassword) {
-      showFeedback('Vui lòng điền đầy đủ các trường.', 'error');
+      showFeedback("validation.required", 'error');
       return;
     }
 
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailPattern.test(normalizedEmail)) {
-      showFeedback('Email chưa đúng định dạng. Vui lòng kiểm tra lại.', 'error');
+      showFeedback("validation.emailFormat", 'error');
       return;
     }
 
-    if (password.length < 6) {
-      showFeedback('Mật khẩu cần có ít nhất 6 ký tự.', 'error');
+    if (password.length < 8) {
+      showFeedback("validation.passwordLength", 'error');
       return;
     }
 
     if (password !== confirmPassword) {
-      showFeedback('Mật khẩu xác nhận không khớp.', 'error');
+      showFeedback("validation.passwordMatch", 'error');
       return;
     }
 
     submittingRef.current = true;
     setIsSubmitting(true);
-    showFeedback('Đang tạo tài khoản, vui lòng chờ...', 'info');
+    showFeedback("auth.creatingWait", 'info');
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password,
-        options: {
-          data: {
-            full_name: normalizedName,
-          },
-        },
-      });
-
-      if (error) {
-        console.error('Supabase signup error:', error);
-
-        if (error.status === 429) {
-          showFeedback(
-            'Bạn đã thử đăng ký quá nhiều lần. Vui lòng chờ rồi thử lại, không bấm liên tục.',
-            'error',
-          );
-        } else {
-          showFeedback(error.message, 'error');
-        }
-
-        return;
+      const hasSession = await signUp(normalizedName, normalizedEmail, password);
+      if (!hasSession) {
+        showFeedback("auth.confirmEmail", 'success');
       }
-
-      if (!data.user) {
-        showFeedback(
-          'Chưa nhận được thông tin tài khoản. Vui lòng thử lại sau.',
-          'error',
-        );
-        return;
-      }
-
-      if (!data.session) {
-        showFeedback(
-          'Yêu cầu đăng ký đã được xử lý. Hãy kiểm tra email để xác nhận tài khoản, sau đó đăng nhập.',
-          'success',
-        );
-
-        return;
-      }
-
-      showFeedback('Đăng ký thành công! Đang chuyển đến ứng dụng...', 'success');
-      router.replace('/(tabs)');
     } catch (error) {
-      console.error('Unexpected signup error:', error);
-
-      showFeedback(
-        error instanceof Error
-          ? `Không thể đăng ký: ${error.message}`
-          : 'Không thể kết nối máy chủ. Vui lòng thử lại sau.',
-        'error',
-      );
+      showFeedback(authErrorMessage(error), 'error');
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
@@ -171,17 +130,16 @@ export default function SignUpScreen() {
 
         {/* Header */}
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>Create your account</Text>
+          <Text style={styles.title}>{t("auth.createTitle")}</Text>
           <Text style={styles.subtitle}>
-            Start your health journey today.
-          </Text>
+            {t("auth.createDescription")}</Text>
         </View>
 
         {/* Form */}
         <View style={styles.formContainer}>
           <AppTextInput
-            label="Full Name"
-            placeholder="Alex Johnson"
+            label={t("auth.fullName")}
+            placeholder={t("auth.namePlaceholder")}
             value={fullName}
             onChangeText={setFullName}
             autoCapitalize="words"
@@ -189,7 +147,7 @@ export default function SignUpScreen() {
           />
 
           <AppTextInput
-            label="Email Address"
+            label={t("auth.email")}
             placeholder="alex.johnson@email.com"
             value={email}
             onChangeText={setEmail}
@@ -199,8 +157,8 @@ export default function SignUpScreen() {
           />
 
           <AppTextInput
-            label="Password"
-            placeholder="Create a strong password"
+            label={t("auth.password")}
+            placeholder={t("auth.strongPassword")}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -209,8 +167,8 @@ export default function SignUpScreen() {
           />
 
           <AppTextInput
-            label="Confirm Password"
-            placeholder="Re-enter your password"
+            label={t("auth.confirmPassword")}
+            placeholder={t("auth.confirmPlaceholder")}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry
@@ -221,15 +179,15 @@ export default function SignUpScreen() {
           {/* Terms */}
           <View style={styles.termsContainer}>
             <Text style={styles.termsText}>
-              By creating an account, you agree to our{' '}
-              <Text style={styles.termsHighlight}>Terms of Service</Text>
-              {' '}and{' '}
-              <Text style={styles.termsHighlight}>Privacy Policy</Text>.
+              {t("auth.agreePrefix")}{' '}
+              <Text style={styles.termsHighlight}>{t("common.terms")}</Text>
+              {' '}{t("auth.and")}{' '}
+              <Text style={styles.termsHighlight}>{t("common.privacy")}</Text>.
             </Text>
           </View>
 
           {/* Feedback hiển thị trực tiếp trên web và mobile */}
-          {feedback !== '' && (
+          {(feedback !== '' || initializationError) && (
             <View
               accessibilityRole="alert"
               style={[
@@ -247,31 +205,32 @@ export default function SignUpScreen() {
                 />
               )}
               <Text style={[styles.feedbackText, { color: feedbackColor }]}>
-                {feedback}
+                {localizeMessage(feedback || initializationError)}
               </Text>
             </View>
           )}
 
           {/* Submit */}
           <PrimaryButton
-            title={isSubmitting ? 'Đang tạo tài khoản...' : 'Create Account'}
+            title={isSubmitting ? t("auth.creating") : t("auth.createAccount")}
             onPress={handleCreateAccount}
             style={styles.createButton}
             disabled={isSubmitting}
+            loading={isSubmitting}
           />
         </View>
 
         {/* Footer */}
         <View style={styles.footerContainer}>
           <Text style={styles.footerText}>
-            Already have an account?{' '}
+            {t("auth.hasAccount")}{' '}
           </Text>
           <TouchableOpacity
             disabled={isSubmitting}
             onPress={() => router.push('/login')}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={styles.footerLink}>Sign In</Text>
+            <Text style={styles.footerLink}>{t("auth.signIn")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

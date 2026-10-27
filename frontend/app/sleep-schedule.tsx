@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { localizeStaticData } from '../src/i18n/localize';
 import React, { useState } from 'react';
 import {
   View,
@@ -7,7 +9,6 @@ import {
   Switch,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
 import { Typography } from '../src/constants/typography';
@@ -15,20 +16,24 @@ import { Spacing, Radius, Shadows } from '../src/constants/spacing';
 import { AppHeader, SectionHeader } from '../src/components/common/AppHeader';
 import { ScreenContainer } from '../src/components/common/ScreenContainer';
 import { PrimaryButton } from '../src/components/common/Buttons';
-import { sleepData, sleepTips } from '../src/data/sleep';
+import { sleepData as rawSleepData, sleepTips as rawSleepTips } from '../src/data/sleep';
 
-const DAYS_OF_WEEK = [
-  { id: 'M', label: 'Mon', full: 'Monday' },
-  { id: 'T', label: 'Tue', full: 'Tuesday' },
-  { id: 'W', label: 'Wed', full: 'Wednesday' },
-  { id: 'Th', label: 'Thu', full: 'Thursday' },
-  { id: 'F', label: 'Fri', full: 'Friday' },
-  { id: 'Sa', label: 'Sat', full: 'Saturday' },
-  { id: 'Su', label: 'Sun', full: 'Sunday' },
+const rawDAYS_OF_WEEK = [
+  { id: 'M', label: "weekday.mon", full: "weekday.monday" },
+  { id: 'T', label: "weekday.tue", full: "weekday.tuesday" },
+  { id: 'W', label: "weekday.wed", full: "weekday.wednesday" },
+  { id: 'Th', label: "weekday.thu", full: "weekday.thursday" },
+  { id: 'F', label: "weekday.fri", full: "weekday.friday" },
+  { id: 'Sa', label: "weekday.sat", full: "weekday.saturday" },
+  { id: 'Su', label: "weekday.sun", full: "weekday.sunday" },
 ];
 
 export default function SleepScheduleScreen() {
-  const router = useRouter();
+  const { t } = useTranslation();
+  const sleepData = localizeStaticData(rawSleepData);
+  const sleepTips = localizeStaticData(rawSleepTips);
+  const DAYS_OF_WEEK = localizeStaticData(rawDAYS_OF_WEEK);
+
 
   // Active days state (all active by default)
   const [activeDays, setActiveDays] = useState<Record<string, boolean>>({
@@ -42,9 +47,9 @@ export default function SleepScheduleScreen() {
   });
 
   // Schedule times
-  const [bedtime] = useState(sleepData.bedtime); // '10:00 PM'
-  const [wakeUp] = useState(sleepData.wakeUp); // '7:30 AM'
-  const duration = '9h 30m';
+  const bedtime = sleepData.bedtime;
+  const wakeUp = sleepData.wakeUp;
+  const duration = t("schedule.durationDemo");
 
   // Toggle states
   const [bedtimeReminder, setBedtimeReminder] = useState(true);
@@ -69,18 +74,15 @@ export default function SleepScheduleScreen() {
   };
 
   const handleSaveSchedule = () => {
-    Alert.alert(
-      'Schedule Saved',
-      `Your sleep schedule (${bedtime} – ${wakeUp}, ${duration}) is active.`,
-      [{ text: 'OK', onPress: () => router.back() }]
-    );
+    Alert.alert(t("common.comingSoon"), t("schedule.unavailable"));
   };
 
   return (
     <View style={styles.container}>
-      <AppHeader title="Sleep Schedule" showBack />
+      <AppHeader title={t("schedule.title")} showBack />
 
       <ScreenContainer>
+        <Text style={{ color:Colors.textSecondary,paddingVertical:Spacing.md }}>{t("schedule.preview")}</Text>
         {/* Current Schedule Hero Card */}
         <View style={styles.scheduleHeroCard}>
           <View style={styles.heroTimeRow}>
@@ -89,9 +91,9 @@ export default function SleepScheduleScreen() {
               <View style={[styles.timeIconWrapper, { backgroundColor: Colors.purpleLight }]}>
                 <Ionicons name="moon" size={22} color={Colors.purple} />
               </View>
-              <Text style={styles.timeLabel}>Bedtime</Text>
+              <Text style={styles.timeLabel}>{t("sleep.bedtime")}</Text>
               <Text style={styles.timeDisplay}>{bedtime}</Text>
-              <Text style={styles.timeSubtext}>Wind down 9:30 PM</Text>
+              <Text style={styles.timeSubtext}>{t("schedule.windDown")}</Text>
             </View>
 
             {/* Connecting visual divider */}
@@ -109,22 +111,21 @@ export default function SleepScheduleScreen() {
               <View style={[styles.timeIconWrapper, { backgroundColor: Colors.orangeLight }]}>
                 <Ionicons name="sunny" size={22} color={Colors.orange} />
               </View>
-              <Text style={styles.timeLabel}>Wake-up</Text>
+              <Text style={styles.timeLabel}>{t("sleep.wakeUp")}</Text>
               <Text style={styles.timeDisplay}>{wakeUp}</Text>
-              <Text style={styles.timeSubtext}>Gentle alarm</Text>
+              <Text style={styles.timeSubtext}>{t("schedule.gentleAlarm")}</Text>
             </View>
           </View>
 
           <View style={styles.targetBanner}>
             <Ionicons name="checkmark-circle" size={16} color={Colors.success} />
             <Text style={styles.targetBannerText}>
-              Exceeds your 8h daily target by 1h 30m
-            </Text>
+              {t("schedule.targetDemo")}</Text>
           </View>
         </View>
 
         {/* Days of Week Section */}
-        <SectionHeader title="Active Days" />
+        <SectionHeader title={t("schedule.activeDays")} />
         <View style={styles.daysCard}>
           <View style={styles.daysRow}>
             {DAYS_OF_WEEK.map((day) => {
@@ -151,7 +152,7 @@ export default function SleepScheduleScreen() {
               onPress={() => handleApplyPreset('all')}
               activeOpacity={0.7}
             >
-              <Text style={styles.presetText}>Every Day</Text>
+              <Text style={styles.presetText}>{t("schedule.everyDay")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -159,7 +160,7 @@ export default function SleepScheduleScreen() {
               onPress={() => handleApplyPreset('weekdays')}
               activeOpacity={0.7}
             >
-              <Text style={styles.presetText}>Weekdays</Text>
+              <Text style={styles.presetText}>{t("schedule.weekdays")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -167,13 +168,13 @@ export default function SleepScheduleScreen() {
               onPress={() => handleApplyPreset('weekends')}
               activeOpacity={0.7}
             >
-              <Text style={styles.presetText}>Weekends</Text>
+              <Text style={styles.presetText}>{t("schedule.weekends")}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Reminders & Alarms Section */}
-        <SectionHeader title="Reminders & Alarms" />
+        <SectionHeader title={t("schedule.alarms")} />
         <View style={styles.card}>
           <View style={styles.switchRow}>
             <View style={styles.switchLeft}>
@@ -181,8 +182,8 @@ export default function SleepScheduleScreen() {
                 <Ionicons name="notifications-outline" size={18} color={Colors.purple} />
               </View>
               <View style={styles.switchTextWrapper}>
-                <Text style={styles.switchTitle}>Bedtime Reminder</Text>
-                <Text style={styles.switchDescription}>Alert 30 minutes before bedtime</Text>
+                <Text style={styles.switchTitle}>{t("schedule.bedtimeReminder")}</Text>
+                <Text style={styles.switchDescription}>{t("schedule.reminderHint")}</Text>
               </View>
             </View>
             <Switch
@@ -199,8 +200,8 @@ export default function SleepScheduleScreen() {
                 <Ionicons name="alarm-outline" size={18} color={Colors.orange} />
               </View>
               <View style={styles.switchTextWrapper}>
-                <Text style={styles.switchTitle}>Smart Wake-Up Alarm</Text>
-                <Text style={styles.switchDescription}>Gentle sound window before 7:30 AM</Text>
+                <Text style={styles.switchTitle}>{t("schedule.smartAlarm")}</Text>
+                <Text style={styles.switchDescription}>{t("schedule.alarmHint")}</Text>
               </View>
             </View>
             <Switch
@@ -217,8 +218,8 @@ export default function SleepScheduleScreen() {
                 <Ionicons name="moon-outline" size={18} color={Colors.blue} />
               </View>
               <View style={styles.switchTextWrapper}>
-                <Text style={styles.switchTitle}>Sleep Focus Mode</Text>
-                <Text style={styles.switchDescription}>Dim display and mute interruptions</Text>
+                <Text style={styles.switchTitle}>{t("schedule.focus")}</Text>
+                <Text style={styles.switchDescription}>{t("schedule.focusHint")}</Text>
               </View>
             </View>
             <Switch
@@ -234,18 +235,17 @@ export default function SleepScheduleScreen() {
         <View style={styles.tipCard}>
           <View style={styles.tipHeader}>
             <Ionicons name="bulb-outline" size={20} color={Colors.primary} />
-            <Text style={styles.tipTitle}>Sleep Insight</Text>
+            <Text style={styles.tipTitle}>{t("sleep.insight")}</Text>
           </View>
           <Text style={styles.tipText}>
-            {sleepTips[0]} Regular sleep patterns help keep your circadian rhythm in sync, leading
-            to deeper REM rest and easier mornings.
-          </Text>
+            {sleepTips[0]} {t("schedule.insight")}</Text>
         </View>
 
         {/* Save Schedule Button */}
         <View style={styles.actionContainer}>
           <PrimaryButton
-            title="Save Schedule"
+            title={t("schedule.savingSoon")}
+            disabled
             onPress={handleSaveSchedule}
             style={styles.saveButton}
           />

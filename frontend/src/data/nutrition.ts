@@ -16,7 +16,7 @@ export const nutritionData = {
 export const meals = [
   {
     id: '1',
-    type: 'Breakfast',
+    type: "meals.breakfast",
     time: '7:30 AM',
     totalCalories: 340,
     icon: 'sunny-outline',
@@ -28,7 +28,7 @@ export const meals = [
   },
   {
     id: '2',
-    type: 'Lunch',
+    type: "meals.lunch",
     time: '12:30 PM',
     totalCalories: 480,
     icon: 'partly-sunny-outline',
@@ -40,7 +40,7 @@ export const meals = [
   },
   {
     id: '3',
-    type: 'Snack',
+    type: "meals.snack",
     time: '3:00 PM',
     totalCalories: 140,
     icon: 'cafe-outline',
@@ -51,7 +51,7 @@ export const meals = [
   },
   {
     id: '4',
-    type: 'Dinner',
+    type: "meals.dinner",
     time: '—',
     totalCalories: 0,
     icon: 'moon-outline',
@@ -60,14 +60,14 @@ export const meals = [
 ];
 
 export const mealCategories = [
-  'Fruits',
-  'Vegetables',
-  'Grains',
-  'Protein',
-  'Dairy',
-  'Beverages',
-  'Snacks',
-  'Custom',
+  "category.fruits",
+  "category.vegetables",
+  "category.grains",
+  "nutrition.protein",
+  "category.dairy",
+  "category.beverages",
+  "meals.snacks",
+  "category.custom",
 ];
 
 export const quickAddFoods = [

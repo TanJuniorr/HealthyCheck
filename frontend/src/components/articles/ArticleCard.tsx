@@ -1,5 +1,6 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '../../constants/colors';
@@ -23,6 +24,8 @@ export function ArticleCard({
   readTime,
   featured = false,
 }: ArticleCardProps) {
+  const { t } = useTranslation();
+
   const router = useRouter();
 
   if (featured) {
@@ -34,7 +37,7 @@ export function ArticleCard({
       >
         <View style={styles.featuredImagePlaceholder}>
           <Ionicons name="image-outline" size={40} color={Colors.textMuted} />
-          <Text style={styles.imagePlaceholderText}>Featured Article</Text>
+          <Text style={styles.imagePlaceholderText}>{t("articles.featured")}</Text>
         </View>
         <View style={styles.featuredContent}>
           <View style={styles.metaRow}>

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { formatNumber,formatDayLabel } from '../../src/i18n/formatting';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,44 +10,49 @@ import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 
-const bmiHistory = [
-  { label: 'Jan', value: 23.5 },
-  { label: 'Mar', value: 23.2 },
-  { label: 'May', value: 23.0 },
-  { label: 'Jul', value: 22.8 },
-  { label: 'Sep', value: 23.0 },
-  { label: 'Oct', value: 23.0 },
-];
+import { useHealthQuery } from '../../src/hooks/useHealthQuery';
+import { getMyProfile } from '../../src/services/profileService';
+import { getLatestWeight, getWeightTrend, calculateBMI } from '../../src/services/weightService';
+import { getMonthRange, toLocalDateKey } from '../../src/lib/dateUtils';
+import { DataFeedback } from '../../src/components/common/DataFeedback';
 
 export default function BmiScreen() {
-  const currentBmi = 23.0;
+  const { t } = useTranslation();
+
+  const today = toLocalDateKey(); const range = getMonthRange(today);
+  const query = useHealthQuery(async () => { const [profile,weight,trend] = await Promise.all([getMyProfile(),getLatestWeight(),getWeightTrend(range.start,today)]); return { profile,weight,trend,bmi:calculateBMI(weight?.weight_kg,profile?.height_cm) }; },'body-metrics:'+today);
+  const currentBmi = query.data?.bmi ?? null;
+  const bmiHistory = (query.data?.trend.points ?? []).flatMap(point => { const bmi = calculateBMI(point.weightKg,query.data?.profile?.height_cm); return bmi === null ? [] : [{ label:formatDayLabel(point.date),value:bmi }]; });
+  const birth = query.data?.profile?.date_of_birth;
+  const now = new Date(); const age = birth ? now.getFullYear() - Number(birth.substring(0,4)) - (today.substring(5) < birth.substring(5) ? 1 : 0) : null;
   // Calculate marker offset across scale (range 15 to 35)
   const minScale = 15;
   const maxScale = 35;
   const pointerPercentage = Math.min(
-    Math.max(((currentBmi - minScale) / (maxScale - minScale)) * 100, 5),
+    Math.max((((currentBmi ?? minScale) - minScale) / (maxScale - minScale)) * 100, 5),
     95
   );
 
   return (
     <View style={styles.container}>
-      <AppHeader title="Body Metrics" showBack={true} />
+      <AppHeader title={t("health.bodyMetrics")} showBack={true} />
       <ScreenContainer scrollable={true} padded={true}>
+        <DataFeedback {...query} empty={currentBmi === null} />
         {/* Main BMI Display Card */}
         <View style={styles.heroCard}>
           <View style={styles.categoryBadge}>
             <Ionicons name="body" size={16} color={Colors.purple} style={styles.badgeIcon} />
-            <Text style={styles.badgeText}>Body Mass Index</Text>
+            <Text style={styles.badgeText}>{t("health.bmi")}</Text>
           </View>
 
           <View style={styles.statRow}>
-            <Text style={styles.statLarge}>{currentBmi.toFixed(1)}</Text>
+            <Text style={styles.statLarge}>{(currentBmi == null ? undefined : formatNumber(currentBmi,1)) ?? '—'}</Text>
             <Text style={styles.statUnit}>kg/m²</Text>
           </View>
 
           <View style={styles.statusLabelContainer}>
             <View style={styles.statusGreenDot} />
-            <Text style={styles.statusLabelText}>Normal weight</Text>
+            <Text style={styles.statusLabelText}>{t("bmi.general")}</Text>
           </View>
 
           {/* BMI Scale Visualization */}
@@ -55,11 +62,11 @@ export default function BmiScreen() {
               <View
                 style={[
                   styles.indicatorWrapper,
-                  { left: `${pointerPercentage}%` },
+                  { left: `${pointerPercentage}%`,opacity:currentBmi === null ? 0 : 1 },
                 ]}
               >
                 <View style={styles.indicatorPill}>
-                  <Text style={styles.indicatorPillText}>{currentBmi}</Text>
+                  <Text style={styles.indicatorPillText}>{(currentBmi == null ? undefined : formatNumber(currentBmi,1)) ?? '—'}</Text>
                 </View>
                 <View style={styles.indicatorArrow} />
               </View>
@@ -75,16 +82,16 @@ export default function BmiScreen() {
 
             {/* Scale Range Labels */}
             <View style={styles.scaleLabelsRow}>
-              <Text style={styles.scaleLabelText}>Underweight</Text>
-              <Text style={styles.scaleLabelText}>Normal</Text>
-              <Text style={styles.scaleLabelText}>Overweight</Text>
-              <Text style={styles.scaleLabelText}>Obese</Text>
+              <Text style={styles.scaleLabelText}>{t("bmi.underweight")}</Text>
+              <Text style={styles.scaleLabelText}>{t("bmi.normal")}</Text>
+              <Text style={styles.scaleLabelText}>{t("bmi.overweight")}</Text>
+              <Text style={styles.scaleLabelText}>{t("bmi.obese")}</Text>
             </View>
 
             <View style={styles.scaleThresholdsRow}>
-              <Text style={styles.thresholdText}>18.5</Text>
-              <Text style={styles.thresholdText}>25.0</Text>
-              <Text style={styles.thresholdText}>30.0</Text>
+              <Text style={styles.thresholdText}>{formatNumber(18.5,1)}</Text>
+              <Text style={styles.thresholdText}>{formatNumber(25,1)}</Text>
+              <Text style={styles.thresholdText}>{formatNumber(30,1)}</Text>
             </View>
           </View>
         </View>
@@ -96,8 +103,8 @@ export default function BmiScreen() {
             <View style={[styles.measurementIconBg, { backgroundColor: Colors.primaryLight }]}>
               <Ionicons name="resize-outline" size={18} color={Colors.primary} />
             </View>
-            <Text style={styles.measurementLabel}>Height</Text>
-            <Text style={styles.measurementValue}>172 <Text style={styles.measurementUnit}>cm</Text></Text>
+            <Text style={styles.measurementLabel}>{t("health.height")}</Text>
+            <Text style={styles.measurementValue}>{formatNumber(query.data?.profile?.height_cm)} <Text style={styles.measurementUnit}>cm</Text></Text>
           </View>
 
           {/* Weight */}
@@ -105,8 +112,8 @@ export default function BmiScreen() {
             <View style={[styles.measurementIconBg, { backgroundColor: Colors.purpleLight }]}>
               <Ionicons name="scale-outline" size={18} color={Colors.purple} />
             </View>
-            <Text style={styles.measurementLabel}>Weight</Text>
-            <Text style={styles.measurementValue}>68 <Text style={styles.measurementUnit}>kg</Text></Text>
+            <Text style={styles.measurementLabel}>{t("health.weight")}</Text>
+            <Text style={styles.measurementValue}>{formatNumber(query.data?.weight?.weight_kg)} <Text style={styles.measurementUnit}>kg</Text></Text>
           </View>
 
           {/* Age */}
@@ -114,8 +121,8 @@ export default function BmiScreen() {
             <View style={[styles.measurementIconBg, { backgroundColor: Colors.blueLight }]}>
               <Ionicons name="calendar-outline" size={18} color={Colors.blue} />
             </View>
-            <Text style={styles.measurementLabel}>Age</Text>
-            <Text style={styles.measurementValue}>28 <Text style={styles.measurementUnit}>yrs</Text></Text>
+            <Text style={styles.measurementLabel}>{t("health.age")}</Text>
+            <Text style={styles.measurementValue}>{formatNumber(age)} <Text style={styles.measurementUnit}>{t("units.years")}</Text></Text>
           </View>
         </View>
 
@@ -123,12 +130,12 @@ export default function BmiScreen() {
         <View style={styles.sectionCard}>
           <View style={styles.chartHeader}>
             <View>
-              <Text style={styles.cardTitle}>BMI History</Text>
-              <Text style={styles.cardSubtitle}>Monthly variation over past 10 months</Text>
+              <Text style={styles.cardTitle}>{t("bmi.history")}</Text>
+              <Text style={styles.cardSubtitle}>{t("bmi.historyHint")}</Text>
             </View>
             <View style={styles.steadyBadge}>
               <Ionicons name="checkmark-circle-outline" size={14} color={Colors.purple} />
-              <Text style={styles.steadyText}>Stable</Text>
+              <Text style={styles.steadyText}>{t("common.recorded")}</Text>
             </View>
           </View>
 
@@ -152,8 +159,7 @@ export default function BmiScreen() {
             style={styles.infoIcon}
           />
           <Text style={styles.infoText}>
-            BMI is a general indicator. Consult a healthcare professional for personalized advice.
-          </Text>
+            {t("bmi.notice")}</Text>
         </View>
       </ScreenContainer>
     </View>

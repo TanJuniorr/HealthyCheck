@@ -1,8 +1,9 @@
+import { useTranslation } from 'react-i18next';
+import { formatNumber } from '../../i18n/formatting';
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Rect, Text as SvgText } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
-import { Typography } from '../../constants/typography';
 import { Spacing } from '../../constants/spacing';
 
 interface BarDataItem {
@@ -32,7 +33,8 @@ export function WeeklyBarChart({
   showValues = false,
   unit = '',
 }: WeeklyBarChartProps) {
-  const max = maxValue || Math.max(...data.map((d) => d.value)) * 1.1;
+  useTranslation();
+  const max = maxValue && maxValue > 0 ? maxValue : Math.max(1,...data.map((d) => d.value)) * 1.1;
   const chartHeight = height - 30; // Reserve space for labels
   const screenWidth = Dimensions.get('window').width - Spacing.screenPadding * 2;
   const totalWidth = screenWidth;
@@ -91,7 +93,7 @@ export function WeeklyBarChart({
                   fill={Colors.textSecondary}
                   fontSize={10}
                 >
-                  {item.value}{unit}
+                  {formatNumber(item.value)}{unit}
                 </SvgText>
               )}
             </React.Fragment>

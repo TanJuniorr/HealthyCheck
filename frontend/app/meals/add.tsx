@@ -1,4 +1,7 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { formatNumber } from '../../src/i18n/formatting';
+import { localizeMessage,localizeStaticData } from '../../src/i18n/localize';
+import React, { useRef, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -15,49 +18,39 @@ import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 import { AppHeader } from '../../src/components/common/AppHeader';
 import { PrimaryButton } from '../../src/components/common/Buttons';
-import { fetchFoods, type Food } from '../../src/lib/healthData';
+import { fetchFoods } from '../../src/lib/healthData';
+import { useHealthQuery } from '../../src/hooks/useHealthQuery';
+import { addMealItems } from '../../src/services/mealsService';
+import { calculateFoodNutrition } from '../../src/lib/healthCalculations';
+import { safeNumber } from '../../src/lib/dataValidation';
+import { dataError } from '../../src/lib/dataErrors';
+import type { MealType } from '../../src/types/database';
 
-const MEAL_TYPES = [
-  { id: 'Breakfast', label: 'Breakfast', icon: 'sunny-outline' },
-  { id: 'Lunch', label: 'Lunch', icon: 'partly-sunny-outline' },
-  { id: 'Dinner', label: 'Dinner', icon: 'moon-outline' },
-  { id: 'Snack', label: 'Snack', icon: 'cafe-outline' },
+const rawMEAL_TYPES = [
+  { id: 'Breakfast', label: "meals.breakfast", icon: 'sunny-outline' },
+  { id: 'Lunch', label: "meals.lunch", icon: 'partly-sunny-outline' },
+  { id: 'Dinner', label: "meals.dinner", icon: 'moon-outline' },
+  { id: 'Snack', label: "meals.snack", icon: 'cafe-outline' },
 ];
 
 export default function AddMealScreen() {
+  const { t } = useTranslation();
+  const MEAL_TYPES = localizeStaticData(rawMEAL_TYPES);
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
   const [selectedMealType, setSelectedMealType] = useState('Dinner');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState<Record<string, number>>({});
-  const [foods, setFoods] = useState<Food[]>([]);
-  const [isLoadingFoods, setIsLoadingFoods] = useState(true);
-  const [foodsError, setFoodsError] = useState<string | null>(null);
-
-  // Load the food catalogue from Supabase instead of the local mock list.
-  const loadFoods = useCallback(async () => {
-    setIsLoadingFoods(true);
-    setFoodsError(null);
-
-    try {
-      const rows = await fetchFoods();
-      setFoods(rows);
-    } catch (error) {
-      setFoodsError(
-        error instanceof Error
-          ? error.message
-          : 'Không tải được danh sách thực phẩm từ database.'
-      );
-    } finally {
-      setIsLoadingFoods(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadFoods();
-  }, [loadFoods]);
-
+  const catalogue = useHealthQuery(fetchFoods,'food-catalogue');
+  const foods = useMemo(() => catalogue.data ?? [],[catalogue.data]);
+  const isLoadingFoods = catalogue.isLoading;
+  const foodsError = catalogue.error;
+  const loadFoods = catalogue.refresh;
+  const [saving,setSaving] = useState(false);
+  const [saveError,setSaveError] = useState('');
+  const pending = useRef(false);
   // Filter database foods by name or serving size.
   const filteredFoods = useMemo(() => {
     const query = searchQuery.trim().toLocaleLowerCase();
@@ -74,7 +67,7 @@ export default function AddMealScreen() {
   const handleAddItem = (name: string) => {
     setSelectedItems((prev) => ({
       ...prev,
-      [name]: (prev[name] || 0) + 1,
+      [name]: (prev[name] || 0) + 100,
     }));
   };
 
@@ -82,21 +75,20 @@ export default function AddMealScreen() {
   const handleRemoveItem = (name: string) => {
     setSelectedItems((prev) => {
       const current = prev[name] || 0;
-      if (current <= 1) {
+      if (current <= 100) {
         const next = { ...prev };
         delete next[name];
         return next;
       }
-      return { ...prev, [name]: current - 1 };
+      return { ...prev, [name]: current - 100 };
     });
   };
 
   // Calculate totals
   const totalCalories = useMemo(() => {
     return Object.entries(selectedItems).reduce((sum, [name, qty]) => {
-      const food = foods.find((f) => f.name === name);
-      const calories = Number(food?.calories ?? food?.calories_per_100g ?? 0);
-      return sum + calories * qty;
+      const food = foods.find((f) => f.id === name);
+      return sum + (food && qty > 0 ? calculateFoodNutrition(food,qty).calories : 0);
     }, 0);
   }, [selectedItems, foods]);
 
@@ -104,14 +96,19 @@ export default function AddMealScreen() {
     return Object.values(selectedItems).reduce((sum, qty) => sum + qty, 0);
   }, [selectedItems]);
 
-  const handleLogMeal = () => {
-    // Visual log action — navigate back
-    router.back();
+  const handleLogMeal = async () => {
+    if (pending.current) return; pending.current = true; setSaving(true); setSaveError('');
+    try {
+      const consumedAt = new Date().toISOString();
+      await addMealItems(Object.entries(selectedItems).filter(([,grams]) => grams > 0).map(([food_id,quantity_g]) => ({ food_id,quantity_g,meal_type:selectedMealType.toLowerCase() as MealType,consumed_at:consumedAt })));
+      router.back();
+    } catch (error) { setSaveError(dataError(error).message); }
+    finally { pending.current = false; setSaving(false); }
   };
 
   return (
     <View style={styles.container}>
-      <AppHeader title="Add Meal" showBack />
+      <AppHeader title={t("meals.add")} showBack />
 
       {/* Meal Type Selector Tabs */}
       <View style={styles.mealTypeBar}>
@@ -145,7 +142,7 @@ export default function AddMealScreen() {
           <Ionicons name="search-outline" size={20} color={Colors.textMuted} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search food, ingredients, meals..."
+            placeholder={t("meals.search")}
             placeholderTextColor={Colors.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -174,49 +171,49 @@ export default function AddMealScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.listHeaderRow}>
-          <Text style={styles.listSectionTitle}>Quick Add Foods</Text>
-          <Text style={styles.itemCountText}>{filteredFoods.length} items</Text>
+          <Text style={styles.listSectionTitle}>{t("meals.quickFoods")}</Text>
+          <Text style={styles.itemCountText}>{t('units.items',{count:filteredFoods.length,value:formatNumber(filteredFoods.length)})}</Text>
         </View>
 
         {isLoadingFoods ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="cloud-download-outline" size={32} color={Colors.textMuted} />
-            <Text style={styles.emptyTitle}>Loading foods...</Text>
-            <Text style={styles.emptySubtitle}>Đang tải danh sách thực phẩm từ Supabase.</Text>
+            <Text style={styles.emptyTitle}>{t("meals.loading")}</Text>
+            <Text style={styles.emptySubtitle}>{t("meals.loadingDescription")}</Text>
           </View>
         ) : foodsError ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="cloud-offline-outline" size={36} color={Colors.textMuted} />
-            <Text style={styles.emptyTitle}>Không tải được thực phẩm</Text>
-            <Text style={styles.emptySubtitle}>{foodsError}</Text>
+            <Text style={styles.emptyTitle}>{t("meals.loadError")}</Text>
+            <Text style={styles.emptySubtitle}>{localizeMessage(foodsError)}</Text>
             <TouchableOpacity
               style={styles.addButton}
               onPress={() => void loadFoods()}
               activeOpacity={0.7}
             >
               <Ionicons name="refresh-outline" size={16} color={Colors.primary} />
-              <Text style={styles.addButtonText}>Thử lại</Text>
+              <Text style={styles.addButtonText}>{t("common.retry")}</Text>
             </TouchableOpacity>
           </View>
         ) : filteredFoods.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="restaurant-outline" size={36} color={Colors.textMuted} />
             <Text style={styles.emptyTitle}>
-              {foods.length === 0 ? 'Chưa có thực phẩm trong database' : 'No food found'}
+              {foods.length === 0 ? t("meals.emptyCatalogue") : t("meals.emptySearch")}
             </Text>
             <Text style={styles.emptySubtitle}>
               {foods.length === 0
-                ? 'Hãy kiểm tra bảng public.foods trong Supabase.'
-                : 'Try searching for a different food or brand.'}
+                ? t("meals.catalogueHint")
+                : t("meals.searchHint")}
             </Text>
           </View>
         ) : (
           filteredFoods.map((item) => {
-            const qty = selectedItems[item.name] || 0;
+            const qty = selectedItems[item.id] || 0;
             const isSelected = qty > 0;
 
             return (
-              <View key={item.name} style={styles.foodRow}>
+              <View key={item.id} style={styles.foodRow}>
                 <View style={styles.foodIconWrapper}>
                   <Ionicons name="nutrition-outline" size={20} color={Colors.orange} />
                 </View>
@@ -224,10 +221,9 @@ export default function AddMealScreen() {
                 <View style={styles.foodInfo}>
                   <Text style={styles.foodName}>{item.name}</Text>
                   <Text style={styles.foodServing}>
-                    {item.serving_size || 'Khẩu phần chưa xác định'} •{' '}
+                    {t("meals.addQuantity")}{' '}
                     <Text style={styles.foodCalories}>
-                      {Number(item.calories ?? item.calories_per_100g ?? 0)} kcal
-                    </Text>
+                      {formatNumber(safeNumber(item.calories_per_100g))} {t("meals.caloriesPer100")}</Text>
                   </Text>
                 </View>
 
@@ -235,15 +231,16 @@ export default function AddMealScreen() {
                   <View style={styles.stepperContainer}>
                     <TouchableOpacity
                       style={styles.stepperButton}
-                      onPress={() => handleRemoveItem(item.name)}
+                      onPress={() => handleRemoveItem(item.id)}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
                       <Ionicons name="remove" size={16} color={Colors.textPrimary} />
                     </TouchableOpacity>
-                    <Text style={styles.stepperCount}>{qty}</Text>
+                    <TextInput style={[styles.stepperCount,{ minWidth:50 }]} accessibilityLabel={t('meals.gramsLabel',{name:item.name})} keyboardType="numeric" value={String(qty)} onChangeText={text => { const grams = Number(text); if (Number.isFinite(grams) && grams >= 0) setSelectedItems(previous => ({ ...previous,[item.id]:grams })); }} />
+                    <Text style={styles.stepperCount}>g</Text>
                     <TouchableOpacity
                       style={[styles.stepperButton, styles.stepperButtonAdd]}
-                      onPress={() => handleAddItem(item.name)}
+                      onPress={() => handleAddItem(item.id)}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
                       <Ionicons name="add" size={16} color={Colors.white} />
@@ -252,11 +249,11 @@ export default function AddMealScreen() {
                 ) : (
                   <TouchableOpacity
                     style={styles.addButton}
-                    onPress={() => handleAddItem(item.name)}
+                    onPress={() => handleAddItem(item.id)}
                     activeOpacity={0.7}
                   >
                     <Ionicons name="add" size={16} color={Colors.primary} />
-                    <Text style={styles.addButtonText}>Add</Text>
+                    <Text style={styles.addButtonText}>{t("common.add")}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -265,23 +262,26 @@ export default function AddMealScreen() {
         )}
       </ScrollView>
 
+      {saveError ? <Text accessibilityRole="alert" style={{ color:Colors.error,padding:Spacing.md }}>{localizeMessage(saveError)}</Text> : null}
       {/* Floating Bottom Action Bar */}
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, Spacing.md) }]}>
         <View style={styles.summaryBar}>
           <View>
-            <Text style={styles.summaryLabel}>Total Selected</Text>
+            <Text style={styles.summaryLabel}>{t("meals.totalSelected")}</Text>
             <Text style={styles.summaryValue}>
-              {totalCalories}{' '}
+              {formatNumber(totalCalories,0)}{' '}
               <Text style={styles.summaryUnit}>kcal</Text>
               {totalCount > 0 && (
-                <Text style={styles.summaryCount}> ({totalCount} items)</Text>
+                <Text style={styles.summaryCount}> {t('units.gramTotal',{value:formatNumber(totalCount)})}</Text>
               )}
             </Text>
           </View>
 
           <PrimaryButton
-            title={`Log ${selectedMealType}`}
+            title={t('meals.logType',{meal:t(`meals.${selectedMealType.toLowerCase()}`)})}
             onPress={handleLogMeal}
+            loading={saving}
+            disabled={totalCount <= 0 || isLoadingFoods || !!foodsError}
             style={styles.logButton}
          
           />

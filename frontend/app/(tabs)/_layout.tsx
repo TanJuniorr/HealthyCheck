@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { Platform } from 'react-native';
 import { Tabs } from 'expo-router';
@@ -8,6 +9,8 @@ import { Typography } from '../../src/constants/typography';
 import { Layout } from '../../src/constants/spacing';
 
 export default function TabLayout() {
+  const { t } = useTranslation();
+
   const insets = useSafeAreaInsets();
   const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 0 : 8);
 
@@ -35,7 +38,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Overview',
+          title: t("navigation.overview"),
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'home' : 'home-outline'}
@@ -48,7 +51,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
+          title: t("navigation.explore"),
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'compass' : 'compass-outline'}
@@ -61,7 +64,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="sharing"
         options={{
-          title: 'Sharing',
+          title: t("navigation.sharing"),
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'people' : 'people-outline'}

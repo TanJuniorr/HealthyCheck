@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { localizeMessage } from '../../i18n/localize';
 import React, { useState } from 'react';
 import { View, TextInput, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,6 +32,8 @@ export function AppTextInput({
   style,
   leftIcon,
 }: AppTextInputProps) {
+  const { t } = useTranslation();
+
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -59,6 +63,7 @@ export function AppTextInput({
           placeholderTextColor={Colors.textMuted}
           value={value}
           onChangeText={onChangeText}
+          accessibilityLabel={label || placeholder}
           secureTextEntry={isSecure}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
@@ -68,6 +73,8 @@ export function AppTextInput({
         {secureTextEntry && (
           <TouchableOpacity
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+            accessibilityRole="button"
+            accessibilityLabel={t(isPasswordVisible ? "auth.hidePassword" : "auth.showPassword")}
             style={styles.eyeButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
@@ -79,7 +86,7 @@ export function AppTextInput({
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error && <Text style={styles.errorText}>{localizeMessage(error)}</Text>}
     </View>
   );
 }

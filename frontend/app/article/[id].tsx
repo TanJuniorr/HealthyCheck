@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { localizeStaticData } from '../../src/i18n/localize';
 import React, { useState } from 'react';
 import {
   View,
@@ -13,10 +15,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
-import { articles } from '../../src/data/articles';
+import { articles as rawArticles } from '../../src/data/articles';
 import { PrimaryButton } from '../../src/components/common/Buttons';
 
 export default function ArticleDetailScreen() {
+  const { t } = useTranslation();
+  const articles = localizeStaticData(rawArticles);
+
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -31,12 +36,11 @@ export default function ArticleDetailScreen() {
         <View style={styles.notFoundIconCircle}>
           <Ionicons name="document-text-outline" size={48} color={Colors.textMuted} />
         </View>
-        <Text style={styles.notFoundTitle}>Article Not Found</Text>
+        <Text style={styles.notFoundTitle}>{t("articles.notFound")}</Text>
         <Text style={styles.notFoundDescription}>
-          The health article you are looking for does not exist or has been moved.
-        </Text>
+          {t("articles.missing")}</Text>
         <PrimaryButton
-          title="Go Back"
+          title={t("common.back")}
           onPress={() => router.back()}
           style={styles.backActionButton}
         />
@@ -65,13 +69,13 @@ export default function ArticleDetailScreen() {
     }
   };
 
-  const categoryConfig = getCategoryConfig(article.category);
+  const categoryConfig = getCategoryConfig(article.categoryId);
 
   const handleShare = async () => {
     try {
       await Share.share({
         title: article.title,
-        message: `${article.title}\n\nRead more on Healthy Check.`,
+        message: t('articles.share',{ title:article.title }),
       });
     } catch {
       // Ignored for visual feedback
@@ -105,6 +109,7 @@ export default function ArticleDetailScreen() {
             <TouchableOpacity
               style={styles.navButton}
               onPress={() => router.back()}
+              accessibilityLabel={t("articles.back")}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
@@ -114,6 +119,7 @@ export default function ArticleDetailScreen() {
               <TouchableOpacity
                 style={styles.navButton}
                 onPress={() => setIsBookmarked(!isBookmarked)}
+                accessibilityLabel={t(isBookmarked ? "articles.removeBookmark" : "articles.bookmark")}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons
@@ -126,6 +132,7 @@ export default function ArticleDetailScreen() {
               <TouchableOpacity
                 style={styles.navButton}
                 onPress={handleShare}
+                accessibilityLabel={t("articles.shareLabel")}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons name="share-social-outline" size={20} color={Colors.textPrimary} />

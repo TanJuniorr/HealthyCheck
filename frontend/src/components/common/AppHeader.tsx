@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +23,7 @@ export function AppHeader({
   onRightPress,
   transparent = false,
 }: AppHeaderProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -38,6 +40,7 @@ export function AppHeader({
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
+            accessibilityLabel={t("articles.back")}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
@@ -54,6 +57,7 @@ export function AppHeader({
           <TouchableOpacity
             style={styles.rightButton}
             onPress={onRightPress}
+            accessibilityLabel={t(rightIcon === "settings-outline" ? "navigation.settings" : "common.edit")}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons name={rightIcon as any} size={22} color={Colors.textPrimary} />

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { localizeStaticData } from '../../src/i18n/localize';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,14 +9,21 @@ import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 import { AppHeader, SectionHeader } from '../../src/components/common/AppHeader';
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
 import {
-  cycleData,
-  cycleWeekDates,
-  symptoms as initialSymptoms,
-  feelings,
-  cycleInsights,
+  cycleData as rawCycleData,
+  cycleWeekDates as rawCycleWeekDates,
+  symptoms as rawInitialSymptoms,
+  feelings as rawFeelings,
+  cycleInsights as rawCycleInsights,
 } from '../../src/data/cycle';
 
 export default function CycleTrackingScreen() {
+  const { t } = useTranslation();
+  const cycleData = localizeStaticData(rawCycleData);
+  const cycleWeekDates = localizeStaticData(rawCycleWeekDates);
+  const initialSymptoms = localizeStaticData(rawInitialSymptoms);
+  const feelings = localizeStaticData(rawFeelings);
+  const cycleInsights = localizeStaticData(rawCycleInsights);
+
   const [selectedDate, setSelectedDate] = useState<number>(26);
   const [selectedFeelingId, setSelectedFeelingId] = useState<string>('2');
   const [selectedSymptoms, setSelectedSymptoms] = useState<Record<string, boolean>>(() => {
@@ -36,15 +45,16 @@ export default function CycleTrackingScreen() {
 
   return (
     <View style={styles.container}>
-      <AppHeader title="Cycle Tracking" showBack />
+      <AppHeader title={t("health.cycleTracking")} showBack />
 
       <ScreenContainer>
+        <Text style={{ color:Colors.textSecondary,paddingVertical:Spacing.md }}>{t("health.demoNotice")}</Text>
         {/* Calendar Week Strip */}
         <View style={styles.calendarCard}>
           <View style={styles.calendarHeader}>
-            <Text style={styles.calendarMonth}>October 2026</Text>
+            <Text style={styles.calendarMonth}>{t("cycle.month")}</Text>
             <View style={styles.calendarBadge}>
-              <Text style={styles.calendarBadgeText}>Week 4</Text>
+              <Text style={styles.calendarBadgeText}>{t("cycle.week")}</Text>
             </View>
           </View>
 
@@ -53,7 +63,7 @@ export default function CycleTrackingScreen() {
               const isSelected = selectedDate === item.date;
               return (
                 <TouchableOpacity
-                  key={item.day}
+                  key={item.date}
                   style={styles.dayColumn}
                   onPress={() => setSelectedDate(item.date)}
                   activeOpacity={0.7}
@@ -90,15 +100,15 @@ export default function CycleTrackingScreen() {
           <View style={styles.statusTopRow}>
             <View style={styles.phaseBadge}>
               <Ionicons name="flower-outline" size={14} color={Colors.coral} />
-              <Text style={styles.phaseBadgeText}>{cycleData.phase.toUpperCase()} PHASE</Text>
+              <Text style={styles.phaseBadgeText}>{t('cycle.phaseValue',{phase:cycleData.phase.toUpperCase()})}</Text>
             </View>
-            <Text style={styles.nextPeriodText}>In {cycleData.nextPeriodIn} days</Text>
+            <Text style={styles.nextPeriodText}>{t('cycle.daysUntil',{count:cycleData.nextPeriodIn})}</Text>
           </View>
 
           <Text style={styles.statusMainText}>
-            Day {cycleData.cycleDay} of {cycleData.cycleLength}
+            {t('cycle.dayOf',{day:cycleData.cycleDay,total:cycleData.cycleLength})}
           </Text>
-          <Text style={styles.statusSubText}>Next period expected around Nov 07</Text>
+          <Text style={styles.statusSubText}>{t("cycle.expected")}</Text>
 
           {/* Cycle Progress Track */}
           <View style={styles.progressContainer}>
@@ -111,15 +121,15 @@ export default function CycleTrackingScreen() {
               />
             </View>
             <View style={styles.progressLabelsRow}>
-              <Text style={styles.progressLabel}>Day 1 (Period)</Text>
-              <Text style={styles.progressLabel}>Day 14 (Ovulation)</Text>
-              <Text style={styles.progressLabel}>Day 28</Text>
+              <Text style={styles.progressLabel}>{t("cycle.periodDay")}</Text>
+              <Text style={styles.progressLabel}>{t("cycle.ovulationDay")}</Text>
+              <Text style={styles.progressLabel}>{t("cycle.lastDay")}</Text>
             </View>
           </View>
         </View>
 
         {/* How are you feeling today? Section */}
-        <SectionHeader title="How are you feeling today?" />
+        <SectionHeader title={t("cycle.feeling")} />
         <View style={styles.feelingsCard}>
           <View style={styles.feelingsRow}>
             {feelings.map((item) => {
@@ -151,7 +161,7 @@ export default function CycleTrackingScreen() {
         </View>
 
         {/* Symptoms Section */}
-        <SectionHeader title="Symptoms" />
+        <SectionHeader title={t("cycle.symptoms")} />
         <View style={styles.symptomsGrid}>
           {initialSymptoms.map((symptom) => {
             const isSelected = !!selectedSymptoms[symptom.id];
@@ -185,7 +195,7 @@ export default function CycleTrackingScreen() {
         </View>
 
         {/* Insights Section */}
-        <SectionHeader title="Cycle Insights" />
+        <SectionHeader title={t("cycle.insights")} />
         <View style={styles.insightsContainer}>
           {cycleInsights.map((insight, index) => (
             <View key={index} style={styles.insightCard}>
@@ -208,8 +218,7 @@ export default function CycleTrackingScreen() {
         <View style={styles.disclaimerContainer}>
           <Ionicons name="information-circle-outline" size={18} color={Colors.textMuted} />
           <Text style={styles.disclaimerText}>
-            All cycle predictions are estimates for demonstration purposes.
-          </Text>
+            {t("cycle.notice")}</Text>
         </View>
       </ScreenContainer>
     </View>

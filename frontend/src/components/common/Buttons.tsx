@@ -86,3 +86,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+export function TextButton({ title, onPress, style, color = Colors.primary, disabled = false, loading = false }: PrimaryButtonProps & { color?: string }) {
+  return <TouchableOpacity accessibilityRole="button" accessibilityState={{ disabled: disabled || loading, busy: loading }} disabled={disabled || loading} onPress={onPress} style={[{ padding: Spacing.md, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', opacity: disabled ? 0.6 : 1 }, style]}>
+    {loading ? <ActivityIndicator color={color} style={{ marginRight: Spacing.sm }} /> : null}
+    <Text style={{ ...Typography.button, color }}>{title}</Text>
+  </TouchableOpacity>;
+}

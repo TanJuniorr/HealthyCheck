@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next';
+import { formatNumber } from '../src/i18n/formatting';
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,9 +10,9 @@ import { Typography } from '../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../src/constants/spacing';
 import { PrimaryButton } from '../src/components/common/Buttons';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
 export default function WelcomeScreen() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -34,7 +36,7 @@ export default function WelcomeScreen() {
               <Ionicons name="heart" size={16} color={Colors.coral} />
             </View>
             <View>
-              <Text style={styles.badgeLabel}>Heart Rate</Text>
+              <Text style={styles.badgeLabel}>{t("health.heart")}</Text>
               <Text style={styles.badgeValue}>72 bpm</Text>
             </View>
           </View>
@@ -44,8 +46,8 @@ export default function WelcomeScreen() {
               <Ionicons name="flame" size={16} color={Colors.orange} />
             </View>
             <View>
-              <Text style={styles.badgeLabel}>Daily Active</Text>
-              <Text style={styles.badgeValue}>1,600 kcal</Text>
+              <Text style={styles.badgeLabel}>{t("welcome.dailyActive")}</Text>
+              <Text style={styles.badgeValue}>{formatNumber(1600)} kcal</Text>
             </View>
           </View>
 
@@ -54,8 +56,8 @@ export default function WelcomeScreen() {
               <Ionicons name="water" size={16} color={Colors.blue} />
             </View>
             <View>
-              <Text style={styles.badgeLabel}>Hydration</Text>
-              <Text style={styles.badgeValue}>2.5 L</Text>
+              <Text style={styles.badgeLabel}>{t("health.hydration")}</Text>
+              <Text style={styles.badgeValue}>{formatNumber(2.5)} L</Text>
             </View>
           </View>
         </View>
@@ -68,19 +70,17 @@ export default function WelcomeScreen() {
           <Text style={styles.brandText}>HEALTHY CHECK</Text>
         </View>
 
-        <Text style={styles.headline}>Your health, one day at a time.</Text>
+        <Text style={styles.headline}>{t("welcome.headline")}</Text>
 
         <Text style={styles.description}>
-          Track your daily vitals, monitor activity, and build lasting healthy habits with
-          personalized wellness insights.
-        </Text>
+          {t("welcome.description")}</Text>
       </View>
 
       {/* Bottom CTA Section */}
       <View style={styles.actionSection}>
         <PrimaryButton
-          title="Get Started"
-          onPress={() => router.replace('/(tabs)')}
+          title={t("welcome.start")}
+          onPress={() => router.push('/signup')}
           style={styles.primaryButton}
         />
 
@@ -90,7 +90,7 @@ export default function WelcomeScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.signInText}>
-            I already have an account <Text style={styles.signInHighlight}>Sign In</Text>
+            {t("welcome.existing")}<Text style={styles.signInHighlight}>{t("auth.signIn")}</Text>
           </Text>
         </TouchableOpacity>
       </View>

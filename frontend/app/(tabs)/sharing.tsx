@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { localizeStaticData } from '../../src/i18n/localize';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -14,28 +16,31 @@ interface SharingFeature {
   description: string;
 }
 
-const SHARING_FEATURES: SharingFeature[] = [
+const rawSHARING_FEATURES: SharingFeature[] = [
   {
     icon: 'share-social',
-    title: 'Share selected health summaries',
+    title: "sharing.summaryTitle",
     description:
-      'Choose which health indicators, daily activity totals, and trends you want to share with trusted individuals.',
+      "sharing.summaryHint",
   },
   {
     icon: 'shield-checkmark',
-    title: 'Control what others can see',
+    title: "sharing.controlTitle",
     description:
-      'You decide exactly what is visible. Specific metrics, sensitive logs, and private details stay protected.',
+      "sharing.controlHint",
   },
   {
     icon: 'close-circle',
-    title: 'Stop sharing whenever desired',
+    title: "sharing.stopTitle",
     description:
-      'You can pause or permanently revoke access at any moment with a single tap. Sharing stops immediately.',
+      "sharing.stopHint",
   },
 ];
 
 export default function SharingScreen() {
+  const { t } = useTranslation();
+  const SHARING_FEATURES = localizeStaticData(rawSHARING_FEATURES);
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -59,10 +64,9 @@ export default function SharingScreen() {
 
         {/* 1. Header Section */}
         <View style={styles.header}>
-          <Text style={styles.title}>Sharing</Text>
+          <Text style={styles.title}>{t("navigation.sharing")}</Text>
           <Text style={styles.subtitle}>
-            Securely share your health and activity summaries with family members, caregivers, or doctors.
-          </Text>
+            {t("sharing.description")}</Text>
         </View>
 
         {/* 2. Feature Explanations (Clean, Card-Free Layout) */}
@@ -83,7 +87,7 @@ export default function SharingScreen() {
         {/* 3. Primary Action & 4. Privacy Note */}
         <View style={styles.footerSection}>
           <PrimaryButton
-            title="Start Sharing"
+            title={t("sharing.start")}
             onPress={() => router.push('/sharing-setup' as any)}
             style={styles.primaryButton}
           />
@@ -96,8 +100,7 @@ export default function SharingScreen() {
               style={styles.lockIcon}
             />
             <Text style={styles.privacyNoteText}>
-              Your data is always under your control. No information is shared without your explicit permission.
-            </Text>
+              {t("sharing.permissionHint")}</Text>
           </View>
         </View>
       </ScrollView>

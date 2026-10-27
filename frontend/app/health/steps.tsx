@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { formatNumber,formatDayLabel } from '../../src/i18n/formatting';
+import { localizeMessage } from '../../src/i18n/localize';
+import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AppHeader } from '../../src/components/common/AppHeader';
@@ -6,7 +9,13 @@ import { ScreenContainer } from '../../src/components/common/ScreenContainer';
 import { ProgressRing } from '../../src/components/charts/ProgressRing';
 import { WeeklyBarChart } from '../../src/components/charts/WeeklyBarChart';
 import { TrendLineChart } from '../../src/components/charts/TrendLineChart';
-import { stepsData, stepsWeekly, stepsHourly, stepsMonthly } from '../../src/data/steps';
+import { useSteps } from '../../src/hooks/healthHooks';
+import { getWeekRange, getMonthRange, toLocalDateKey } from '../../src/lib/dateUtils';
+import { addStepRecord } from '../../src/services/stepsService';
+import { dataError } from '../../src/lib/dataErrors';
+import { AppTextInput } from '../../src/components/common/AppTextInput';
+import { PrimaryButton } from '../../src/components/common/Buttons';
+import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
@@ -14,34 +23,38 @@ import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 type Period = 'Today' | 'Week' | 'Month';
 
 export default function StepsScreen() {
+  const { t } = useTranslation();
+
   const [selectedPeriod, setSelectedPeriod] = useState<Period>('Today');
 
-  // Chart data adaptations
-  const todayChartData = stepsHourly.map((item) => ({
-    label: item.hour,
-    value: item.steps,
-  }));
-
-  const weekChartData = stepsWeekly.map((item) => ({
-    label: item.day,
-    value: item.steps,
-    highlighted: item.day === 'Sun',
-  }));
-
-  const monthChartData = stepsMonthly.map((item) => ({
-    label: item.week,
-    value: item.avg,
-  }));
+  const today = toLocalDateKey();
+  const range = selectedPeriod === 'Today' ? { start:today,end:today } : selectedPeriod === 'Week' ? getWeekRange(today) : getMonthRange(today);
+  const query = useSteps(range);
+  const [entry,setEntry] = useState('');
+  const [saving,setSaving] = useState(false);
+  const [saveError,setSaveError] = useState('');
+  const pending = useRef(false);
+  const goal = selectedPeriod === 'Today' ? query.data?.daily[0]?.goal ?? null : null;
+  const stepsData = { current:query.data?.totalSteps ?? '—', goal:goal ?? '—', progress:selectedPeriod === 'Today' ? (query.data?.daily[0]?.progressPercent ?? 0) / 100 : 0, calories:'—', distance:query.data?.daily.length === 1 ? query.data.daily[0].distanceKm ?? '—' : '—', activeMinutes:query.data?.daily.length === 1 ? query.data.daily[0].activeMinutes ?? '—' : '—' };
+  const chart = (query.data?.daily ?? []).filter(day => day.hasRecords).map(day => ({ label:formatDayLabel(day.date),value:day.totalSteps }));
+  const todayChartData = chart; const weekChartData = chart; const monthChartData = chart;
+  const save = async () => {
+    if (pending.current) return; pending.current = true; setSaving(true); setSaveError('');
+    try { await addStepRecord({ record_date:today,steps:Number(entry.trim() || NaN) }); setEntry(''); await query.refresh(); }
+    catch (error) { setSaveError(dataError(error).message); }
+    finally { pending.current = false; setSaving(false); }
+  };
 
   return (
     <View style={styles.container}>
       <AppHeader
-        title="Steps"
+        title={t("health.steps")}
         showBack={true}
         rightIcon="calendar-outline"
         onRightPress={() => {}}
       />
       <ScreenContainer scrollable={true} padded={true}>
+        <DataFeedback {...query} empty={query.data?.daysWithRecords === 0} />
         {/* Ring Hero Card */}
         <View style={styles.heroCard}>
           <ProgressRing
@@ -56,10 +69,10 @@ export default function StepsScreen() {
                 <Ionicons name="walk" size={24} color={Colors.primary} />
               </View>
               <Text style={styles.ringStat}>
-                {stepsData.current.toLocaleString()}
+                {formatNumber(stepsData.current)}
               </Text>
               <Text style={styles.ringLabel}>
-                of {stepsData.goal.toLocaleString()} steps
+                {selectedPeriod === 'Today' ? t('steps.ofGoal',{goal:formatNumber(stepsData.goal)}) : t("steps.periodTotal")}
               </Text>
             </View>
           </ProgressRing>
@@ -80,7 +93,7 @@ export default function StepsScreen() {
               <View style={[styles.statIconCircle, { backgroundColor: Colors.primaryLight }]}>
                 <Ionicons name="navigate" size={16} color={Colors.primary} />
               </View>
-              <Text style={styles.statPillValue}>{stepsData.distance}</Text>
+              <Text style={styles.statPillValue}>{formatNumber(stepsData.distance)}</Text>
               <Text style={styles.statPillUnit}>km</Text>
             </View>
 
@@ -89,8 +102,8 @@ export default function StepsScreen() {
               <View style={[styles.statIconCircle, { backgroundColor: Colors.blueLight }]}>
                 <Ionicons name="timer-outline" size={16} color={Colors.blue} />
               </View>
-              <Text style={styles.statPillValue}>{stepsData.activeMinutes}</Text>
-              <Text style={styles.statPillUnit}>min</Text>
+              <Text style={styles.statPillValue}>{formatNumber(stepsData.activeMinutes)}</Text>
+              <Text style={styles.statPillUnit}>{t("units.minuteShort")}</Text>
             </View>
           </View>
         </View>
@@ -112,7 +125,7 @@ export default function StepsScreen() {
                     isSelected && styles.filterTabTextActive,
                   ]}
                 >
-                  {period}
+                  {t(period === 'Today' ? 'period.today' : period === 'Week' ? 'period.week' : 'period.month')}
                 </Text>
               </TouchableOpacity>
             );
@@ -123,14 +136,14 @@ export default function StepsScreen() {
         <View style={styles.chartCard}>
           <View style={styles.chartHeader}>
             <Text style={styles.chartTitle}>
-              {selectedPeriod === 'Today' && 'Hourly Activity'}
-              {selectedPeriod === 'Week' && 'Weekly Breakdown'}
-              {selectedPeriod === 'Month' && '4-Week Average'}
+              {selectedPeriod === 'Today' && t("steps.dailyTotal")}
+              {selectedPeriod === 'Week' && t("steps.weekly")}
+              {selectedPeriod === 'Month' && t("steps.monthly")}
             </Text>
             <Text style={styles.chartSubtitle}>
-              {selectedPeriod === 'Today' && 'Steps per hour today'}
-              {selectedPeriod === 'Week' && 'Daily progress towards 15k goal'}
-              {selectedPeriod === 'Month' && 'Weekly average step count'}
+              {selectedPeriod === 'Today' && t("steps.manualToday")}
+              {selectedPeriod === 'Week' && t("steps.dailyTotals")}
+              {selectedPeriod === 'Month' && t("steps.dailyTotals")}
             </Text>
           </View>
 
@@ -147,7 +160,7 @@ export default function StepsScreen() {
             {selectedPeriod === 'Week' && (
               <WeeklyBarChart
                 data={weekChartData}
-                maxValue={16000}
+                maxValue={Math.max(goal ?? 1,...chart.map(row => row.value),1)}
                 color={Colors.primary}
                 highlightColor={Colors.primaryDark}
                 height={170}
@@ -173,8 +186,14 @@ export default function StepsScreen() {
             <Ionicons name="sparkles" size={18} color={Colors.primary} />
           </View>
           <Text style={styles.motivationText}>
-            You're 79% of the way to your daily goal. Keep it up!
+            {query.data ? t('steps.periodMessage',{value:formatNumber(query.data.totalSteps)}) : t("steps.addHint")}
           </Text>
+        </View>
+        <View style={styles.chartCard}>
+          <Text style={styles.chartTitle}>{t("steps.manualEntry")}</Text>
+          <AppTextInput label={t("health.steps")} value={entry} onChangeText={setEntry} keyboardType="numeric" />
+          {saveError ? <Text accessibilityRole="alert" style={{ color:Colors.error }}>{localizeMessage(saveError)}</Text> : null}
+          <PrimaryButton title={t("steps.add")} onPress={save} loading={saving} />
         </View>
       </ScreenContainer>
     </View>

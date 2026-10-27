@@ -1,57 +1,66 @@
+import { useTranslation } from 'react-i18next';
+import { formatNumber,formatTime,formatDuration,formatDayLabel } from '../../src/i18n/formatting';
+import { localizeStaticData } from '../../src/i18n/localize';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { AppHeader } from '../../src/components/common/AppHeader';
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
-import { ProgressBar } from '../../src/components/charts/ProgressRing';
 import { WeeklyBarChart } from '../../src/components/charts/WeeklyBarChart';
-import { sleepData, sleepWeekly, sleepPhases, sleepTips } from '../../src/data/sleep';
+import { sleepTips as rawSleepTips } from '../../src/data/sleep';
+import { useSleep } from '../../src/hooks/healthHooks';
+import { getWeekRange } from '../../src/lib/dateUtils';
+import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 
 export default function SleepScreen() {
+  const { t } = useTranslation();
+  const sleepTips = localizeStaticData(rawSleepTips);
+
   const router = useRouter();
 
-  const weeklyChartData = sleepWeekly.map((item) => ({
-    label: item.day,
-    value: item.hours,
-    highlighted: item.day === 'Sat',
-  }));
+  const query = useSleep(getWeekRange());
+  const formatMinutes = (minutes: number | null | undefined) => formatDuration(minutes);
+  const latest = query.data?.latestSession;
+  const sleepData = { average:formatMinutes(query.data?.averageDailyMinutes),quality:(query.data?.averageQualityRating == null ? undefined : formatNumber(query.data?.averageQualityRating,1)) ?? '—',deepSleep:'—',awake:'—',bedtime:latest ? formatTime(new Date(latest.sleep_start),{ hour:'2-digit',minute:'2-digit' }) : '—',wakeUp:latest ? formatTime(new Date(latest.sleep_end),{ hour:'2-digit',minute:'2-digit' }) : '—' };
+  const weeklyChartData = (query.data?.daily ?? []).filter(day => day.minutes !== null).map(day => ({ label:formatDayLabel(day.date),value:(day.minutes ?? 0)/60 }));
 
   return (
     <View style={styles.container}>
-      <AppHeader title="Sleep" showBack={true} />
+      <AppHeader title={t("health.sleep")} showBack={true} />
       <ScreenContainer scrollable={true} padded={true}>
+        <DataFeedback {...query} empty={!query.data?.latestSession} />
         {/* Main Summary Card (Blue-tinted) */}
         <View style={styles.summaryCard}>
           <View style={styles.summaryHeader}>
             <View style={styles.summaryIconCircle}>
               <Ionicons name="moon" size={20} color={Colors.blue} />
             </View>
-            <Text style={styles.summaryBadge}>Good Quality</Text>
+            <Text style={styles.summaryBadge}>{t("overview.recordedSleep")}</Text>
           </View>
 
-          <Text style={styles.summaryLabel}>Average Sleep Time</Text>
+          <Text style={styles.summaryLabel}>{t("sleep.average")}</Text>
           <Text style={styles.summaryValue}>{sleepData.average}</Text>
 
           <View style={styles.summaryRow}>
             <View style={styles.summaryCol}>
-              <Text style={styles.summaryColLabel}>Quality Score</Text>
+              <Text style={styles.summaryColLabel}>{t("sleep.quality")}</Text>
               <View style={styles.summaryColValueRow}>
                 <Ionicons name="star" size={14} color="#F4A261" style={styles.starIcon} />
-                <Text style={styles.summaryColValue}>{sleepData.quality}%</Text>
+                <Text style={styles.summaryColValue}>{sleepData.quality}/5</Text>
               </View>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryCol}>
-              <Text style={styles.summaryColLabel}>Deep Sleep</Text>
+              <Text style={styles.summaryColLabel}>{t("sleep.deep")}</Text>
               <Text style={styles.summaryColValue}>{sleepData.deepSleep}</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryCol}>
-              <Text style={styles.summaryColLabel}>Time Awake</Text>
+              <Text style={styles.summaryColLabel}>{t("sleep.awake")}</Text>
               <Text style={styles.summaryColValue}>{sleepData.awake}</Text>
             </View>
           </View>
@@ -59,22 +68,11 @@ export default function SleepScreen() {
 
         {/* Sleep Phases Breakdown */}
         <View style={styles.sectionCard}>
-          <Text style={styles.cardTitle}>Sleep Phases Breakdown</Text>
-          <Text style={styles.cardSubtitle}>Total duration 7h 31m</Text>
+          <Text style={styles.cardTitle}>{t("sleep.phases")}</Text>
+          <Text style={styles.cardSubtitle}>{t('sleep.weekTotal',{duration:formatMinutes(query.data?.totalMinutes)})}</Text>
 
           <View style={styles.phasesList}>
-            {sleepPhases.map((phase) => (
-              <View key={phase.phase} style={styles.phaseItem}>
-                <ProgressBar
-                  progress={phase.percentage / 100}
-                  color={phase.color}
-                  trackColor="#EDF1F5"
-                  height={10}
-                  label={phase.phase}
-                  value={`${phase.duration} · ${phase.percentage}%`}
-                />
-              </View>
-            ))}
+            <Text style={styles.cardSubtitle}>{t("sleep.phasesUnavailable")}</Text>
           </View>
         </View>
 
@@ -82,12 +80,12 @@ export default function SleepScreen() {
         <View style={styles.sectionCard}>
           <View style={styles.chartHeader}>
             <View>
-              <Text style={styles.cardTitle}>Weekly Sleep Duration</Text>
-              <Text style={styles.cardSubtitle}>Target: 8h per night</Text>
+              <Text style={styles.cardTitle}>{t("sleep.weekly")}</Text>
+              <Text style={styles.cardSubtitle}>{t("sleep.grouping")}</Text>
             </View>
             <View style={styles.legendBadge}>
               <View style={[styles.legendDot, { backgroundColor: '#3A5BC7' }]} />
-              <Text style={styles.legendText}>Sat Peak</Text>
+              <Text style={styles.legendText}>{t("sleep.recordedNights")}</Text>
             </View>
           </View>
 
@@ -100,7 +98,7 @@ export default function SleepScreen() {
               height={170}
               barWidth={26}
               showValues={true}
-              unit="h"
+              unit={t("units.hourShort")}
             />
           </View>
         </View>
@@ -108,13 +106,13 @@ export default function SleepScreen() {
         {/* Sleep Schedule Section */}
         <View style={styles.sectionCard}>
           <View style={styles.scheduleHeader}>
-            <Text style={styles.cardTitle}>Sleep Schedule</Text>
+            <Text style={styles.cardTitle}>{t("sleep.latest")}</Text>
             <TouchableOpacity
               onPress={() => router.push('/sleep-schedule')}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               style={styles.editButton}
             >
-              <Text style={styles.editText}>Edit</Text>
+              <Text style={styles.editText}>{t("common.edit")}</Text>
               <Ionicons name="chevron-forward" size={14} color={Colors.primary} />
             </TouchableOpacity>
           </View>
@@ -126,7 +124,7 @@ export default function SleepScreen() {
                 <Ionicons name="moon" size={20} color={Colors.blue} />
               </View>
               <View>
-                <Text style={styles.scheduleLabel}>Bedtime</Text>
+                <Text style={styles.scheduleLabel}>{t("sleep.bedtime")}</Text>
                 <Text style={styles.scheduleTime}>{sleepData.bedtime}</Text>
               </View>
             </View>
@@ -141,7 +139,7 @@ export default function SleepScreen() {
                 <Ionicons name="sunny" size={20} color={Colors.orange} />
               </View>
               <View>
-                <Text style={styles.scheduleLabel}>Wake-up</Text>
+                <Text style={styles.scheduleLabel}>{t("sleep.wakeUp")}</Text>
                 <Text style={styles.scheduleTime}>{sleepData.wakeUp}</Text>
               </View>
             </View>
@@ -154,7 +152,7 @@ export default function SleepScreen() {
             <Ionicons name="bulb-outline" size={20} color={Colors.blue} />
           </View>
           <View style={styles.tipTextContainer}>
-            <Text style={styles.tipHeading}>Sleep Insight</Text>
+            <Text style={styles.tipHeading}>{t("sleep.insight")}</Text>
             <Text style={styles.tipText}>{sleepTips[0]}</Text>
           </View>
         </View>

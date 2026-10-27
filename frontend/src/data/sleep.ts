@@ -16,23 +16,23 @@ export const sleepData = {
 };
 
 export const sleepWeekly = [
-  { day: 'Mon', hours: 7.2, quality: 78 },
-  { day: 'Tue', hours: 6.8, quality: 72 },
-  { day: 'Wed', hours: 8.1, quality: 88 },
-  { day: 'Thu', hours: 7.5, quality: 80 },
-  { day: 'Fri', hours: 7.0, quality: 75 },
-  { day: 'Sat', hours: 8.5, quality: 90 },
-  { day: 'Sun', hours: 7.5, quality: 82 },
+  { day: "weekday.mon", hours: 7.2, quality: 78 },
+  { day: "weekday.tue", hours: 6.8, quality: 72 },
+  { day: "weekday.wed", hours: 8.1, quality: 88 },
+  { day: "weekday.thu", hours: 7.5, quality: 80 },
+  { day: "weekday.fri", hours: 7.0, quality: 75 },
+  { day: "weekday.sat", hours: 8.5, quality: 90 },
+  { day: "weekday.sun", hours: 7.5, quality: 82 },
 ];
 
 export const sleepPhases = [
-  { phase: 'Deep', duration: '1h 03m', percentage: 14, color: '#3A5BC7' },
-  { phase: 'Light', duration: '4h 12m', percentage: 56, color: '#5B8DEF' },
+  { phase: "sleep.deepPhase", duration: '1h 03m', percentage: 14, color: '#3A5BC7' },
+  { phase: "sleep.lightPhase", duration: '4h 12m', percentage: 56, color: '#5B8DEF' },
   { phase: 'REM', duration: '2h 16m', percentage: 30, color: '#9B85CE' },
 ];
 
 export const sleepTips = [
-  'Try to maintain a consistent sleep schedule, even on weekends.',
-  'Avoid screens for 30 minutes before bed to improve sleep quality.',
-  'Keep your bedroom cool and dark for deeper sleep.',
+  "sleep.tipSchedule",
+  "sleep.tipScreens",
+  "sleep.tipRoom",
 ];

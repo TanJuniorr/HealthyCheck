@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next';
+import { formatNumber } from '../../i18n/formatting';
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Polyline, Circle, Line, Text as SvgText } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
 import { Spacing } from '../../constants/spacing';
@@ -28,6 +30,7 @@ export function TrendLineChart({
   showGrid = true,
   yAxisSuffix = '',
 }: TrendLineChartProps) {
+  useTranslation();
   const screenWidth = Dimensions.get('window').width - Spacing.screenPadding * 2;
   const paddingLeft = 40;
   const paddingRight = 16;
@@ -35,9 +38,10 @@ export function TrendLineChart({
   const paddingBottom = showLabels ? 30 : 16;
   const chartWidth = screenWidth - paddingLeft - paddingRight;
   const chartHeight = height - paddingTop - paddingBottom;
+  const labelStride = Math.max(1,Math.ceil(data.length / Math.max(2,Math.floor(chartWidth / 48))));
 
-  const maxValue = Math.max(...data.map((d) => d.value)) * 1.15;
-  const minValue = Math.min(...data.map((d) => d.value)) * 0.85;
+  const maxValue = Math.max(1,...data.map((d) => d.value)) * 1.15;
+  const minValue = (data.length ? Math.min(...data.map((d) => d.value)) : 0) * 0.85;
   const range = maxValue - minValue || 1;
 
   const points = data.map((item, index) => {
@@ -78,7 +82,7 @@ export function TrendLineChart({
                 fill={Colors.textMuted}
                 fontSize={10}
               >
-                {line.val}{yAxisSuffix}
+                {formatNumber(line.val)}{yAxisSuffix}
               </SvgText>
             </React.Fragment>
           ))}
@@ -103,7 +107,7 @@ export function TrendLineChart({
 
         {/* X Labels */}
         {showLabels &&
-          points.map((p, i) => (
+          points.map((p, i) => i % labelStride === 0 ? (
             <SvgText
               key={`label-${i}`}
               x={p.x}
@@ -114,7 +118,7 @@ export function TrendLineChart({
             >
               {p.label}
             </SvgText>
-          ))}
+          ) : null)}
       </Svg>
     </View>
   );

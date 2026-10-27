@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { formatNumber,formatTime } from '../../src/i18n/formatting';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -9,11 +11,24 @@ import { AppHeader, SectionHeader } from '../../src/components/common/AppHeader'
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
 import { PrimaryButton } from '../../src/components/common/Buttons';
 import { ProgressRing, ProgressBar } from '../../src/components/charts/ProgressRing';
-import { nutritionData, meals } from '../../src/data/nutrition';
+import { useHealthQuery } from '../../src/hooks/useHealthQuery';
+import { getMealsByDate } from '../../src/services/mealsService';
+import { toLocalDateKey } from '../../src/lib/dateUtils';
+import { getCurrentGoals } from '../../src/services/healthGoalsService';
+import { aggregateNutrition, calculateFoodNutrition } from '../../src/lib/healthCalculations';
+import { safeNumber } from '../../src/lib/dataValidation';
+import { DataFeedback } from '../../src/components/common/DataFeedback';
 
 export default function NutritionScreen() {
+  const { t } = useTranslation();
+
   const router = useRouter();
 
+  const today = toLocalDateKey();
+  const query = useHealthQuery(async () => { const [rows,goals] = await Promise.all([getMealsByDate(today),getCurrentGoals(today)]); return { rows,summary:aggregateNutrition(rows,today,today,goals?.daily_calories ?? null) }; },'nutrition-screen:'+today);
+  const summary = query.data?.summary;
+  const nutritionData = { caloriesGoal:summary?.calorieGoal ?? 0,caloriesConsumed:summary?.calories ?? 0,progress:(summary?.progressPercent ?? 0)/100,protein:{ current:summary?.protein ?? 0,goal:0,color:Colors.primary },carbs:{ current:summary?.carbs ?? 0,goal:0,color:Colors.blue },fat:{ current:summary?.fat ?? 0,goal:0,color:Colors.orange } };
+  const meals = (['breakfast','lunch','dinner','snack'] as const).map(type => { const rows = query.data?.rows.filter(row => row.meal_type === type) ?? []; return { id:type,type:t(`meals.${type}`),icon:'restaurant-outline',time:rows.length ? formatTime(new Date(rows[0].consumed_at),{ hour:'2-digit',minute:'2-digit' }) : '',totalCalories:formatNumber(summary?.byMealType[type].calories,0) ?? '—',items:rows.map(row => ({ name:row.food?.name ?? t("nutrition.unavailableFood"),calories:row.food ? formatNumber(calculateFoodNutrition(row.food,safeNumber(row.quantity_g)).calories,0) : '—' })) }; });
   const caloriesRemaining = Math.max(0, nutritionData.caloriesGoal - nutritionData.caloriesConsumed);
 
   const handleAddMeal = () => {
@@ -22,9 +37,10 @@ export default function NutritionScreen() {
 
   return (
     <View style={styles.container}>
-      <AppHeader title="Nutrition" showBack />
+      <AppHeader title={t("health.nutrition")} showBack />
 
       <ScreenContainer>
+        <DataFeedback {...query} empty={summary?.recordCount === 0} />
         {/* Calorie Summary Card */}
         <View style={styles.summaryCard}>
           <View style={styles.ringSection}>
@@ -38,11 +54,11 @@ export default function NutritionScreen() {
               <View style={styles.ringContent}>
                 <Ionicons name="flame" size={22} color={Colors.orange} style={styles.flameIcon} />
                 <Text style={styles.ringValue}>
-                  {nutritionData.caloriesConsumed.toLocaleString()}
+                  {summary ? formatNumber(nutritionData.caloriesConsumed,0) : '—'}
                 </Text>
-                <Text style={styles.ringSubtext}>kcal consumed</Text>
+                <Text style={styles.ringSubtext}>{t("nutrition.consumedUnit")}</Text>
                 <View style={styles.goalPill}>
-                  <Text style={styles.ringGoal}>Goal: {nutritionData.caloriesGoal.toLocaleString()} kcal</Text>
+                  <Text style={styles.ringGoal}>{t("nutrition.goalPrefix")}{' '}{formatNumber(nutritionData.caloriesGoal)} kcal</Text>
                 </View>
               </View>
             </ProgressRing>
@@ -51,7 +67,7 @@ export default function NutritionScreen() {
           {/* Calorie Breakdown Metrics */}
           <View style={styles.metricsRow}>
             <View style={styles.metricItem}>
-              <Text style={styles.metricLabel}>Consumed</Text>
+              <Text style={styles.metricLabel}>{t("nutrition.consumed")}</Text>
               <Text style={[styles.metricValue, { color: Colors.orange }]}>
                 {nutritionData.caloriesConsumed} <Text style={styles.metricUnit}>kcal</Text>
               </Text>
@@ -60,25 +76,25 @@ export default function NutritionScreen() {
             <View style={styles.metricDivider} />
 
             <View style={styles.metricItem}>
-              <Text style={styles.metricLabel}>Remaining</Text>
+              <Text style={styles.metricLabel}>{t("nutrition.remaining")}</Text>
               <Text style={[styles.metricValue, { color: Colors.primaryDark }]}>
-                {caloriesRemaining} <Text style={styles.metricUnit}>kcal</Text>
+                {summary?.calorieGoal != null ? formatNumber(caloriesRemaining,0) : '—'} <Text style={styles.metricUnit}>kcal</Text>
               </Text>
             </View>
 
             <View style={styles.metricDivider} />
 
             <View style={styles.metricItem}>
-              <Text style={styles.metricLabel}>Daily Target</Text>
+              <Text style={styles.metricLabel}>{t("nutrition.dailyTarget")}</Text>
               <Text style={[styles.metricValue, { color: Colors.textPrimary }]}>
-                {nutritionData.caloriesGoal} <Text style={styles.metricUnit}>kcal</Text>
+                {formatNumber(summary?.calorieGoal)} <Text style={styles.metricUnit}>kcal</Text>
               </Text>
             </View>
           </View>
         </View>
 
         {/* Macronutrients Section */}
-        <SectionHeader title="Macronutrients" />
+        <SectionHeader title={t("nutrition.macros")} />
 
         <View style={styles.card}>
           {/* Protein */}
@@ -86,15 +102,15 @@ export default function NutritionScreen() {
             <View style={styles.macroHeader}>
               <View style={styles.macroTitleRow}>
                 <View style={[styles.macroDot, { backgroundColor: nutritionData.protein.color }]} />
-                <Text style={styles.macroName}>Protein</Text>
+                <Text style={styles.macroName}>{t("nutrition.protein")}</Text>
               </View>
               <Text style={styles.macroValues}>
-                <Text style={styles.macroCurrent}>{nutritionData.protein.current}g</Text>
-                <Text style={styles.macroGoal}> / {nutritionData.protein.goal}g</Text>
+                <Text style={styles.macroCurrent}>{summary ? formatNumber(nutritionData.protein.current,1) : '—'}g</Text>
+                <Text style={styles.macroGoal}> {' '}{t("nutrition.noMacroTarget")}</Text>
               </Text>
             </View>
             <ProgressBar
-              progress={nutritionData.protein.current / nutritionData.protein.goal}
+              progress={0}
               color={nutritionData.protein.color}
               trackColor={Colors.primaryLight}
               height={8}
@@ -107,15 +123,15 @@ export default function NutritionScreen() {
             <View style={styles.macroHeader}>
               <View style={styles.macroTitleRow}>
                 <View style={[styles.macroDot, { backgroundColor: nutritionData.carbs.color }]} />
-                <Text style={styles.macroName}>Carbohydrates</Text>
+                <Text style={styles.macroName}>{t("nutrition.carbs")}</Text>
               </View>
               <Text style={styles.macroValues}>
-                <Text style={styles.macroCurrent}>{nutritionData.carbs.current}g</Text>
-                <Text style={styles.macroGoal}> / {nutritionData.carbs.goal}g</Text>
+                <Text style={styles.macroCurrent}>{summary ? formatNumber(nutritionData.carbs.current,1) : '—'}g</Text>
+                <Text style={styles.macroGoal}> {' '}{t("nutrition.noMacroTarget")}</Text>
               </Text>
             </View>
             <ProgressBar
-              progress={nutritionData.carbs.current / nutritionData.carbs.goal}
+              progress={0}
               color={nutritionData.carbs.color}
               trackColor={Colors.blueLight}
               height={8}
@@ -128,15 +144,15 @@ export default function NutritionScreen() {
             <View style={styles.macroHeader}>
               <View style={styles.macroTitleRow}>
                 <View style={[styles.macroDot, { backgroundColor: nutritionData.fat.color }]} />
-                <Text style={styles.macroName}>Fat</Text>
+                <Text style={styles.macroName}>{t("nutrition.fat")}</Text>
               </View>
               <Text style={styles.macroValues}>
-                <Text style={styles.macroCurrent}>{nutritionData.fat.current}g</Text>
-                <Text style={styles.macroGoal}> / {nutritionData.fat.goal}g</Text>
+                <Text style={styles.macroCurrent}>{summary ? formatNumber(nutritionData.fat.current,1) : '—'}g</Text>
+                <Text style={styles.macroGoal}> {' '}{t("nutrition.noMacroTarget")}</Text>
               </Text>
             </View>
             <ProgressBar
-              progress={nutritionData.fat.current / nutritionData.fat.goal}
+              progress={0}
               color={nutritionData.fat.color}
               trackColor={Colors.orangeLight}
               height={8}
@@ -147,8 +163,8 @@ export default function NutritionScreen() {
 
         {/* Meals Section */}
         <SectionHeader
-          title="Today's Meals"
-          actionText="+ Quick Add"
+          title={t("nutrition.mealsToday")}
+          actionText={t("nutrition.quickAdd")}
           onAction={handleAddMeal}
         />
 
@@ -175,7 +191,7 @@ export default function NutritionScreen() {
                     <View>
                       <Text style={styles.mealTitle}>{meal.type}</Text>
                       <Text style={styles.mealTime}>
-                        {isLogged ? meal.time : 'Scheduled'}
+                        {isLogged ? meal.time : t("nutrition.scheduled")}
                       </Text>
                     </View>
                   </View>
@@ -193,7 +209,7 @@ export default function NutritionScreen() {
                         activeOpacity={0.7}
                       >
                         <Ionicons name="add" size={14} color={Colors.primary} />
-                        <Text style={styles.logNowText}>Log</Text>
+                        <Text style={styles.logNowText}>{t("nutrition.log")}</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -218,7 +234,7 @@ export default function NutritionScreen() {
                 ) : (
                   <View style={styles.unloggedContainer}>
                     <Ionicons name="time-outline" size={16} color={Colors.textMuted} />
-                    <Text style={styles.unloggedText}>Not yet logged</Text>
+                    <Text style={styles.unloggedText}>{t("nutrition.notLogged")}</Text>
                   </View>
                 )}
               </View>
@@ -229,7 +245,7 @@ export default function NutritionScreen() {
         {/* Bottom Action Button */}
         <View style={styles.actionContainer}>
           <PrimaryButton
-            title="Add Meal"
+            title={t("meals.add")}
             onPress={handleAddMeal}
             style={styles.addButton}
           />

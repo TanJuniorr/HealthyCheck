@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { localizeStaticData } from '../src/i18n/localize';
 import React, { useState } from 'react';
 import {
   View,
@@ -27,28 +29,31 @@ interface DataCategory {
   enabled: boolean;
 }
 
-const PRIVACY_LEVELS = [
+const rawPRIVACY_LEVELS = [
   {
     id: 'specific',
-    title: 'Specific People',
-    description: 'Only individuals you explicitly invite can view selected categories.',
+    title: "sharing.specific",
+    description: "sharing.specificHint",
     icon: 'lock-closed-outline',
   },
   {
     id: 'family',
-    title: 'Family & Friends',
-    description: 'Connected family circle can view high-level summaries and streaks.',
+    title: "sharing.family",
+    description: "sharing.familyHint",
     icon: 'people-outline',
   },
   {
     id: 'community',
-    title: 'Community',
-    description: 'Contribute anonymized statistics to group wellness challenges.',
+    title: "sharing.community",
+    description: "sharing.communityHint",
     icon: 'globe-outline',
   },
 ];
 
 export default function SharingSetupScreen() {
+  const { t } = useTranslation();
+  const PRIVACY_LEVELS = localizeStaticData(rawPRIVACY_LEVELS);
+
   const router = useRouter();
 
   const [recipient, setRecipient] = useState('');
@@ -57,8 +62,8 @@ export default function SharingSetupScreen() {
   const [categories, setCategories] = useState<DataCategory[]>([
     {
       id: 'steps',
-      name: 'Steps & Activity',
-      description: 'Daily step count, distance, active minutes',
+      name: 'sharing.steps',
+      description: 'sharing.stepsHint',
       icon: 'walk-outline',
       color: Colors.primary,
       bgColor: Colors.primaryLight,
@@ -66,8 +71,8 @@ export default function SharingSetupScreen() {
     },
     {
       id: 'sleep',
-      name: 'Sleep Quality',
-      description: 'Sleep duration, sleep score, and phases',
+      name: 'sharing.sleep',
+      description: 'sharing.sleepHint',
       icon: 'moon-outline',
       color: Colors.purple,
       bgColor: Colors.purpleLight,
@@ -75,8 +80,8 @@ export default function SharingSetupScreen() {
     },
     {
       id: 'nutrition',
-      name: 'Nutrition & Calories',
-      description: 'Calorie summary and macronutrient totals',
+      name: 'sharing.nutrition',
+      description: 'sharing.nutritionHint',
       icon: 'restaurant-outline',
       color: Colors.orange,
       bgColor: Colors.orangeLight,
@@ -84,8 +89,8 @@ export default function SharingSetupScreen() {
     },
     {
       id: 'heart',
-      name: 'Heart Rate',
-      description: 'Resting BPM and daily heart rate trends',
+      name: 'health.heart',
+      description: 'sharing.heartHint',
       icon: 'heart-outline',
       color: Colors.coral,
       bgColor: Colors.coralLight,
@@ -93,8 +98,8 @@ export default function SharingSetupScreen() {
     },
     {
       id: 'cycle',
-      name: 'Cycle Tracking',
-      description: 'Cycle day, phase, and logged symptoms',
+      name: 'health.cycleTracking',
+      description: 'sharing.cycleHint',
       icon: 'flower-outline',
       color: Colors.coral,
       bgColor: Colors.coralLight,
@@ -114,15 +119,15 @@ export default function SharingSetupScreen() {
   const handleStartSharing = () => {
     const activeCount = categories.filter((c) => c.enabled).length;
     Alert.alert(
-      'Sharing Invitation Created',
-      `You have invited ${recipient || 'your contact'} to view ${activeCount} health categories. Access can be revoked anytime.`,
-      [{ text: 'Done', onPress: () => router.back() }]
+      t("sharing.invitation"),
+      t('sharing.invited',{recipient:recipient || t('sharing.contact'),count:activeCount}),
+      [{ text: t("common.done"), onPress: () => router.back() }]
     );
   };
 
   return (
     <View style={styles.container}>
-      <AppHeader title="Sharing Setup" showBack />
+      <AppHeader title={t("sharing.setup")} showBack />
 
       <ScreenContainer>
         {/* Intro Card */}
@@ -131,19 +136,18 @@ export default function SharingSetupScreen() {
             <Ionicons name="share-social" size={24} color={Colors.primary} />
           </View>
           <View style={styles.introTextWrapper}>
-            <Text style={styles.introTitle}>Share Your Health Journey</Text>
+            <Text style={styles.introTitle}>{t("sharing.journey")}</Text>
             <Text style={styles.introDescription}>
-              Easily share vitals and wellness milestones with your doctor, coach, or loved ones.
-            </Text>
+              {t("sharing.journeyHint")}</Text>
           </View>
         </View>
 
         {/* Invite Recipient Section */}
-        <SectionHeader title="Invite Recipient" />
+        <SectionHeader title={t("sharing.invite")} />
         <View style={styles.card}>
           <AppTextInput
-            label="Recipient Email or Name"
-            placeholder="doctor@clinic.com or family member"
+            label={t("sharing.recipient")}
+            placeholder={t("sharing.recipientPlaceholder")}
             value={recipient}
             onChangeText={setRecipient}
             keyboardType="email-address"
@@ -154,7 +158,7 @@ export default function SharingSetupScreen() {
         </View>
 
         {/* Privacy Level Selector */}
-        <SectionHeader title="Privacy Level" />
+        <SectionHeader title={t("sharing.privacyLevel")} />
         <View style={styles.privacyContainer}>
           {PRIVACY_LEVELS.map((level) => {
             const isSelected = privacyLevel === level.id;
@@ -194,7 +198,7 @@ export default function SharingSetupScreen() {
         </View>
 
         {/* Data Categories with Toggles */}
-        <SectionHeader title="Data Categories to Share" />
+        <SectionHeader title={t("sharing.categories")} />
         <View style={styles.card}>
           {categories.map((cat, idx) => {
             const isLast = idx === categories.length - 1;
@@ -208,8 +212,8 @@ export default function SharingSetupScreen() {
                 </View>
 
                 <View style={styles.categoryInfo}>
-                  <Text style={styles.categoryName}>{cat.name}</Text>
-                  <Text style={styles.categoryDesc}>{cat.description}</Text>
+                  <Text style={styles.categoryName}>{t(cat.name)}</Text>
+                  <Text style={styles.categoryDesc}>{t(cat.description)}</Text>
                 </View>
 
                 <Switch
@@ -224,14 +228,13 @@ export default function SharingSetupScreen() {
         </View>
 
         {/* Notification Preferences */}
-        <SectionHeader title="Notification Preferences" />
+        <SectionHeader title={t("sharing.notificationPreferences")} />
         <View style={styles.card}>
           <View style={styles.prefRow}>
             <View style={styles.prefTextWrapper}>
-              <Text style={styles.prefTitle}>Notify when viewed</Text>
+              <Text style={styles.prefTitle}>{t("sharing.viewed")}</Text>
               <Text style={styles.prefDescription}>
-                Receive a notification when recipient checks your health data
-              </Text>
+                {t("sharing.viewedHint")}</Text>
             </View>
             <Switch
               value={notifyOnView}
@@ -243,10 +246,9 @@ export default function SharingSetupScreen() {
 
           <View style={[styles.prefRow, styles.categoryRowLast]}>
             <View style={styles.prefTextWrapper}>
-              <Text style={styles.prefTitle}>Weekly summary digest</Text>
+              <Text style={styles.prefTitle}>{t("sharing.weeklyDigest")}</Text>
               <Text style={styles.prefDescription}>
-                Send an automated weekly health report via email
-              </Text>
+                {t("sharing.weeklyDigestHint")}</Text>
             </View>
             <Switch
               value={weeklyDigest}
@@ -260,7 +262,7 @@ export default function SharingSetupScreen() {
         {/* Start Sharing CTA Button */}
         <View style={styles.actionContainer}>
           <PrimaryButton
-            title="Start Sharing"
+            title={t("sharing.start")}
             onPress={handleStartSharing}
             style={styles.submitButton}
           />
@@ -270,9 +272,7 @@ export default function SharingSetupScreen() {
         <View style={styles.privacyNoticeContainer}>
           <Ionicons name="shield-checkmark-outline" size={18} color={Colors.primary} />
           <Text style={styles.privacyNoticeText}>
-            Your health data is end-to-end encrypted. You can pause or revoke access at any time
-            from your settings.
-          </Text>
+            {t("sharing.encryptionHint")}</Text>
         </View>
       </ScreenContainer>
     </View>

@@ -1,6 +1,7 @@
+import { useTranslation } from 'react-i18next';
+import { formatNumber,formatDate,formatDuration } from '../../src/i18n/formatting';
+import { localizeStaticData } from '../../src/i18n/localize';
 import React from 'react';
-import { useEffect } from "react";
-import { fetchFoods } from "../../src/lib/healthData";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,23 +14,39 @@ import { HealthMetricCard, StatPill } from '../../src/components/health/HealthCo
 import { SectionHeader } from '../../src/components/common/AppHeader';
 import { ArticleCard } from '../../src/components/articles/ArticleCard';
 import { MockAvatar } from '../../src/components/common/MockAvatar';
-import { healthScore, dailyHighlights, weeklyStats, recentActivity } from '../../src/data/health';
-import { featuredArticle } from '../../src/data/articles';
-import { mockUser } from '../../src/data/user';
+import { dailyHighlights as rawHighlightDefinitions } from '../../src/data/health';
+import { featuredArticle as rawFeaturedArticle } from '../../src/data/articles';
+import { useAuth } from '../../src/contexts/AuthContext';
+import { useWeeklyOverview } from '../../src/hooks/healthHooks';
+import { toLocalDateKey } from '../../src/lib/dateUtils';
+import { DataFeedback } from '../../src/components/common/DataFeedback';
+import { displayName, initials } from '../../src/lib/profileRepository';
 
 export default function OverviewScreen() {
+  const { t } = useTranslation();
+  const highlightDefinitions = localizeStaticData(rawHighlightDefinitions);
+  const featuredArticle = localizeStaticData(rawFeaturedArticle);
+
   const router = useRouter();
+  const { user, profile } = useAuth();
+  const hasName = Boolean(profile?.full_name?.trim() || (typeof user?.user_metadata.full_name === 'string' && user.user_metadata.full_name.trim()));
+  const name = hasName ? displayName(user,profile) : t('profile.member');
   const insets = useSafeAreaInsets();
-  useEffect(() => {
-  fetchFoods()
-    .then((foods) => {
-      console.log("FOODS FROM SUPABASE:", foods.length);
-      console.log("FOOD DATA:", foods);
-    })
-    .catch((error) => {
-      console.error("FOODS LOAD ERROR:", error);
-    });
-}, []);
+  const today = toLocalDateKey();
+  const week = useWeeklyOverview(today); const query = week; const summary = week.data?.find(day => day.date === today) ?? null;
+  const healthScore = { score:'—',maxScore:100,status:t("common.notAvailable"),description:t("overview.scoreUnavailable") };
+  const dailyHighlights = highlightDefinitions.map(item => ({ ...item,value:item.id === 'steps' ? summary ? formatNumber(summary.steps.total) : '—' : item.id === 'sleep' ? summary?.sleep.minutes != null ? formatDuration(summary.sleep.minutes) : '—' : item.id === 'nutrition' ? summary ? formatNumber(summary.nutrition.calories,0) : '—' : t("common.comingSoon"),unit:item.id === 'cycle' ? '' : item.unit }));
+  const weeklyStats = [
+    { label:t("overview.totalSteps"),value:week.data ? formatNumber(week.data.reduce((sum,day) => sum + day.steps.total,0)) : '—',icon:'footsteps-outline' },
+    { label:t("overview.caloriesEaten"),value:week.data ? formatNumber(week.data.reduce((sum,day) => sum + day.nutrition.calories,0),0)+' kcal' : '—',icon:'restaurant-outline' },
+    { label:t("health.water"),value:week.data ? formatNumber((week.data.reduce((sum,day) => sum + day.water.totalMl,0)/1000),1)+' L' : '—',icon:'water-outline' },
+    { label:t("overview.recordedSleep"),value:week.data ? t('units.hourValue',{value:formatNumber((week.data.reduce((sum,day) => sum + (day.sleep.minutes ?? 0),0)/60),1)}) : '—',icon:'moon-outline' },
+  ];
+  const recentActivity = summary ? [
+    { id:'steps',title:t("overview.recordedSteps"),subtitle:summary.steps.hasRecords ? t('units.stepCount',{count:summary.steps.total,value:formatNumber(summary.steps.total)}) : t("common.noRecords"),time:t("period.today"),icon:'walk-outline',color:Colors.primary },
+    { id:'water',title:t("overview.waterIntake"),subtitle:summary.water.hasRecords ? `${formatNumber(summary.water.totalMl)} ml` : t("common.noRecords"),time:t("period.today"),icon:'water-outline',color:Colors.blue },
+    { id:'sleep',title:t("overview.sleepSessions"),subtitle:summary.sleep.minutes === null ? t("common.noRecords") : t('units.minuteCount',{count:Math.round(summary.sleep.minutes),value:formatNumber(Math.round(summary.sleep.minutes))}),time:t("period.today"),icon:'moon-outline',color:Colors.purple },
+  ] : [];
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <ScrollView
@@ -42,32 +59,33 @@ export default function OverviewScreen() {
         {/* 1. Top Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.dateLabel}>Monday, Oct 26</Text>
-            <Text style={styles.greetingTitle}>Good morning, {mockUser.name}</Text>
+            <Text style={styles.dateLabel}>{formatDate(new Date())}</Text>
+            <Text style={styles.greetingTitle}>{t('overview.greeting',{name})}</Text>
           </View>
           <TouchableOpacity
             style={styles.avatarButton}
             onPress={() => router.push('/profile' as any)}
             activeOpacity={0.8}
-            accessibilityLabel="View profile"
+            accessibilityLabel={t("overview.viewProfile")}
           >
-            <MockAvatar initials={mockUser.avatarInitials} size={44} />
+            <MockAvatar initials={initials(name)} size={44} />
           </TouchableOpacity>
         </View>
 
+        <DataFeedback {...query} />
         {/* 2. Health Score Card */}
         <View style={styles.scoreCard}>
           <View style={styles.scoreCardContent}>
             <View style={styles.ringWrapper}>
               <ProgressRing
-                progress={healthScore.score / healthScore.maxScore}
+                progress={0}
                 size={118}
                 strokeWidth={10}
                 color={Colors.primary}
                 trackColor="rgba(14, 165, 164, 0.16)"
               >
                 <Text style={styles.scoreValue}>{healthScore.score}</Text>
-                <Text style={styles.scoreInnerLabel}>Health Score</Text>
+                <Text style={styles.scoreInnerLabel}>{t("overview.healthScore")}</Text>
               </ProgressRing>
             </View>
 
@@ -82,7 +100,7 @@ export default function OverviewScreen() {
         </View>
 
         {/* 3. Daily Highlights (2x2 grid) */}
-        <SectionHeader title="Daily Highlights" />
+        <SectionHeader title={t("overview.highlights")} />
         <View style={styles.highlightsGrid}>
           {dailyHighlights.map((item) => (
             <View key={item.id} style={styles.gridCol}>
@@ -100,7 +118,7 @@ export default function OverviewScreen() {
         </View>
 
         {/* 4. Weekly Summary Section */}
-        <SectionHeader title="This Week" />
+        <SectionHeader title={t("period.thisWeek")} />
         <View style={styles.weeklyGrid}>
           {weeklyStats.map((item, index) => (
             <View key={index} style={styles.gridCol}>
@@ -110,7 +128,7 @@ export default function OverviewScreen() {
         </View>
 
         {/* 5. Recent Activity Section */}
-        <SectionHeader title="Recent Activity" />
+        <SectionHeader title={t("overview.recordedToday")} />
         <View style={styles.activityContainer}>
           {recentActivity.map((activity, index) => (
             <View
@@ -141,8 +159,8 @@ export default function OverviewScreen() {
 
         {/* 6. Health Tip Section */}
         <SectionHeader
-          title="For You"
-          actionText="See all"
+          title={t("overview.forYou")}
+          actionText={t("overview.seeAll")}
           onAction={() => router.push('/explore' as any)}
         />
         <ArticleCard

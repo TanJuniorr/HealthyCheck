@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
-import { supabase } from '../src/lib/supabase';
+import { useTranslation } from 'react-i18next';
+import { localizeMessage } from '../src/i18n/localize';
+import { LanguageSelector } from '../src/components/common/LanguageSelector';
+import React, { useRef, useState } from 'react';
+import { useAuth } from '../src/contexts/AuthContext';
+import { authErrorMessage, isValidEmail } from '../src/lib/authErrors';
 import {
   View,
   Text,
@@ -19,7 +23,11 @@ import { AppTextInput } from '../src/components/common/AppTextInput';
 import { PrimaryButton } from '../src/components/common/Buttons';
 
 export default function LoginScreen() {
+  const { t } = useTranslation();
+
   const router = useRouter();
+  const { signIn, initializationError } = useAuth();
+  const submittingRef = useRef(false);
   const insets = useSafeAreaInsets();
 
   const [email, setEmail] = useState('');
@@ -28,57 +36,18 @@ export default function LoginScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSignIn = async () => {
-    if (isSubmitting) return;
-
+    if (submittingRef.current) return;
     const normalizedEmail = email.trim().toLowerCase();
-
-    if (!normalizedEmail || !password) {
-      setFeedback('Vui lòng nhập email và mật khẩu.');
+    setFeedback('');
+    if (!isValidEmail(normalizedEmail) || !password) {
+      setFeedback("validation.login");
       return;
     }
-
-    setFeedback('');
+    submittingRef.current = true;
     setIsSubmitting(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password,
-      });
-
-      if (error) {
-        const lowerMessage = error.message.toLowerCase();
-        if (lowerMessage.includes('email not confirmed')) {
-          setFeedback('Email của tài khoản chưa được xác nhận. Hãy kiểm tra hộp thư đến.');
-        } else if (
-          lowerMessage.includes('invalid login credentials') ||
-          lowerMessage.includes('invalid_credentials')
-        ) {
-          setFeedback('Email hoặc mật khẩu không đúng. Hãy kiểm tra lại thông tin.');
-        } else if (
-          lowerMessage.includes('too many requests') ||
-          lowerMessage.includes('rate limit')
-        ) {
-          setFeedback('Bạn đã thử đăng nhập quá nhiều lần. Hãy chờ một lúc rồi thử lại.');
-        } else {
-          setFeedback(`Đăng nhập thất bại: ${error.message}`);
-        }
-        return;
-      }
-
-      // Supabase has established the session; go straight to the app.
-      router.replace('/(tabs)');
-    } catch (error: unknown) {
-      const detail = error instanceof Error ? error.message : 'Lỗi không xác định';
-      setFeedback(`Không thể kết nối Supabase: ${detail}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleSocialLogin = (_provider: string) => {
-    // Visual auth only
-    router.replace('/(tabs)');
+    try { await signIn(normalizedEmail, password); }
+    catch (error) { setFeedback(authErrorMessage(error)); }
+    finally { submittingRef.current = false; setIsSubmitting(false); }
   };
 
   return (
@@ -104,27 +73,27 @@ export default function LoginScreen() {
 
         {/* Header Titles */}
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>Welcome back</Text>
-          <Text style={styles.subtitle}>Sign in to continue your health journey.</Text>
+          <Text style={styles.title}>{t("auth.welcomeBack")}</Text>
+          <Text style={styles.subtitle}>{t("auth.loginDescription")}</Text>
         </View>
 
         {/* Input Form */}
         <View style={styles.formContainer}>
           <AppTextInput
-            label="Email Address"
+            label={t("auth.email")}
             placeholder="name@example.com"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={value => { setEmail(value); setFeedback(''); }}
             keyboardType="email-address"
             autoCapitalize="none"
             leftIcon="mail-outline"
           />
 
           <AppTextInput
-            label="Password"
-            placeholder="Enter your password"
+            label={t("auth.password")}
+            placeholder={t("auth.passwordPlaceholder")}
             value={password}
-            onChangeText={setPassword}
+            onChangeText={value => { setPassword(value); setFeedback(''); }}
             secureTextEntry
             autoCapitalize="none"
             leftIcon="lock-closed-outline"
@@ -136,20 +105,22 @@ export default function LoginScreen() {
             onPress={() => router.push('/forgot-password')}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+            <Text style={styles.forgotPasswordText}>{t("auth.forgotLink")}</Text>
           </TouchableOpacity>
 
           {/* Inline feedback also works on Expo Web; Alert.alert may be invisible there. */}
-          {feedback ? (
+          {feedback || initializationError ? (
             <Text accessibilityRole="alert" style={styles.feedbackText}>
-              {feedback}
+              {localizeMessage(feedback || initializationError)}
             </Text>
           ) : null}
 
           {/* Primary Sign In Button */}
           <PrimaryButton
-            title={isSubmitting ? 'Signing in...' : 'Sign In'}
+            title={isSubmitting ? t("auth.signingIn") : t("auth.signIn")}
             onPress={handleSignIn}
+            loading={isSubmitting}
+            disabled={isSubmitting}
             style={styles.signInButton}
           />
         </View>
@@ -157,51 +128,55 @@ export default function LoginScreen() {
         {/* Divider */}
         <View style={styles.dividerContainer}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>Or continue with</Text>
+          <Text style={styles.dividerText}>{t("auth.socialSoon")}</Text>
           <View style={styles.dividerLine} />
         </View>
 
         {/* Social Login Buttons */}
         <View style={styles.socialContainer}>
           <TouchableOpacity
-            style={styles.socialButton}
-            onPress={() => handleSocialLogin('Google')}
+            style={[styles.socialButton, { opacity: 0.5 }]}
+            disabled
+            accessibilityState={{ disabled: true }}
             activeOpacity={0.7}
-            accessibilityLabel="Sign in with Google"
+            accessibilityLabel={t("auth.google")}
           >
             <Ionicons name="logo-google" size={20} color="#DB4437" />
             <Text style={styles.socialButtonText}>Google</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.socialButton}
-            onPress={() => handleSocialLogin('Apple')}
+            style={[styles.socialButton, { opacity: 0.5 }]}
+            disabled
+            accessibilityState={{ disabled: true }}
             activeOpacity={0.7}
-            accessibilityLabel="Sign in with Apple"
+            accessibilityLabel={t("auth.apple")}
           >
             <Ionicons name="logo-apple" size={20} color={Colors.textPrimary} />
             <Text style={styles.socialButtonText}>Apple</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.socialButton}
-            onPress={() => handleSocialLogin('Facebook')}
+            style={[styles.socialButton, { opacity: 0.5 }]}
+            disabled
+            accessibilityState={{ disabled: true }}
             activeOpacity={0.7}
-            accessibilityLabel="Sign in with Facebook"
+            accessibilityLabel={t("auth.facebook")}
           >
             <Ionicons name="logo-facebook" size={20} color="#1877F2" />
             <Text style={styles.socialButtonText}>Facebook</Text>
           </TouchableOpacity>
         </View>
 
+        <LanguageSelector compact />
         {/* Bottom Sign Up Link */}
         <View style={styles.footerContainer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
+          <Text style={styles.footerText}>{t("auth.noAccount")}{' '}</Text>
           <TouchableOpacity
             onPress={() => router.push('/signup')}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={styles.footerLink}>Sign Up</Text>
+            <Text style={styles.footerLink}>{t("auth.signUp")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

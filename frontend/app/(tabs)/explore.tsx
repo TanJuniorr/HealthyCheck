@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { localizeStaticData } from '../../src/i18n/localize';
 import React, { useState } from 'react';
 import {
   View,
@@ -15,9 +17,14 @@ import { Spacing, Radius, Layout } from '../../src/constants/spacing';
 import { CategoryChip } from '../../src/components/health/HealthComponents';
 import { SectionHeader } from '../../src/components/common/AppHeader';
 import { ArticleCard } from '../../src/components/articles/ArticleCard';
-import { articles, featuredArticle, exploreCategories } from '../../src/data/articles';
+import { articles as rawArticles, featuredArticle as rawFeaturedArticle, exploreCategories as rawExploreCategories } from '../../src/data/articles';
 
 export default function ExploreScreen() {
+  const { t } = useTranslation();
+  const articles = localizeStaticData(rawArticles);
+  const featuredArticle = localizeStaticData(rawFeaturedArticle);
+  const exploreCategories = localizeStaticData(rawExploreCategories);
+
   const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,7 +33,7 @@ export default function ExploreScreen() {
   const filteredArticles = articles.filter((item) => {
     const matchesCategory =
       selectedCategory === 'all' ||
-      item.category.toLowerCase() === selectedCategory.toLowerCase();
+      item.categoryId === selectedCategory;
     const matchesSearch =
       searchQuery.trim() === '' ||
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -52,15 +59,15 @@ export default function ExploreScreen() {
       >
         {/* 1. Header with Title & Search Input */}
         <View style={styles.header}>
-          <Text style={styles.screenTitle}>Explore</Text>
-          <Text style={styles.screenSubtitle}>Curated wellness guides and actionable insights</Text>
+          <Text style={styles.screenTitle}>{t("navigation.explore")}</Text>
+          <Text style={styles.screenSubtitle}>{t("explore.description")}</Text>
 
           {/* Search bar */}
           <View style={styles.searchBar}>
             <Ionicons name="search-outline" size={18} color={Colors.textMuted} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search health articles, topics..."
+              placeholder={t("explore.search")}
               placeholderTextColor={Colors.textMuted}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -115,7 +122,7 @@ export default function ExploreScreen() {
           )}
 
           {/* 4. Recent Articles Section */}
-          <SectionHeader title="Recent Articles" />
+          <SectionHeader title={t("explore.recent")} />
 
           {filteredArticles.length > 0 ? (
             <View style={styles.articlesList}>
@@ -136,10 +143,9 @@ export default function ExploreScreen() {
               <View style={styles.emptyIconBg}>
                 <Ionicons name="document-text-outline" size={28} color={Colors.textMuted} />
               </View>
-              <Text style={styles.emptyTitle}>No articles found</Text>
+              <Text style={styles.emptyTitle}>{t("explore.empty")}</Text>
               <Text style={styles.emptyDescription}>
-                Try selecting another category or adjusting your search keywords.
-              </Text>
+                {t("explore.emptyHint")}</Text>
             </View>
           )}
         </View>

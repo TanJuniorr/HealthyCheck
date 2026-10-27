@@ -12,9 +12,9 @@ export const healthScore = {
 export const dailyHighlights = [
   {
     id: 'steps',
-    category: 'Steps',
+    category: "health.steps",
     value: '11,857',
-    unit: 'steps',
+    unit: "units.steps",
     target: '15,000',
     icon: 'walk' as const,
     color: '#0EA5A4',
@@ -23,7 +23,7 @@ export const dailyHighlights = [
   },
   {
     id: 'sleep',
-    category: 'Sleep',
+    category: "health.sleep",
     value: '7h 31m',
     unit: '',
     target: '8h',
@@ -34,7 +34,7 @@ export const dailyHighlights = [
   },
   {
     id: 'nutrition',
-    category: 'Nutrition',
+    category: "health.nutrition",
     value: '960',
     unit: 'kcal',
     target: '1,600 kcal',
@@ -45,7 +45,7 @@ export const dailyHighlights = [
   },
   {
     id: 'cycle',
-    category: 'Cycle',
+    category: "health.cycle",
     value: '12 days',
     unit: 'until next period',
     target: '',
@@ -57,9 +57,9 @@ export const dailyHighlights = [
 ];
 
 export const weeklyStats = [
-  { label: 'Total Steps', value: '72,340', icon: 'footsteps-outline' },
+  { label: "overview.totalSteps", value: '72,340', icon: 'footsteps-outline' },
   { label: 'Workouts', value: '4h 20m', icon: 'barbell-outline' },
-  { label: 'Water', value: '14.5 L', icon: 'water-outline' },
+  { label: "health.water", value: '14.5 L', icon: 'water-outline' },
   { label: 'Avg Sleep', value: '7h 15m', icon: 'moon-outline' },
 ];
 
@@ -93,9 +93,9 @@ export const recentActivity = [
 export const healthMetrics = [
   {
     id: 'steps',
-    name: 'Steps',
+    name: "health.steps",
     value: '11,857',
-    unit: 'steps',
+    unit: "units.steps",
     icon: 'walk-outline',
     color: '#0EA5A4',
     bgColor: '#EAF8F7',
@@ -103,7 +103,7 @@ export const healthMetrics = [
   },
   {
     id: 'sleep',
-    name: 'Sleep',
+    name: "health.sleep",
     value: '7h 31m',
     unit: '',
     icon: 'moon-outline',
@@ -113,7 +113,7 @@ export const healthMetrics = [
   },
   {
     id: 'heart',
-    name: 'Heart Rate',
+    name: "health.heart",
     value: '72',
     unit: 'bpm',
     icon: 'heart-outline',
@@ -123,7 +123,7 @@ export const healthMetrics = [
   },
   {
     id: 'calories',
-    name: 'Calories Burned',
+    name: 'calories.burned',
     value: '487',
     unit: 'kcal',
     icon: 'flame-outline',
@@ -143,9 +143,9 @@ export const healthMetrics = [
   },
   {
     id: 'nutrition',
-    name: 'Nutrition',
+    name: "health.nutrition",
     value: '960',
-    unit: 'kcal eaten',
+    unit: 'units.caloriesEaten',
     icon: 'restaurant-outline',
     color: '#F4A261',
     bgColor: '#FFF2E6',
@@ -153,7 +153,7 @@ export const healthMetrics = [
   },
   {
     id: 'cycle',
-    name: 'Cycle Tracking',
+    name: "health.cycleTracking",
     value: '12 days',
     unit: 'until next',
     icon: 'flower-outline',
@@ -163,7 +163,7 @@ export const healthMetrics = [
   },
   {
     id: 'double-support',
-    name: 'Double Support Time',
+    name: "health.doubleSupport",
     value: '28.4',
     unit: '%',
     icon: 'accessibility-outline',

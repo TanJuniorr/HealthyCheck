@@ -13,13 +13,13 @@ export const stepsData = {
 };
 
 export const stepsWeekly = [
-  { day: 'Mon', steps: 12340, goal: 15000 },
-  { day: 'Tue', steps: 9870, goal: 15000 },
-  { day: 'Wed', steps: 14200, goal: 15000 },
-  { day: 'Thu', steps: 11050, goal: 15000 },
-  { day: 'Fri', steps: 13500, goal: 15000 },
-  { day: 'Sat', steps: 8600, goal: 15000 },
-  { day: 'Sun', steps: 11857, goal: 15000 },
+  { day: "weekday.mon", steps: 12340, goal: 15000 },
+  { day: "weekday.tue", steps: 9870, goal: 15000 },
+  { day: "weekday.wed", steps: 14200, goal: 15000 },
+  { day: "weekday.thu", steps: 11050, goal: 15000 },
+  { day: "weekday.fri", steps: 13500, goal: 15000 },
+  { day: "weekday.sat", steps: 8600, goal: 15000 },
+  { day: "weekday.sun", steps: 11857, goal: 15000 },
 ];
 
 export const stepsHourly = [

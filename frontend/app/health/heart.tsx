@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { localizeStaticData } from '../../src/i18n/localize';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,21 +11,25 @@ import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 
-const weeklyHeartData = [
-  { label: 'Mon', value: 68 },
-  { label: 'Tue', value: 72 },
-  { label: 'Wed', value: 70 },
-  { label: 'Thu', value: 75 },
-  { label: 'Fri', value: 69 },
-  { label: 'Sat', value: 82 },
-  { label: 'Sun', value: 72 },
+const rawWeeklyHeartData = [
+  { label: "weekday.mon", value: 68 },
+  { label: "weekday.tue", value: 72 },
+  { label: "weekday.wed", value: 70 },
+  { label: "weekday.thu", value: 75 },
+  { label: "weekday.fri", value: 69 },
+  { label: "weekday.sat", value: 82 },
+  { label: "weekday.sun", value: 72 },
 ];
 
 export default function HeartRateScreen() {
+  const { t } = useTranslation();
+  const weeklyHeartData = localizeStaticData(rawWeeklyHeartData);
+
   return (
     <View style={styles.container}>
-      <AppHeader title="Heart Rate" showBack={true} />
+      <AppHeader title={t("health.heart")} showBack={true} />
       <ScreenContainer scrollable={true} padded={true}>
+        <Text style={{ color:Colors.textSecondary,paddingVertical:Spacing.md }}>{t("health.demoNotice")}</Text>
         {/* Main Display Card */}
         <View style={styles.heroCard}>
           <ProgressRing
@@ -43,7 +49,7 @@ export default function HeartRateScreen() {
               </View>
               <View style={styles.statusBadge}>
                 <View style={styles.greenDot} />
-                <Text style={styles.statusText}>Normal</Text>
+                <Text style={styles.statusText}>{t("bmi.normal")}</Text>
               </View>
             </View>
           </ProgressRing>
@@ -52,7 +58,7 @@ export default function HeartRateScreen() {
           <View style={styles.rangeRow}>
             {/* Resting */}
             <View style={styles.rangeItem}>
-              <Text style={styles.rangeLabel}>Resting</Text>
+              <Text style={styles.rangeLabel}>{t("heart.resting")}</Text>
               <Text style={styles.rangeValue}>62 <Text style={styles.rangeUnit}>bpm</Text></Text>
             </View>
 
@@ -60,7 +66,7 @@ export default function HeartRateScreen() {
 
             {/* Average */}
             <View style={styles.rangeItem}>
-              <Text style={styles.rangeLabel}>Average</Text>
+              <Text style={styles.rangeLabel}>{t("heart.average")}</Text>
               <Text style={styles.rangeValue}>72 <Text style={styles.rangeUnit}>bpm</Text></Text>
             </View>
 
@@ -68,7 +74,7 @@ export default function HeartRateScreen() {
 
             {/* Peak */}
             <View style={styles.rangeItem}>
-              <Text style={styles.rangeLabel}>Peak</Text>
+              <Text style={styles.rangeLabel}>{t("heart.peak")}</Text>
               <Text style={[styles.rangeValue, { color: Colors.coral }]}>
                 145 <Text style={styles.rangeUnit}>bpm</Text>
               </Text>
@@ -80,12 +86,12 @@ export default function HeartRateScreen() {
         <View style={styles.sectionCard}>
           <View style={styles.chartHeader}>
             <View>
-              <Text style={styles.cardTitle}>7-Day Heart Rate Trend</Text>
-              <Text style={styles.cardSubtitle}>Resting & daily average values</Text>
+              <Text style={styles.cardTitle}>{t("heart.trend")}</Text>
+              <Text style={styles.cardSubtitle}>{t("heart.trendHint")}</Text>
             </View>
             <View style={styles.trendBadge}>
               <Ionicons name="pulse" size={14} color={Colors.coral} />
-              <Text style={styles.trendBadgeText}>Avg 72</Text>
+              <Text style={styles.trendBadgeText}>{t("heart.averageDemo")}</Text>
             </View>
           </View>
 
@@ -103,15 +109,15 @@ export default function HeartRateScreen() {
 
         {/* Heart Rate Zones Reference */}
         <View style={styles.sectionCard}>
-          <Text style={styles.cardTitle}>Heart Rate Zones</Text>
-          <Text style={styles.cardSubtitle}>Based on age and resting heart rate</Text>
+          <Text style={styles.cardTitle}>{t("heart.zones")}</Text>
+          <Text style={styles.cardSubtitle}>{t("heart.zonesHint")}</Text>
 
           <View style={styles.zonesList}>
             <View style={styles.zoneRow}>
               <View style={[styles.zoneIndicator, { backgroundColor: Colors.success }]} />
               <View style={styles.zoneInfo}>
-                <Text style={styles.zoneName}>Resting Zone</Text>
-                <Text style={styles.zoneDesc}>Normal rhythm while at rest</Text>
+                <Text style={styles.zoneName}>{t("heart.restingZone")}</Text>
+                <Text style={styles.zoneDesc}>{t("heart.restingDescription")}</Text>
               </View>
               <Text style={styles.zoneRange}>60 - 75 bpm</Text>
             </View>
@@ -119,8 +125,8 @@ export default function HeartRateScreen() {
             <View style={styles.zoneRow}>
               <View style={[styles.zoneIndicator, { backgroundColor: Colors.blue }]} />
               <View style={styles.zoneInfo}>
-                <Text style={styles.zoneName}>Moderate / Fat Burn</Text>
-                <Text style={styles.zoneDesc}>Brisk walking & light aerobic</Text>
+                <Text style={styles.zoneName}>{t("heart.moderate")}</Text>
+                <Text style={styles.zoneDesc}>{t("heart.moderateDescription")}</Text>
               </View>
               <Text style={styles.zoneRange}>95 - 125 bpm</Text>
             </View>
@@ -128,8 +134,8 @@ export default function HeartRateScreen() {
             <View style={styles.zoneRow}>
               <View style={[styles.zoneIndicator, { backgroundColor: Colors.coral }]} />
               <View style={styles.zoneInfo}>
-                <Text style={styles.zoneName}>Cardio / Peak</Text>
-                <Text style={styles.zoneDesc}>Running & high-intensity exercise</Text>
+                <Text style={styles.zoneName}>{t("heart.cardio")}</Text>
+                <Text style={styles.zoneDesc}>{t("heart.cardioDescription")}</Text>
               </View>
               <Text style={styles.zoneRange}>126 - 165 bpm</Text>
             </View>
@@ -145,8 +151,7 @@ export default function HeartRateScreen() {
             style={styles.infoIcon}
           />
           <Text style={styles.infoText}>
-            Heart rate data shown is for demonstration purposes only.
-          </Text>
+            {t("heart.demo")}</Text>
         </View>
       </ScreenContainer>
     </View>

@@ -198,6 +198,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   valueRow: {
+    flexWrap:'wrap',
     flexDirection: 'row',
     alignItems: 'baseline',
   },
@@ -254,6 +255,8 @@ const styles = StyleSheet.create({
   },
   pillText: {
     gap: 1,
+    flex:1,
+    minWidth:0,
   },
   pillValue: {
     ...Typography.label,
@@ -288,20 +291,28 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.divider,
   },
   settingsLeft: {
+    flex:1,
+    minWidth:0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
   },
   settingsRight: {
+    flexShrink:1,
+    maxWidth:'45%',
+    marginLeft:Spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
   },
   settingsTitle: {
+    flexShrink:1,
     ...Typography.body,
     color: Colors.textPrimary,
   },
   settingsValue: {
+    flexShrink:1,
+    textAlign:'right',
     ...Typography.supporting,
     color: Colors.textMuted,
   },

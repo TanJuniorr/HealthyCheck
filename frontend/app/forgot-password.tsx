@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { localizeMessage } from '../src/i18n/localize';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -13,27 +15,42 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
 import { Typography } from '../src/constants/typography';
-import { Spacing, Radius } from '../src/constants/spacing';
+import { Spacing } from '../src/constants/spacing';
 import { AppHeader } from '../src/components/common/AppHeader';
 import { AppTextInput } from '../src/components/common/AppTextInput';
 import { PrimaryButton } from '../src/components/common/Buttons';
-import { mockUser } from '../src/data/user';
+import { sendRecoveryEmail } from '../src/lib/authRecovery';
+import { authErrorMessage, isValidEmail } from '../src/lib/authErrors';
 
 export default function ForgotPasswordScreen() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const [email, setEmail] = useState(mockUser.email);
+  const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSendResetLink = () => {
-    // Visual feedback only
-    setIsSubmitted(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState('');
+  const submittingRef = useRef(false);
+  const handleSendResetLink = async () => {
+    if (submittingRef.current) return;
+    const normalizedEmail = email.trim().toLowerCase();
+    setFeedback('');
+    if (!isValidEmail(normalizedEmail)) { setFeedback("validation.email"); return; }
+    submittingRef.current = true; setIsSubmitting(true);
+    try {
+      await sendRecoveryEmail(normalizedEmail);
+      setEmail(normalizedEmail);
+      setIsSubmitted(true);
+    } catch (error) { setFeedback(authErrorMessage(error)); }
+    finally { submittingRef.current = false; setIsSubmitting(false); }
   };
 
   return (
     <View style={styles.screen}>
-      <AppHeader title="Forgot Password" showBack />
+      <AppHeader title={t("auth.forgot")} showBack />
 
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
@@ -47,6 +64,7 @@ export default function ForgotPasswordScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {feedback ? <Text accessibilityRole="alert" style={{ ...Typography.body, color: Colors.error, marginBottom: Spacing.md }}>{localizeMessage(feedback)}</Text> : null}
           {isSubmitted ? (
             /* Success confirmation state */
             <View style={styles.successContainer}>
@@ -54,25 +72,24 @@ export default function ForgotPasswordScreen() {
                 <Ionicons name="mail-open-outline" size={44} color={Colors.primary} />
               </View>
 
-              <Text style={styles.title}>Check your email</Text>
+              <Text style={styles.title}>{t("auth.checkEmail")}</Text>
               <Text style={styles.subtitle}>
-                We've sent a password reset link to{' '}
-                <Text style={styles.emailHighlight}>{email || 'your email'}</Text>. Please follow
-                the instructions in the email to reset your password.
+                {t('auth.recoveryConfirmation',{ email:email || t('auth.yourEmail') })}
               </Text>
 
               <PrimaryButton
-                title="Back to Sign In"
+                title={t("auth.backToLogin")}
                 onPress={() => router.push('/login')}
                 style={styles.primaryActionButton}
               />
 
               <TouchableOpacity
                 style={styles.resendButton}
-                onPress={() => setIsSubmitted(false)}
+                onPress={handleSendResetLink}
+                disabled={isSubmitting}
                 activeOpacity={0.7}
               >
-                <Text style={styles.resendText}>Didn't receive an email? Try again</Text>
+                <Text style={styles.resendText}>{isSubmitting ? t("auth.sending") : t("auth.resend")}</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -87,16 +104,14 @@ export default function ForgotPasswordScreen() {
 
               {/* Title & instructions */}
               <View style={styles.headerContainer}>
-                <Text style={styles.title}>Reset your password</Text>
+                <Text style={styles.title}>{t("auth.resetTitle")}</Text>
                 <Text style={styles.subtitle}>
-                  Enter the email associated with your account and we'll send you instructions to
-                  reset your password.
-                </Text>
+                  {t("auth.resetDescription")}</Text>
               </View>
 
               {/* Email Input */}
               <AppTextInput
-                label="Email Address"
+                label={t("auth.email")}
                 placeholder="name@example.com"
                 value={email}
                 onChangeText={setEmail}
@@ -107,7 +122,8 @@ export default function ForgotPasswordScreen() {
 
               {/* Action Button */}
               <PrimaryButton
-                title="Send Reset Link"
+                title={isSubmitting ? t("auth.sending") : t("auth.sendLink")}
+                loading={isSubmitting}
                 onPress={handleSendResetLink}
                 style={styles.primaryActionButton}
               />
@@ -120,7 +136,7 @@ export default function ForgotPasswordScreen() {
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                   <Ionicons name="arrow-back" size={16} color={Colors.textSecondary} />
-                  <Text style={styles.footerLink}>Back to Sign In</Text>
+                  <Text style={styles.footerLink}>{t("auth.backToLogin")}</Text>
                 </TouchableOpacity>
               </View>
             </View>
