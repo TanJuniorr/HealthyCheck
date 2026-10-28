@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { formatNumber,formatDate,formatDuration } from '../../src/i18n/formatting';
 import { localizeStaticData } from '../../src/i18n/localize';
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,7 +20,9 @@ import { useAuth } from '../../src/contexts/AuthContext';
 import { useWeeklyOverview } from '../../src/hooks/healthHooks';
 import { toLocalDateKey } from '../../src/lib/dateUtils';
 import { DataFeedback } from '../../src/components/common/DataFeedback';
-import { displayName, initials } from '../../src/lib/profileRepository';
+import { displayName, initials, profileText } from '../../src/lib/profileRepository';
+import { useHealthQuery } from '../../src/hooks/useHealthQuery';
+import { createAvatarSignedUrl } from '../../src/services/avatarService';
 
 export default function OverviewScreen() {
   const { t } = useTranslation();
@@ -29,6 +31,12 @@ export default function OverviewScreen() {
 
   const router = useRouter();
   const { user, profile } = useAuth();
+  const avatarPath = profileText(profile,'avatar_url');
+  const avatarQuery = useHealthQuery(async () => {
+    if (!avatarPath) return null;
+    return /^https:\/\//i.test(avatarPath) ? avatarPath : createAvatarSignedUrl(avatarPath);
+  },'overview-avatar:'+String(user?.id ?? 'signed-out')+':'+String(avatarPath ?? 'none'));
+  const [failedAvatarUrl,setFailedAvatarUrl] = useState<string | null>(null);
   const hasName = Boolean(profile?.full_name?.trim() || (typeof user?.user_metadata.full_name === 'string' && user.user_metadata.full_name.trim()));
   const name = hasName ? displayName(user,profile) : t('profile.member');
   const insets = useSafeAreaInsets();
@@ -45,7 +53,7 @@ export default function OverviewScreen() {
   const recentActivity = summary ? [
     { id:'steps',title:t("overview.recordedSteps"),subtitle:summary.steps.hasRecords ? t('units.stepCount',{count:summary.steps.total,value:formatNumber(summary.steps.total)}) : t("common.noRecords"),time:t("period.today"),icon:'walk-outline',color:Colors.primary },
     { id:'water',title:t("overview.waterIntake"),subtitle:summary.water.hasRecords ? `${formatNumber(summary.water.totalMl)} ml` : t("common.noRecords"),time:t("period.today"),icon:'water-outline',color:Colors.blue },
-    { id:'sleep',title:t("overview.sleepSessions"),subtitle:summary.sleep.minutes === null ? t("common.noRecords") : t('units.minuteCount',{count:Math.round(summary.sleep.minutes),value:formatNumber(Math.round(summary.sleep.minutes))}),time:t("period.today"),icon:'moon-outline',color:Colors.purple },
+    { id:'sleep',title:t("overview.sleepSessions"),subtitle:summary.sleep.minutes === null ? t("common.noRecords") : formatDuration(summary.sleep.minutes),time:'',icon:'moon-outline',color:Colors.purple },
   ] : [];
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -68,7 +76,9 @@ export default function OverviewScreen() {
             activeOpacity={0.8}
             accessibilityLabel={t("overview.viewProfile")}
           >
-            <MockAvatar initials={initials(name)} size={44} />
+            {avatarQuery.data && failedAvatarUrl !== avatarQuery.data ? (
+              <Image source={{ uri:avatarQuery.data }} style={{ width:44,height:44,borderRadius:22 }} onError={() => setFailedAvatarUrl(avatarQuery.data)} accessibilityLabel={t('profile.avatar')} />
+            ) : <MockAvatar initials={initials(name)} size={44} />}
           </TouchableOpacity>
         </View>
 
@@ -152,7 +162,7 @@ export default function OverviewScreen() {
                 <Text style={styles.activitySubtitle}>{activity.subtitle}</Text>
               </View>
 
-              <Text style={styles.activityTime}>{activity.time}</Text>
+              {activity.time ? <Text style={styles.activityTime}>{activity.time}</Text> : null}
             </View>
           ))}
         </View>

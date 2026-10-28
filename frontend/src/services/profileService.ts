@@ -1,12 +1,24 @@
 import { supabase } from '../lib/supabase';
 import type { ProfileRow, ProfileUpdate } from '../types/database';
 import { validateProfile, normalizeRow } from '../lib/dataValidation';
-import { DataAccessError } from '../lib/dataErrors';
-import { columns, queryResult, requireAuthenticatedUser } from './queryCore';
+import { DataAccessError, dataError } from '../lib/dataErrors';
+import { assertIdentity, columns, queryResult, requireAuthenticatedUser } from './queryCore';
 export async function getMyProfile(): Promise<ProfileRow | null> {
  const user = await requireAuthenticatedUser();
- const row = await queryResult(supabase.from('profiles').select(columns.profiles).eq('id', user.id).maybeSingle(), user.id);
- return row ? normalizeRow('profiles',row) : null;
+ let result;
+ try {
+  result = await supabase.from('profiles').select(columns.profiles).eq('id', user.id).maybeSingle();
+ } catch (error) {
+  if (__DEV__) console.warn('[profile] Profile request failed before receiving a response.', error);
+  throw error;
+ }
+ if (result.error) {
+  if (__DEV__) console.warn('[profile] Supabase profile query failed.', { code: result.error.code, message: result.error.message });
+  await assertIdentity(user.id);
+  throw dataError(result.error);
+ }
+ await assertIdentity(user.id);
+ return result.data ? normalizeRow('profiles',result.data) : null;
 }
 export async function updateMyProfile(payload: ProfileUpdate): Promise<ProfileRow> {
  const input = validateProfile(payload); const user = await requireAuthenticatedUser();

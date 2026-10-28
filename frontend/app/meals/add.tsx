@@ -10,7 +10,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/colors';
@@ -20,29 +20,53 @@ import { AppHeader } from '../../src/components/common/AppHeader';
 import { PrimaryButton } from '../../src/components/common/Buttons';
 import { fetchFoods } from '../../src/lib/healthData';
 import { useHealthQuery } from '../../src/hooks/useHealthQuery';
-import { addMealItems } from '../../src/services/mealsService';
+import { addMealItems, deleteMealRecord, getMealsByDateRange, updateMealRecord } from '../../src/services/mealsService';
 import { calculateFoodNutrition } from '../../src/lib/healthCalculations';
 import { safeNumber } from '../../src/lib/dataValidation';
 import { dataError } from '../../src/lib/dataErrors';
 import type { MealType } from '../../src/types/database';
+import type { MealWithFood } from '../../src/types/health';
+import { parseLocalDate, toLocalDateKey } from '../../src/lib/dateUtils';
 
 const rawMEAL_TYPES = [
-  { id: 'Breakfast', label: "meals.breakfast", icon: 'sunny-outline' },
-  { id: 'Lunch', label: "meals.lunch", icon: 'partly-sunny-outline' },
-  { id: 'Dinner', label: "meals.dinner", icon: 'moon-outline' },
-  { id: 'Snack', label: "meals.snack", icon: 'cafe-outline' },
+  { id: 'breakfast', label: "meals.breakfast", icon: 'sunny-outline' },
+  { id: 'lunch', label: "meals.lunch", icon: 'partly-sunny-outline' },
+  { id: 'dinner', label: "meals.dinner", icon: 'moon-outline' },
+  { id: 'snack', label: "meals.snack", icon: 'cafe-outline' },
 ];
+const normalizeSearch = (value:string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[đĐ]/g,character => character === 'Đ' ? 'D' : 'd').toLocaleLowerCase();
+const EMPTY_ROWS: MealWithFood[] = [];
+const EMPTY_ITEMS: Record<string,number> = {};
 
 export default function AddMealScreen() {
   const { t } = useTranslation();
   const MEAL_TYPES = localizeStaticData(rawMEAL_TYPES);
 
   const router = useRouter();
+  const params = useLocalSearchParams<{ mealType?: string; date?: string }>();
   const insets = useSafeAreaInsets();
-
-  const [selectedMealType, setSelectedMealType] = useState('Dinner');
+  const today = toLocalDateKey();
+  const dateParam = typeof params.date === 'string' ? params.date : today;
+  const mealDate = /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : today;
+  const requestedMealType = ['breakfast','lunch','dinner','snack'].includes(params.mealType ?? '') ? params.mealType as MealType : 'dinner';
+  const [selectedMealType, setSelectedMealType] = useState<MealType>(requestedMealType);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedItems, setSelectedItems] = useState<Record<string, number>>({});
+  const [draftState,setDraftState] = useState<{ date:string; values:Record<MealType,Record<string,number>> } | null>(null);
+  const existingMeals = useHealthQuery(() => getMealsByDateRange(mealDate,mealDate),'meal-editor:'+mealDate);
+  const savedRows = existingMeals.data ?? EMPTY_ROWS;
+  const savedDrafts = useMemo(() => {
+    const next: Record<MealType,Record<string,number>> = { breakfast:{},lunch:{},dinner:{},snack:{} };
+    for (const row of savedRows) next[row.meal_type][row.food_id] = (next[row.meal_type][row.food_id] ?? 0) + safeNumber(row.quantity_g);
+    return next;
+  },[savedRows]);
+  const drafts = draftState?.date === mealDate ? draftState.values : savedDrafts;
+  const selectedItems = drafts[selectedMealType] ?? EMPTY_ITEMS;
+  const setSelectedItems = (update: (items:Record<string,number>) => Record<string,number>) => {
+    setDraftState(previous => {
+      const values = previous?.date === mealDate ? previous.values : savedDrafts;
+      return { date:mealDate,values:{ ...values,[selectedMealType]:update(values[selectedMealType] ?? {}) } };
+    });
+  };
   const catalogue = useHealthQuery(fetchFoods,'food-catalogue');
   const foods = useMemo(() => catalogue.data ?? [],[catalogue.data]);
   const isLoadingFoods = catalogue.isLoading;
@@ -51,15 +75,15 @@ export default function AddMealScreen() {
   const [saving,setSaving] = useState(false);
   const [saveError,setSaveError] = useState('');
   const pending = useRef(false);
-  // Filter database foods by name or serving size.
+  // Match Vietnamese names whether or not the search text contains accents.
   const filteredFoods = useMemo(() => {
-    const query = searchQuery.trim().toLocaleLowerCase();
+    const query = normalizeSearch(searchQuery.trim());
     if (!query) return foods;
 
     return foods.filter((food) =>
-      food.name.toLocaleLowerCase().includes(query) ||
-      (food.serving_size ?? '').toLocaleLowerCase().includes(query) ||
-      (food.category ?? '').toLocaleLowerCase().includes(query)
+      normalizeSearch(food.name).includes(query) ||
+      normalizeSearch(food.serving_size ?? '').includes(query) ||
+      normalizeSearch(food.category ?? '').includes(query)
     );
   }, [foods, searchQuery]);
 
@@ -99,8 +123,33 @@ export default function AddMealScreen() {
   const handleLogMeal = async () => {
     if (pending.current) return; pending.current = true; setSaving(true); setSaveError('');
     try {
-      const consumedAt = new Date().toISOString();
-      await addMealItems(Object.entries(selectedItems).filter(([,grams]) => grams > 0).map(([food_id,quantity_g]) => ({ food_id,quantity_g,meal_type:selectedMealType.toLowerCase() as MealType,consumed_at:consumedAt })));
+      if (existingMeals.isLoading || existingMeals.data === null || existingMeals.error) {
+        setSaveError(existingMeals.error ? localizeMessage(existingMeals.error) : t('meals.waitForExisting'));
+        return;
+      }
+      const existingByFood = new Map<string,typeof savedRows>();
+      for (const row of savedRows.filter(item => item.meal_type === selectedMealType)) {
+        const group = existingByFood.get(row.food_id) ?? [];
+        group.push(row);
+        existingByFood.set(row.food_id,group);
+      }
+      const actions: Promise<unknown>[] = [];
+      const newItems: { food_id:string;quantity_g:number;meal_type:MealType;consumed_at:string }[] = [];
+      const consumedAtDate = parseLocalDate(mealDate);
+      consumedAtDate.setHours(12,0,0,0);
+      for (const [food_id,rows] of existingByFood) {
+        const quantity = selectedItems[food_id] ?? 0;
+        if (quantity <= 0) rows.forEach(row => actions.push(deleteMealRecord(row.id)));
+        else {
+          actions.push(updateMealRecord(rows[0].id,{ quantity_g:quantity }));
+          rows.slice(1).forEach(row => actions.push(deleteMealRecord(row.id)));
+        }
+      }
+      for (const [food_id,quantity_g] of Object.entries(selectedItems)) {
+        if (quantity_g > 0 && !existingByFood.has(food_id)) newItems.push({ food_id,quantity_g,meal_type:selectedMealType,consumed_at:consumedAtDate.toISOString() });
+      }
+      await Promise.all(actions);
+      if (newItems.length) await addMealItems(newItems);
       router.back();
     } catch (error) { setSaveError(dataError(error).message); }
     finally { pending.current = false; setSaving(false); }
@@ -118,7 +167,7 @@ export default function AddMealScreen() {
             <TouchableOpacity
               key={type.id}
               style={[styles.mealTypeTab, isSelected && styles.mealTypeTabSelected]}
-              onPress={() => setSelectedMealType(type.id)}
+              onPress={() => setSelectedMealType(type.id as MealType)}
               activeOpacity={0.7}
             >
               <Ionicons
@@ -262,6 +311,7 @@ export default function AddMealScreen() {
         )}
       </ScrollView>
 
+      {existingMeals.error ? <TouchableOpacity accessibilityRole="button" onPress={() => void existingMeals.refresh()} style={{ padding:Spacing.md }}><Text accessibilityRole="alert" style={{ color:Colors.error }}>{localizeMessage(existingMeals.error)} · {t('common.retry')}</Text></TouchableOpacity> : null}
       {saveError ? <Text accessibilityRole="alert" style={{ color:Colors.error,padding:Spacing.md }}>{localizeMessage(saveError)}</Text> : null}
       {/* Floating Bottom Action Bar */}
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, Spacing.md) }]}>
@@ -281,7 +331,7 @@ export default function AddMealScreen() {
             title={t('meals.logType',{meal:t(`meals.${selectedMealType.toLowerCase()}`)})}
             onPress={handleLogMeal}
             loading={saving}
-            disabled={totalCount <= 0 || isLoadingFoods || !!foodsError}
+            disabled={totalCount <= 0 || isLoadingFoods || !!foodsError || existingMeals.isLoading || existingMeals.data === null}
             style={styles.logButton}
          
           />

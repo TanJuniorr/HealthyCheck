@@ -2,19 +2,19 @@ import { useTranslation } from 'react-i18next';
 import { formatNumber, formatTime, formatDuration, formatDayLabel, formatDate } from '../../src/i18n/formatting';
 import { localizeStaticData, localizeMessage } from '../../src/i18n/localize';
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Modal } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AppHeader } from '../../src/components/common/AppHeader';
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
 import { PrimaryButton, TextButton } from '../../src/components/common/Buttons';
 import { WeeklyBarChart } from '../../src/components/charts/WeeklyBarChart';
 import { SleepRecordForm } from '../../src/components/health/SleepRecordForm';
-import { SleepDateTimeField } from '../../src/components/health/SleepDateTimeField';
 import { sleepTips as rawSleepTips } from '../../src/data/sleep';
 import { useSleepRecords, useHealthGoals } from '../../src/hooks/healthHooks';
 import { useAuth } from '../../src/contexts/AuthContext';
-import { getWeekRange, getMonthRange, shiftDay, toLocalDateKey, timestampDateKey, parseLocalDate } from '../../src/lib/dateUtils';
+import { getWeekRange, getMonthRange, shiftDay, toLocalDateKey, timestampDateKey } from '../../src/lib/dateUtils';
 import { aggregateSleep, sleepDurationMinutes } from '../../src/lib/healthCalculations';
 import { deleteSleepRecord } from '../../src/services/sleepService';
 import { dataError } from '../../src/lib/dataErrors';
@@ -32,8 +32,8 @@ export default function SleepScreen() {
 function SleepContent() {
   const { t } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [date, setDate] = useState(toLocalDateKey());
-  const [period, setPeriod] = useState<'week' | 'month'>('week');
   const [editing, setEditing] = useState<SleepRecordRow | null | undefined>(undefined);
   const [deleting, setDeleting] = useState<SleepRecordRow | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -42,22 +42,17 @@ function SleepContent() {
   const deleteLock = useRef(false), mounted = useRef(true);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const week = getWeekRange(date), month = getMonthRange(date);
-  const range = period === 'week' ? week : month;
   // One range query supplies history, weekly chart and both averages.
   const query = useSleepRecords({ start: week.start < month.start ? week.start : month.start, end: week.end > month.end ? week.end : month.end });
   const goals = useHealthGoals(date);
   const rows = query.data ?? [];
   const weekly = aggregateSleep(rows, week.start, week.end), monthly = aggregateSleep(rows, month.start, month.end);
-  const summary = period === 'week' ? weekly : monthly;
-  const latest = summary.latestSession;
-  const history = rows.filter(row => { const key = timestampDateKey(row.sleep_end); return key >= range.start && key <= range.end; })
+  const selectedDay = aggregateSleep(rows,date,date);
+  const latest = selectedDay.latestSession;
+  const history = rows.filter(row => timestampDateKey(row.sleep_end) === date)
     .sort((a, b) => Date.parse(b.sleep_end) - Date.parse(a.sleep_end) || b.id.localeCompare(a.id));
   const chart = weekly.daily.filter(day => day.minutes !== null).map(day => ({ label: formatDayLabel(day.date), value: (day.minutes ?? 0) / 60 }));
-  const move = (direction: number) => {
-    if (period === 'week') setDate(shiftDay(date, direction * 7));
-    else { const next = parseLocalDate(month.start); next.setMonth(next.getMonth() + direction); setDate(toLocalDateKey(next)); }
-    setNotice(null);
-  };
+  const move = (direction: number) => { setDate(shiftDay(date,direction)); setNotice(null); };
   const remove = async () => {
     if (!deleting || deleteLock.current) return;
     deleteLock.current = true; setBusy(true); setDeleteError(null);
@@ -70,30 +65,24 @@ function SleepContent() {
   const openForm = (record: SleepRecordRow | null) => { setNotice(null); setEditing(record); };
   return <View style={styles.container}>
     <AppHeader title={t('health.sleep')} showBack />
-    <ScreenContainer>
+    <ScreenContainer contentContainerStyle={{ paddingBottom:Spacing.md }}>
       <View style={styles.controls}>
-        <PrimaryButton title={t('sleep.addRecord')} onPress={() => openForm(null)} />
-        <SleepDateTimeField label={t('sleep.selectedDate')} date={date} onChange={value => { if (value) { try { setDate(toLocalDateKey(value)); setNotice(null); } catch { /* Keep the last valid filter. */ } } }} />
-        <View style={styles.controlsRow}>
-          <TextButton title={t('sleep.weekView')} onPress={() => setPeriod('week')} disabled={period === 'week'} />
-          <TextButton title={t('sleep.monthView')} onPress={() => setPeriod('month')} disabled={period === 'month'} />
+        <Text style={styles.selectedDate}>{formatDate(date)}</Text>
+        <View style={styles.dateControls}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('calendar.previousDay')} onPress={() => move(-1)} style={styles.dateArrow}><Ionicons name="chevron-back" size={24} color={Colors.textPrimary} /></TouchableOpacity>
+          <TextButton title={t('period.today')} onPress={() => { setDate(toLocalDateKey()); setNotice(null); }} />
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('calendar.nextDay')} onPress={() => move(1)} style={styles.dateArrow}><Ionicons name="chevron-forward" size={24} color={Colors.textPrimary} /></TouchableOpacity>
         </View>
-        <View style={styles.controlsRow}>
-          <TextButton title={t('sleep.previousPeriod')} onPress={() => move(-1)} />
-          <TextButton title={t('period.today')} onPress={() => setDate(toLocalDateKey())} />
-          <TextButton title={t('sleep.nextPeriod')} onPress={() => move(1)} />
-        </View>
-        <Text style={styles.cardSubtitle}>{t('sleep.dateRange', { start: formatDate(range.start), end: formatDate(range.end) })}</Text>
       </View>
       {notice && <Text accessibilityRole="alert" style={styles.success}>{t(notice)}</Text>}
-      <DataFeedback {...query} empty={!summary.latestSession} />
+      <DataFeedback {...query} empty={!selectedDay.latestSession} />
       <View style={styles.summaryCard}>
         <View style={styles.summaryHeader}>
           <View style={styles.summaryIconCircle}><Ionicons name="moon" size={20} color={Colors.blue} /></View>
           <Text style={styles.summaryBadge}>{t('overview.recordedSleep')}</Text>
         </View>
-        <Text style={styles.summaryLabel}>{t('sleep.weekAverage')}</Text>
-        <Text style={styles.summaryValue}>{formatDuration(query.data ? weekly.averageDailyMinutes : null)}</Text>
+        <Text style={styles.summaryLabel}>{t('sleep.selectedDayDuration')}</Text>
+        <Text style={styles.summaryValue}>{formatDuration(query.data ? selectedDay.totalMinutes : null)}</Text>
         <View style={styles.summaryRow}>
           <View style={styles.summaryCol}>
             <Text style={styles.summaryColLabel}>{t('sleep.monthAverage')}</Text>
@@ -101,19 +90,19 @@ function SleepContent() {
           </View>
           <View style={styles.summaryDivider} />
           <View style={styles.summaryCol}>
-            <Text style={styles.summaryColLabel}>{t('sleep.recordedDays')}</Text>
-            <Text style={styles.summaryColValue}>{query.data ? formatNumber(summary.daily.filter(day => day.sessionCount > 0).length) : '—'}</Text>
+            <Text style={styles.summaryColLabel}>{t('sleep.selectedDayRecords')}</Text>
+            <Text style={styles.summaryColValue}>{query.data ? formatNumber(selectedDay.daily[0]?.sessionCount ?? 0) : '—'}</Text>
           </View>
         </View>
         <Text style={styles.cardSubtitle}>{t('sleep.averageRule')}</Text>
       </View>
       <View style={styles.sectionCard}>
-        <Text style={styles.cardTitle}>{t('sleep.periodTotal', { duration: formatDuration(query.data ? summary.totalMinutes : null) })}</Text>
-        <Text style={styles.cardSubtitle}>{t('sleep.qualityValue', { value: formatNumber(summary.averageQualityRating, 1) })}</Text>
+        <Text style={styles.cardTitle}>{t('sleep.selectedDateTotal', { duration: formatDuration(query.data ? selectedDay.totalMinutes : null) })}</Text>
+        <Text style={styles.cardSubtitle}>{t('sleep.qualityValue', { value: formatNumber(selectedDay.averageQualityRating, 1) })}</Text>
         <DataFeedback {...goals} />
         <Text style={styles.cardSubtitle}>{t('sleep.goalValue', { duration: formatDuration(goals.data?.target_sleep_minutes) })}</Text>
-        {summary.averageDailyMinutes !== null && goals.data?.target_sleep_minutes != null && goals.data.target_sleep_minutes > 0 &&
-          <Text style={styles.cardSubtitle}>{t('sleep.goalProgress', { value: formatNumber(summary.averageDailyMinutes / goals.data.target_sleep_minutes * 100, 0) })}</Text>}
+        {selectedDay.totalMinutes > 0 && goals.data?.target_sleep_minutes != null && goals.data.target_sleep_minutes > 0 &&
+          <Text style={styles.cardSubtitle}>{t('sleep.goalProgress', { value: formatNumber(selectedDay.totalMinutes / goals.data.target_sleep_minutes * 100, 0) })}</Text>}
       </View>
       <View style={styles.sectionCard}>
         <Text style={styles.cardTitle}>{t('sleep.weekly')}</Text>
@@ -160,6 +149,9 @@ function SleepContent() {
         <View style={styles.tipTextContainer}><Text style={styles.tipHeading}>{t('sleep.insight')}</Text><Text style={styles.tipText}>{localizeStaticData(rawSleepTips)[0]}</Text></View>
       </View>
     </ScreenContainer>
+    <View style={[styles.stickyFooter,{paddingBottom:Math.max(insets.bottom,Spacing.md)}]}>
+      <PrimaryButton title={t('sleep.addRecord')} onPress={() => openForm(null)} />
+    </View>
     {editing !== undefined && <SleepRecordForm record={editing} onClose={() => setEditing(undefined)} onSaved={wakeDate => { setDate(wakeDate); setEditing(undefined); setNotice('sleep.saved'); }} />}
     <Modal visible={deleting !== null} transparent animationType="fade" onRequestClose={() => { if (!deleteLock.current) setDeleting(null); }}>
       <View style={styles.backdrop}><View accessibilityViewIsModal style={styles.dialog}>
@@ -177,6 +169,10 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   controls: { gap: Spacing.sm, marginTop: Spacing.md },
   controlsRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  selectedDate: { ...Typography.cardTitle, color:Colors.textPrimary, textAlign:'center' },
+  dateControls: { flexDirection:'row', alignItems:'center', justifyContent:'space-between', backgroundColor:Colors.white, borderRadius:Radius.lg, borderWidth:1, borderColor:Colors.border, paddingHorizontal:Spacing.sm },
+  dateArrow: { width:44, height:44, alignItems:'center', justifyContent:'center' },
+  stickyFooter: { paddingHorizontal:Spacing.screenPadding, paddingTop:Spacing.md, backgroundColor:Colors.white, borderTopWidth:1, borderTopColor:Colors.border },
   success: { ...Typography.bodySmall, color: Colors.success, paddingVertical: Spacing.md },
   error: { ...Typography.bodySmall, color: Colors.error },
   duration: { ...Typography.cardTitle, color: Colors.blue, marginTop: Spacing.sm },

@@ -6,6 +6,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
+import { StepSensorProvider } from '../src/contexts/StepSensorContext';
 import { Colors } from '../src/constants/colors';
 
 function AuthNavigator() {
@@ -37,5 +38,5 @@ function AuthNavigator() {
   );
 }
 export default function RootLayout() {
-  return <SafeAreaProvider><LanguageProvider><StatusBar style="dark" /><AuthProvider><AuthNavigator /></AuthProvider></LanguageProvider></SafeAreaProvider>;
+  return <SafeAreaProvider><LanguageProvider><StatusBar style="dark" /><AuthProvider><StepSensorProvider><AuthNavigator /></StepSensorProvider></AuthProvider></LanguageProvider></SafeAreaProvider>;
 }

@@ -10,6 +10,12 @@ export const updateStepRecord = repo.update;
 export const deleteStepRecord = repo.remove;
 export const getStepsByDateRange = repo.range;
 export function getStepsByDate(date: DateInput) { const key = toLocalDateKey(date); return repo.range(key,key); }
+export async function addOrIncrementStepRecord(date: DateInput, steps: number) {
+ const key = toLocalDateKey(date);
+ const existing = await getStepsByDate(key);
+ if (existing.length) return updateStepRecord(existing[0].id,{ steps: existing[0].steps + steps });
+ return addStepRecord({ record_date:key,steps });
+}
 export async function getStepsSummary(start: string,end: string) {
  validateDateRange(start,end);
  const [rows,goals] = await Promise.all([repo.range(start,end),getGoalsForRange(start,end)]);

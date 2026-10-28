@@ -27,7 +27,21 @@
       "expo-router",
       "expo-sqlite",
       "expo-font",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Cho phép Healthy Check truy cập chuyển động để đếm bước chân."
+        }
+      ],
       "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Healthy Check cần truy cập ảnh để bạn chọn ảnh đại diện.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
       "@react-native-community/datetimepicker"
     ]
   }

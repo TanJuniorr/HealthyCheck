@@ -47,11 +47,23 @@ export function validateInput<T extends PersonalTable>(table: T, input: Inputs[T
 export function validateProfile(input: ProfileUpdate): ProfileUpdate {
   if (!input || typeof input !== 'object' || Array.isArray(input)) invalid('Hồ sơ đầu vào không hợp lệ.');
   const result: ProfileUpdate = {};
-  for (const key of Object.keys(input)) if (!['full_name','date_of_birth','height_cm','avatar_url'].includes(key)) invalid('Trường hồ sơ không được phép.');
+  for (const key of Object.keys(input)) if (!['full_name','date_of_birth','height_cm','gender','avatar_url'].includes(key)) invalid('Trường hồ sơ không được phép.');
   if (input.full_name !== undefined) { if (input.full_name !== null && (typeof input.full_name !== 'string' || !input.full_name.trim() || input.full_name.trim().length > 120)) invalid('Họ tên phải có 1–120 ký tự.'); result.full_name = input.full_name?.trim() ?? null; }
   if (input.date_of_birth !== undefined) { const date = input.date_of_birth === null ? null : toLocalDateKey(input.date_of_birth); if (date && date > toLocalDateKey()) invalid('Ngày sinh không thể ở tương lai.'); result.date_of_birth = date; }
   if (input.height_cm !== undefined) { const height = input.height_cm === null ? null : positive(input.height_cm); if (height !== null && (height < 30 || height > 300)) invalid('Chiều cao hợp lệ từ 30 đến 300 cm.'); result.height_cm = height; }
-  if (input.avatar_url !== undefined) { if (input.avatar_url !== null) { try { if (new URL(input.avatar_url).protocol !== 'https:') invalid('Avatar cần URL HTTPS.'); } catch { invalid('URL avatar không hợp lệ.'); } } result.avatar_url = input.avatar_url; }
+  if (input.gender !== undefined) { if (input.gender !== null && !['male','female','other','prefer_not_to_say'].includes(input.gender)) invalid('Giới tính không hợp lệ.'); result.gender = input.gender; }
+  if (input.avatar_url !== undefined) {
+    if (input.avatar_url !== null) {
+      const value = input.avatar_url.trim();
+      if (/^https:\/\//i.test(value)) {
+        try { if (new URL(value).protocol !== 'https:') invalid('Avatar cần URL HTTPS.'); }
+        catch { invalid('URL avatar không hợp lệ.'); }
+      } else if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[A-Za-z0-9_-]+\.jpg$/i.test(value)) {
+        invalid('Đường dẫn ảnh đại diện không hợp lệ.');
+      }
+      result.avatar_url = value;
+    } else result.avatar_url = null;
+  }
   if (!Object.keys(result).length) invalid('Không có thông tin để cập nhật.');
   return result;
 }

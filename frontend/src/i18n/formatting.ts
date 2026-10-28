@@ -9,7 +9,9 @@ function dateValue(value: Date | string | number): Date {
  return value instanceof Date ? value : new Date(value);
 }
 export function formatDate(value: Date | string | number, options: Intl.DateTimeFormatOptions = { year:'numeric',month:'long',day:'numeric' }): string {
- const date = dateValue(value); return Number.isFinite(date.getTime()) ? new Intl.DateTimeFormat(appLocale(),options).format(date) : '—';
+ const date = dateValue(value); if (!Number.isFinite(date.getTime())) return '—';
+ const locale = appLocale(); const formatted = new Intl.DateTimeFormat(locale,options).format(date);
+ return locale === 'vi-VN' ? formatted.replace(/^(\s*)ngày(?=\s)/i, '$1Ngày') : formatted;
 }
 export function formatTime(value: Date | string | number, options: Intl.DateTimeFormatOptions = { hour:'2-digit',minute:'2-digit' }): string { return formatDate(value,options); }
 export function formatDayLabel(value: string): string { return formatDate(value,{ day:'numeric',month:'numeric' }); }

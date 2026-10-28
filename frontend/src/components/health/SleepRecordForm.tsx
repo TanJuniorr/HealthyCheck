@@ -2,11 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
 import { Radius, Spacing } from '../../constants/spacing';
 import { Typography } from '../../constants/typography';
 import { PrimaryButton, TextButton } from '../common/Buttons';
 import { SleepDateTimeField } from './SleepDateTimeField';
+import type { SleepDateTimePickerMode } from './SleepDateTimeField.types';
 import { formatDate, formatDuration, formatNumber } from '../../i18n/formatting';
 import { localizeMessage } from '../../i18n/localize';
 import { dataError } from '../../lib/dataErrors';
@@ -30,6 +32,7 @@ export function SleepRecordForm({ record, onClose, onSaved }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [activePicker, setActivePicker] = useState<{ field: 'start' | 'end'; mode: SleepDateTimePickerMode } | null>(null);
   const lock = useRef(false), mounted = useRef(true);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   let minutes: number | null = null;
@@ -41,9 +44,15 @@ export function SleepRecordForm({ record, onClose, onSaved }: Props) {
     else { setEndDate(date); setEndTime(time ?? ''); }
     setConfirmed(false); setError(null);
   };
+  const changePicker = (field: 'start' | 'end', mode: SleepDateTimePickerMode) => {
+    setActivePicker(current => {
+      if (mode) return { field, mode };
+      return current?.field === field ? null : current;
+    });
+  };
   const save = async () => {
     if (lock.current) return;
-    setError(null);
+    setError(null); setActivePicker(null);
     lock.current = true; setSaving(true);
     try {
       const sleep_start = sleepLocalTimestamp(startDate, startTime), sleep_end = sleepLocalTimestamp(endDate, endTime);
@@ -61,10 +70,22 @@ export function SleepRecordForm({ record, onClose, onSaved }: Props) {
   return <Modal visible animationType="slide" onRequestClose={close}>
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content, { paddingTop: insets.top + Spacing.lg, paddingBottom: insets.bottom + Spacing.xl }]}>
-        <Text accessibilityRole="header" style={styles.title}>{t(record ? 'sleep.editRecord' : 'sleep.addRecord')}</Text>
+        <View style={styles.header}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('common.back')} disabled={saving} onPress={close} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <Text accessibilityRole="header" numberOfLines={1} style={styles.title}>{t(record ? 'sleep.editRecord' : 'sleep.addRecord')}</Text>
+          <View style={styles.headerSpacer} />
+        </View>
         <Text style={styles.hint}>{t('sleep.recordConvention')}</Text>
-        <SleepDateTimeField label={t('sleep.bedtime')} date={startDate} time={startTime} disabled={saving} onChange={(date, time) => changeTimes('start', date, time)} />
-        <SleepDateTimeField label={t('sleep.wakeUp')} date={endDate} time={endTime} disabled={saving} onChange={(date, time) => changeTimes('end', date, time)} />
+        <SleepDateTimeField label={t('sleep.bedtime')} date={startDate} time={startTime}
+          activeMode={activePicker?.field === 'start' ? activePicker.mode : null}
+          onActiveModeChange={mode => changePicker('start', mode)}
+          disabled={saving} onChange={(date, time) => changeTimes('start', date, time)} />
+        <SleepDateTimeField label={t('sleep.wakeUp')} date={endDate} time={endTime}
+          activeMode={activePicker?.field === 'end' ? activePicker.mode : null}
+          onActiveModeChange={mode => changePicker('end', mode)}
+          disabled={saving} onChange={(date, time) => changeTimes('end', date, time)} />
         <Text style={styles.duration}>{t('sleep.durationValue', { duration: formatDuration(minutes) })}</Text>
         <Text style={styles.hint}>{t('sleep.recordDate', { date: endDate ? formatDate(endDate) : '—' })}</Text>
         {unusual && <TouchableOpacity accessibilityRole="checkbox" accessibilityState={{ checked: confirmed, disabled: saving }} disabled={saving}
@@ -77,7 +98,7 @@ export function SleepRecordForm({ record, onClose, onSaved }: Props) {
           {[null, 1, 2, 3, 4, 5].map(value => <TouchableOpacity key={value ?? 'none'} accessibilityRole="radio" accessibilityState={{ selected: quality === value, disabled: saving }}
             accessibilityLabel={value === null ? t('sleep.noRating') : t('sleep.ratingValue', { value: formatNumber(value) })}
             disabled={saving} onPress={() => setQuality(value)} style={[styles.rating, quality === value && styles.selected]}>
-            <Text style={{ color: quality === value ? Colors.white : Colors.textPrimary }}>{value === null ? t('sleep.noRating') : formatNumber(value)}</Text>
+            <Text style={{ color: quality === value ? Colors.white : Colors.textPrimary }}>{value === null ? '—' : formatNumber(value)}</Text>
           </TouchableOpacity>)}
         </View>
         <Text style={styles.label}>{t('sleep.notes')}</Text>
@@ -93,13 +114,16 @@ export function SleepRecordForm({ record, onClose, onSaved }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: Spacing.screenPadding, gap: Spacing.lg, width: '100%', maxWidth: 640, alignSelf: 'center' },
-  title: { ...Typography.sectionTitle, color: Colors.textPrimary },
+  header: { minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', position: 'relative' },
+  backButton: { width: 44, height: 44, alignItems: 'flex-start', justifyContent: 'center' },
+  headerSpacer: { width: 44, height: 44 },
+  title: { ...Typography.sectionTitle, color: Colors.textPrimary, position: 'absolute', left: 48, right: 48, textAlign: 'center' },
   hint: { ...Typography.bodySmall, color: Colors.textSecondary },
   label: { ...Typography.label, color: Colors.textSecondary },
   duration: { ...Typography.cardTitle, color: Colors.blue },
   confirm: { padding: Spacing.md, gap: Spacing.sm, backgroundColor: Colors.orangeLight, borderRadius: Radius.md, minHeight: 48 },
-  qualityRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
-  rating: { padding: 12, minWidth: 44, minHeight: 44, alignItems: 'center', backgroundColor: Colors.white, borderRadius: Radius.md },
+  qualityRow: { flexDirection: 'row', flexWrap: 'nowrap', gap: Spacing.xs },
+  rating: { flex: 1, minWidth: 0, height: 44, paddingHorizontal: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.white, borderRadius: Radius.md },
   selected: { backgroundColor: Colors.primary },
   notes: { ...Typography.body, color: Colors.textPrimary, minHeight: 96, padding: Spacing.md, backgroundColor: Colors.white, borderColor: Colors.border, borderWidth: 1, borderRadius: Radius.md },
   error: { ...Typography.bodySmall, color: Colors.error },

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { formatNumber,formatDate } from '../src/i18n/formatting';
+import { formatNumber } from '../src/i18n/formatting';
 import { localizeMessage } from '../src/i18n/localize';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,16 +11,21 @@ import { Spacing, Radius, Shadows } from '../src/constants/spacing';
 import { AppHeader, SectionHeader } from '../src/components/common/AppHeader';
 import { ScreenContainer } from '../src/components/common/ScreenContainer';
 import { TextButton } from '../src/components/common/Buttons';
+import { PersonalProfileModal, HealthGoalsModal, formatBirthDate, type EditableHealthGoals, type PersonalProfileDraft } from '../src/components/profile/ProfileEditModals';
 import { MockAvatar } from '../src/components/common/MockAvatar';
 import { SettingsRow } from '../src/components/health/HealthComponents';
 import { useAuth } from '../src/contexts/AuthContext';
 import { displayName, initials, profileText } from '../src/lib/profileRepository';
 import { useHealthQuery } from '../src/hooks/useHealthQuery';
-import { getCurrentGoals } from '../src/services/healthGoalsService';
-import { getLatestWeight } from '../src/services/weightService';
-import { ensureMyProfile } from '../src/services/profileService';
+import { createGoals, getCurrentGoals } from '../src/services/healthGoalsService';
+import { addWeightRecord, getLatestWeight } from '../src/services/weightService';
+import { updateMyProfile, ensureMyProfile } from '../src/services/profileService';
 import { DataFeedback } from '../src/components/common/DataFeedback';
 import { authErrorMessage } from '../src/lib/authErrors';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadAvatar, createAvatarSignedUrl, deleteAvatar } from '../src/services/avatarService';
+import { DataAccessError, dataError } from '../src/lib/dataErrors';
+import { toLocalDateKey } from '../src/lib/dateUtils';
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
@@ -31,15 +36,76 @@ export default function ProfileScreen() {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [avatarFailed, setAvatarFailed] = useState(false);
+  const [avatarBusy,setAvatarBusy] = useState(false);
+  const [personalEditorOpen, setPersonalEditorOpen] = useState(false);
+  const [goalsEditorOpen, setGoalsEditorOpen] = useState(false);
   const submittingRef = useRef(false);
+  const avatarLock = useRef(false);
   const records = useHealthQuery(async () => { const [goals,weight] = await Promise.all([getCurrentGoals(),getLatestWeight()]); return { goals,weight }; },'profile-health');
   const hasName = Boolean(profile?.full_name?.trim() || (typeof user?.user_metadata.full_name === 'string' && user.user_metadata.full_name.trim()));
   const name = hasName ? displayName(user,profile) : t('profile.member');
   const avatar = profileText(profile, 'avatar_url');
+  const avatarQuery = useHealthQuery(async () => {
+    if (!avatar) return null;
+    return /^https:\/\//i.test(avatar) ? avatar : createAvatarSignedUrl(avatar);
+  },'profile-avatar:'+String(user?.id ?? 'signed-out')+':'+String(avatar ?? 'none'));
+  const avatarImageUrl = avatarQuery.data;
   const height = profile?.height_cm ?? '—';
   const birthDate = profileText(profile, 'date_of_birth') ?? '—';
+  const personalDraft = useMemo<PersonalProfileDraft>(() => {
+    const metadataName = user?.user_metadata.full_name;
+    return {
+      fullName: profile?.full_name ?? (typeof metadataName === 'string' ? metadataName : ''),
+      dateOfBirth: birthDate === '—' ? '' : birthDate,
+      heightCm: height === '—' ? '' : String(height),
+      weightKg: records.data?.weight?.weight_kg == null ? '' : String(records.data.weight.weight_kg),
+      gender: profile?.gender ?? '',
+    };
+  }, [birthDate, height, profile?.full_name, profile?.gender, records.data?.weight?.weight_kg, user?.user_metadata.full_name]);
+  const goalsDraft = useMemo(() => ({
+    daily_steps: records.data?.goals?.daily_steps ?? 8000,
+    daily_calories: records.data?.goals?.daily_calories ?? 2000,
+    daily_water_ml: records.data?.goals?.daily_water_ml ?? 2000,
+    target_sleep_minutes: records.data?.goals?.target_sleep_minutes ?? 480,
+  }), [records.data?.goals]);
   // Refresh on focus; provider fetches once on session restoration as well.
   useFocusEffect(useCallback(() => { void refreshProfile(); }, [refreshProfile]));
+  const handlePickAvatar = async () => {
+    if (!user || avatarLock.current) return;
+    avatarLock.current = true;
+    setAvatarBusy(true);
+    setFeedback('');
+    let uploadedPath: string | null = null;
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes:['images'],allowsEditing:true,aspect:[1,1],quality:0.72,base64:true });
+      if (result.canceled) return;
+      const image = result.assets[0];
+      if (!image?.base64 || (image.fileSize != null && image.fileSize > 4 * 1024 * 1024)) {
+        setFeedback(t('profile.avatarTooLarge'));
+        return;
+      }
+      if (!profile) await ensureMyProfile();
+      uploadedPath = await uploadAvatar(image.base64);
+      try {
+        await updateMyProfile({ avatar_url:uploadedPath });
+      } catch (error) {
+        await deleteAvatar(uploadedPath).catch(() => {});
+        uploadedPath = null;
+        throw error;
+      }
+      await refreshProfile();
+      setAvatarFailed(false);
+      setFeedback(t('profile.avatarSaved'));
+      const oldPath = avatar?.startsWith(`${user.id}/`) ? avatar : null;
+      if (oldPath && oldPath !== uploadedPath) void deleteAvatar(oldPath).catch(() => {});
+    } catch (error) {
+      if (uploadedPath) await deleteAvatar(uploadedPath).catch(() => {});
+      setFeedback(dataError(error).message || t('profile.avatarSaveFailed'));
+    } finally {
+      avatarLock.current = false;
+      setAvatarBusy(false);
+    }
+  };
   const handleSignOut = async () => {
     if (submittingRef.current) return;
     submittingRef.current = true;
@@ -48,6 +114,30 @@ export default function ProfileScreen() {
     try { await signOut(); }
     catch (error) { setFeedback(authErrorMessage(error)); }
     finally { submittingRef.current = false; setIsSigningOut(false); }
+  };
+  const handleSavePersonal = async (draft: PersonalProfileDraft) => {
+    if (!user) throw new Error('Vui lòng đăng nhập để cập nhật hồ sơ.');
+    const heightValue = draft.heightCm.trim() ? Number(draft.heightCm.trim()) : null;
+    const weightValue = draft.weightKg.trim() ? Number(draft.weightKg.trim()) : null;
+    if (heightValue !== null && (!Number.isFinite(heightValue) || heightValue < 30 || heightValue > 300)) throw new DataAccessError('INVALID_INPUT', t('profile.invalidPersonal'));
+    if (draft.fullName.trim().length > 120) throw new DataAccessError('INVALID_INPUT', t('profile.invalidPersonal'));
+    if (weightValue !== null && (!Number.isFinite(weightValue) || weightValue <= 0 || weightValue > 500)) throw new DataAccessError('INVALID_INPUT', t('profile.invalidPersonal'));
+    await ensureMyProfile();
+    await updateMyProfile({
+      full_name: draft.fullName.trim() || null,
+      date_of_birth: draft.dateOfBirth || null,
+      height_cm: heightValue,
+      gender: draft.gender || null,
+    });
+    const previousWeight = Number(records.data?.weight?.weight_kg);
+    if (weightValue !== null && (!Number.isFinite(previousWeight) || Math.abs(previousWeight - weightValue) > 0.001)) {
+      await addWeightRecord({ weight_kg: weightValue });
+    }
+    await Promise.all([refreshProfile(), records.refresh()]);
+  };
+  const handleSaveGoals = async (values: EditableHealthGoals) => {
+    await createGoals({ ...values, effective_from: toLocalDateKey() });
+    await records.refresh();
   };
 
   return (
@@ -64,15 +154,16 @@ export default function ProfileScreen() {
         {profileLoading ? <ActivityIndicator color={Colors.primary} accessibilityLabel={t("profile.loading")} /> : null}
         {profileError ? <Text accessibilityRole="alert" style={{ color: Colors.error }}>{localizeMessage(profileError)}</Text> : null}
         {!profileLoading && !profileError && !profile ? <Text style={{ color: Colors.textSecondary }}>{t("profile.missing")}</Text> : null}
-        {feedback ? <Text accessibilityRole="alert" style={{ color: Colors.error }}>{localizeMessage(feedback)}</Text> : null}
+        {feedback ? <Text accessibilityRole={feedback === t('profile.avatarSaved') ? undefined : 'alert'} style={{ color:feedback === t('profile.avatarSaved') ? Colors.success : Colors.error }}>{localizeMessage(feedback)}</Text> : null}
+        {avatarQuery.error && avatar ? <Text accessibilityRole="alert" style={{ color:Colors.error }}>{localizeMessage(avatarQuery.error)}</Text> : null}
         {/* Profile Header Card */}
         <View style={styles.headerCard}>
           <View style={styles.avatarWrapper}>
-            {avatar && /^https:\/\//i.test(avatar) && !avatarFailed ? (
-              <Image source={{ uri: avatar }} style={{ width: 80, height: 80, borderRadius: 40 }} onError={() => setAvatarFailed(true)} accessibilityLabel={t("profile.avatar")} />
+            {avatarImageUrl && !avatarFailed ? (
+              <Image source={{ uri: avatarImageUrl }} style={{ width: 80, height: 80, borderRadius: 40 }} onError={() => setAvatarFailed(true)} accessibilityLabel={t("profile.avatar")} />
             ) : <MockAvatar initials={initials(name)} size={80} />}
-            <TouchableOpacity style={styles.editAvatarBadge} activeOpacity={0.8}>
-              <Ionicons name="camera" size={14} color={Colors.white} />
+            <TouchableOpacity style={styles.editAvatarBadge} activeOpacity={0.8} onPress={handlePickAvatar} disabled={avatarBusy} accessibilityRole="button" accessibilityLabel={t('profile.changeAvatar')}>
+              {avatarBusy ? <ActivityIndicator size="small" color={Colors.white} /> : <Ionicons name="camera" size={14} color={Colors.white} />}
             </TouchableOpacity>
           </View>
 
@@ -87,49 +178,55 @@ export default function ProfileScreen() {
 
         {!profile && !profileLoading ? <TextButton title={t("profile.create")} onPress={async () => { try { await ensureMyProfile(); await refreshProfile(); } catch (error) { setFeedback(error instanceof Error ? error.message : "profile.createError"); } }} /> : null}
         {/* Personal Info Grid */}
-        <SectionHeader title={t("profile.personal")} />
+        <SectionHeader title={t("profile.personal")} actionText={t('common.edit')} onAction={() => setPersonalEditorOpen(true)} />
         <View style={styles.personalInfoGrid}>
           <View style={styles.infoBox}>
             <View style={[styles.infoIconBg, { backgroundColor: Colors.primaryLight }]}>
               <Ionicons name="calendar-outline" size={18} color={Colors.primary} />
             </View>
-            <Text style={styles.infoLabel}>{t("profile.birthDate")}</Text>
-            <Text style={styles.infoValue}>
-              {birthDate === '—' ? birthDate : formatDate(birthDate)}
-            </Text>
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>{t("profile.birthDate")}</Text>
+              <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={styles.infoValue}>{birthDate === '—' ? birthDate : formatBirthDate(birthDate)}</Text>
+            </View>
           </View>
 
           <View style={styles.infoBox}>
             <View style={[styles.infoIconBg, { backgroundColor: Colors.blueLight }]}>
               <Ionicons name="resize-outline" size={18} color={Colors.blue} />
             </View>
-            <Text style={styles.infoLabel}>{t("health.height")}</Text>
-            <Text style={styles.infoValue}>
-              {formatNumber(height)} <Text style={styles.infoUnit}>cm</Text>
-            </Text>
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>{t("health.height")}</Text>
+              <Text numberOfLines={1} style={styles.infoValue}>
+                {formatNumber(height)} <Text style={styles.infoUnit}>cm</Text>
+              </Text>
+            </View>
           </View>
 
           <View style={styles.infoBox}>
             <View style={[styles.infoIconBg, { backgroundColor: Colors.orangeLight }]}>
               <Ionicons name="scale-outline" size={18} color={Colors.orange} />
             </View>
-            <Text style={styles.infoLabel}>{t("health.weight")}</Text>
-            <Text style={styles.infoValue}>
-              {formatNumber(records.data?.weight?.weight_kg)} <Text style={styles.infoUnit}>kg</Text>
-            </Text>
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>{t("health.weight")}</Text>
+              <Text numberOfLines={1} style={styles.infoValue}>
+                {formatNumber(records.data?.weight?.weight_kg)} <Text style={styles.infoUnit}>kg</Text>
+              </Text>
+            </View>
           </View>
 
           <View style={styles.infoBox}>
             <View style={[styles.infoIconBg, { backgroundColor: Colors.purpleLight }]}>
               <Ionicons name="person-outline" size={18} color={Colors.purple} />
             </View>
-            <Text style={styles.infoLabel}>{t("health.gender")}</Text>
-            <Text style={styles.infoValue}>{'—'}</Text>
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>{t("health.gender")}</Text>
+              <Text numberOfLines={1} style={styles.infoValue}>{profile?.gender ? t(`profile.genderOptions.${profile.gender}`) : '—'}</Text>
+            </View>
           </View>
         </View>
 
         {/* Daily Goals Section */}
-        <SectionHeader title={t("profile.dailyGoals")} />
+        <SectionHeader title={t("profile.dailyGoals")} actionText={t('common.edit')} onAction={() => setGoalsEditorOpen(true)} />
         <View style={styles.card}>
           {/* Steps */}
           <View style={styles.goalItem}>
@@ -244,6 +341,18 @@ export default function ProfileScreen() {
           />
         </View>
       </ScreenContainer>
+      {personalEditorOpen ? <PersonalProfileModal
+          visible
+          initial={personalDraft}
+          onClose={() => setPersonalEditorOpen(false)}
+          onSave={handleSavePersonal}
+        /> : null}
+      {goalsEditorOpen ? <HealthGoalsModal
+          visible
+          initial={goalsDraft}
+          onClose={() => setGoalsEditorOpen(false)}
+          onSave={handleSaveGoals}
+        /> : null}
     </View>
   );
 }
@@ -309,27 +418,35 @@ const styles = StyleSheet.create({
   },
   personalInfoGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
     gap: Spacing.sm,
   },
   infoBox: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: '47%',
+    minHeight: 68,
     backgroundColor: Colors.white,
     borderRadius: Radius.lg,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xs,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+    flexDirection: 'row',
     alignItems: 'center',
     ...Shadows.sm,
     borderWidth: 1,
     borderColor: Colors.border,
   },
   infoIconBg: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.xs,
+    marginRight: Spacing.sm,
+    flexShrink: 0,
+  },
+  infoTextContainer: {
+    flex: 1,
+    minWidth: 0,
   },
   infoLabel: {
     ...Typography.labelSmall,
@@ -339,7 +456,7 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     ...Typography.cardTitle,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: Colors.textPrimary,
   },

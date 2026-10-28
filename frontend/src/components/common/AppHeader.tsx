@@ -13,6 +13,7 @@ interface AppHeaderProps {
   showBack?: boolean;
   rightIcon?: string;
   onRightPress?: () => void;
+  rightAccessibilityLabel?: string;
   transparent?: boolean;
 }
 
@@ -21,6 +22,7 @@ export function AppHeader({
   showBack = true,
   rightIcon,
   onRightPress,
+  rightAccessibilityLabel,
   transparent = false,
 }: AppHeaderProps) {
   const { t } = useTranslation();
@@ -57,7 +59,7 @@ export function AppHeader({
           <TouchableOpacity
             style={styles.rightButton}
             onPress={onRightPress}
-            accessibilityLabel={t(rightIcon === "settings-outline" ? "navigation.settings" : "common.edit")}
+            accessibilityLabel={t(rightAccessibilityLabel ?? (rightIcon === "settings-outline" ? "navigation.settings" : "common.edit"))}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons name={rightIcon as any} size={22} color={Colors.textPrimary} />

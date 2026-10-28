@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { formatNumber,formatTime } from '../../src/i18n/formatting';
-import React from 'react';
+import { formatNumber,formatTime,formatDate } from '../../src/i18n/formatting';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,26 +18,28 @@ import { getCurrentGoals } from '../../src/services/healthGoalsService';
 import { aggregateNutrition, calculateFoodNutrition } from '../../src/lib/healthCalculations';
 import { safeNumber } from '../../src/lib/dataValidation';
 import { DataFeedback } from '../../src/components/common/DataFeedback';
+import { CalendarDatePicker } from '../../src/components/common/CalendarDatePicker';
 
 export default function NutritionScreen() {
   const { t } = useTranslation();
 
   const router = useRouter();
-
-  const today = toLocalDateKey();
-  const query = useHealthQuery(async () => { const [rows,goals] = await Promise.all([getMealsByDate(today),getCurrentGoals(today)]); return { rows,summary:aggregateNutrition(rows,today,today,goals?.daily_calories ?? null) }; },'nutrition-screen:'+today);
+  const [selectedDate,setSelectedDate] = useState(toLocalDateKey());
+  const [calendarVisible,setCalendarVisible] = useState(false);
+  const query = useHealthQuery(async () => { const [rows,goals] = await Promise.all([getMealsByDate(selectedDate),getCurrentGoals(selectedDate)]); return { rows,summary:aggregateNutrition(rows,selectedDate,selectedDate,goals?.daily_calories ?? null) }; },'nutrition-screen:'+selectedDate);
   const summary = query.data?.summary;
   const nutritionData = { caloriesGoal:summary?.calorieGoal ?? 0,caloriesConsumed:summary?.calories ?? 0,progress:(summary?.progressPercent ?? 0)/100,protein:{ current:summary?.protein ?? 0,goal:0,color:Colors.primary },carbs:{ current:summary?.carbs ?? 0,goal:0,color:Colors.blue },fat:{ current:summary?.fat ?? 0,goal:0,color:Colors.orange } };
-  const meals = (['breakfast','lunch','dinner','snack'] as const).map(type => { const rows = query.data?.rows.filter(row => row.meal_type === type) ?? []; return { id:type,type:t(`meals.${type}`),icon:'restaurant-outline',time:rows.length ? formatTime(new Date(rows[0].consumed_at),{ hour:'2-digit',minute:'2-digit' }) : '',totalCalories:formatNumber(summary?.byMealType[type].calories,0) ?? '—',items:rows.map(row => ({ name:row.food?.name ?? t("nutrition.unavailableFood"),calories:row.food ? formatNumber(calculateFoodNutrition(row.food,safeNumber(row.quantity_g)).calories,0) : '—' })) }; });
+  const meals = (['breakfast','lunch','dinner','snack'] as const).map(type => { const rows = query.data?.rows.filter(row => row.meal_type === type) ?? []; return { id:type,type:t(`meals.${type}`),icon:'restaurant-outline',time:rows.length ? formatTime(new Date(rows[0].consumed_at),{ hour:'2-digit',minute:'2-digit' }) : '',totalCalories:formatNumber(summary?.byMealType[type].calories,0) ?? '—',items:rows.map(row => ({ name:row.food?.name ?? t("nutrition.unavailableFood"),quantity:formatNumber(safeNumber(row.quantity_g)),calories:row.food ? formatNumber(calculateFoodNutrition(row.food,safeNumber(row.quantity_g)).calories,0) : '—' })) }; });
   const caloriesRemaining = Math.max(0, nutritionData.caloriesGoal - nutritionData.caloriesConsumed);
 
-  const handleAddMeal = () => {
-    router.push('/meals/add');
+  const handleAddMeal = (mealType = 'dinner') => {
+    router.push({ pathname:'/meals/add' as any,params:{ mealType,date:selectedDate } });
   };
 
   return (
     <View style={styles.container}>
-      <AppHeader title={t("health.nutrition")} showBack />
+      <AppHeader title={t("health.nutrition")} showBack rightIcon="calendar-outline" rightAccessibilityLabel="calendar.chooseDate" onRightPress={() => setCalendarVisible(true)} />
+      <Text style={styles.selectedDate}>{formatDate(selectedDate)}</Text>
 
       <ScreenContainer>
         <DataFeedback {...query} empty={summary?.recordCount === 0} />
@@ -58,7 +60,7 @@ export default function NutritionScreen() {
                 </Text>
                 <Text style={styles.ringSubtext}>{t("nutrition.consumedUnit")}</Text>
                 <View style={styles.goalPill}>
-                  <Text style={styles.ringGoal}>{t("nutrition.goalPrefix")}{' '}{formatNumber(nutritionData.caloriesGoal)} kcal</Text>
+                  <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={styles.ringGoal}>{t("nutrition.goalPrefix")}{' '}{formatNumber(nutritionData.caloriesGoal)} kcal</Text>
                 </View>
               </View>
             </ProgressRing>
@@ -163,9 +165,9 @@ export default function NutritionScreen() {
 
         {/* Meals Section */}
         <SectionHeader
-          title={t("nutrition.mealsToday")}
+          title={t("nutrition.mealsForDate",{date:formatDate(selectedDate)})}
           actionText={t("nutrition.quickAdd")}
-          onAction={handleAddMeal}
+          onAction={() => handleAddMeal('dinner')}
         />
 
         <View style={styles.mealsContainer}>
@@ -173,7 +175,7 @@ export default function NutritionScreen() {
             const isLogged = meal.items && meal.items.length > 0;
 
             return (
-              <View key={meal.id} style={styles.mealCard}>
+              <TouchableOpacity key={meal.id} style={styles.mealCard} onPress={() => handleAddMeal(meal.id)} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('nutrition.editMeal',{meal:meal.type})}>
                 <View style={styles.mealHeader}>
                   <View style={styles.mealHeaderLeft}>
                     <View
@@ -205,11 +207,13 @@ export default function NutritionScreen() {
                     ) : (
                       <TouchableOpacity
                         style={styles.logNowBadge}
-                        onPress={handleAddMeal}
+                        onPress={() => handleAddMeal(meal.id)}
                         activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel={t(isLogged ? 'common.edit' : 'nutrition.log') + ` ${meal.type}`}
                       >
-                        <Ionicons name="add" size={14} color={Colors.primary} />
-                        <Text style={styles.logNowText}>{t("nutrition.log")}</Text>
+                        <Ionicons name={isLogged ? 'create-outline' : 'add'} size={14} color={Colors.primary} />
+                        <Text style={styles.logNowText}>{t(isLogged ? 'common.edit' : 'nutrition.log')}</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -226,7 +230,7 @@ export default function NutritionScreen() {
                         ]}
                       >
                         <View style={styles.mealItemBullet} />
-                        <Text style={styles.mealItemName}>{item.name}</Text>
+                        <Text style={styles.mealItemName}>{item.name} · {item.quantity} g</Text>
                         <Text style={styles.mealItemCalories}>{item.calories} kcal</Text>
                       </View>
                     ))}
@@ -237,7 +241,7 @@ export default function NutritionScreen() {
                     <Text style={styles.unloggedText}>{t("nutrition.notLogged")}</Text>
                   </View>
                 )}
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>
@@ -246,11 +250,12 @@ export default function NutritionScreen() {
         <View style={styles.actionContainer}>
           <PrimaryButton
             title={t("meals.add")}
-            onPress={handleAddMeal}
+            onPress={() => handleAddMeal('dinner')}
             style={styles.addButton}
           />
         </View>
       </ScreenContainer>
+      <CalendarDatePicker key={`${calendarVisible}-${selectedDate}`} visible={calendarVisible} date={selectedDate} title={t('calendar.chooseDate')} onClose={() => setCalendarVisible(false)} onSelect={value => { setSelectedDate(value); setCalendarVisible(false); }} />
     </View>
   );
 }
@@ -260,6 +265,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  selectedDate: { ...Typography.supporting, color:Colors.textMuted, backgroundColor:Colors.white, paddingHorizontal:Spacing.screenPadding, paddingVertical:Spacing.sm },
   summaryCard: {
     backgroundColor: Colors.white,
     borderRadius: Radius.xl,
@@ -305,6 +311,8 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.orange,
     fontWeight: '600',
+    maxWidth: 112,
+    textAlign: 'center',
   },
   metricsRow: {
     flexDirection: 'row',

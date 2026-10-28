@@ -2,8 +2,9 @@
 // No CLI-generated schema was available in this workspace. Regenerate when connected.
 export type Numeric = number | string;
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
-export type ProfileRow = { id: string; full_name: string | null; date_of_birth: string | null; height_cm: Numeric | null; avatar_url: string | null; created_at: string; updated_at: string };
-export type ProfileUpdate = Partial<Pick<ProfileRow, 'full_name' | 'date_of_birth' | 'height_cm' | 'avatar_url'>>;
+export type ProfileGender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
+export type ProfileRow = { id: string; full_name: string | null; date_of_birth: string | null; height_cm: Numeric | null; gender: ProfileGender | null; avatar_url: string | null; created_at: string; updated_at: string };
+export type ProfileUpdate = Partial<Pick<ProfileRow, 'full_name' | 'date_of_birth' | 'height_cm' | 'gender' | 'avatar_url'>>;
 export type HealthGoalRow = { id: string; user_id: string; daily_steps: number | null; daily_calories: number | null; daily_water_ml: number | null; target_sleep_minutes: number | null; effective_from: string; created_at: string };
 export type HealthGoalInsert = { daily_steps?: number; daily_calories?: number; daily_water_ml?: number; target_sleep_minutes?: number; effective_from?: string };
 export type StepRecordRow = { id: string; user_id: string; record_date: string; steps: number; distance_km: Numeric | null; active_minutes: number | null; created_at: string; updated_at: string };

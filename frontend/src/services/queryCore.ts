@@ -7,7 +7,7 @@ import type { Inputs, PersonalTable, Rows } from '../types/database';
 export type HistoryOptions = { page?: number; pageSize?: number; startDate?: string; endDate?: string; ascending?: boolean };
 export type Page<T> = { data: T[]; page: number; pageSize: number; total: number | null; hasMore: boolean };
 export const columns = {
- profiles: 'id,full_name,date_of_birth,height_cm,avatar_url,created_at,updated_at',
+ profiles: 'id,full_name,date_of_birth,height_cm,gender,avatar_url,created_at,updated_at',
  health_goals: 'id,user_id,daily_steps,daily_calories,daily_water_ml,target_sleep_minutes,effective_from,created_at',
  step_records: 'id,user_id,record_date,steps,distance_km,active_minutes,created_at,updated_at',
  sleep_records: 'id,user_id,sleep_start,sleep_end,quality_rating,notes,created_at',
