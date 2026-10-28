@@ -14,8 +14,10 @@ import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 import { useNutrition, useHealthGoals } from '../../src/hooks/healthHooks';
 import { getWeekRange, toLocalDateKey } from '../../src/lib/dateUtils';
 import { DataFeedback } from '../../src/components/common/DataFeedback';
+import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 export default function CaloriesScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
 
   const today = toLocalDateKey(); const query = useNutrition(getWeekRange(today));
@@ -150,7 +152,7 @@ export default function CaloriesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

@@ -27,6 +27,7 @@ import { dataError } from '../../src/lib/dataErrors';
 import type { MealType } from '../../src/types/database';
 import type { MealWithFood } from '../../src/types/health';
 import { parseLocalDate, toLocalDateKey } from '../../src/lib/dateUtils';
+import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 const rawMEAL_TYPES = [
   { id: 'breakfast', label: "meals.breakfast", icon: 'sunny-outline' },
@@ -39,6 +40,7 @@ const EMPTY_ROWS: MealWithFood[] = [];
 const EMPTY_ITEMS: Record<string,number> = {};
 
 export default function AddMealScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const MEAL_TYPES = localizeStaticData(rawMEAL_TYPES);
 
@@ -341,7 +343,7 @@ export default function AddMealScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

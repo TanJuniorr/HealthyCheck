@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { Radius, Spacing } from '../../constants/spacing';
+import { useThemedStyles } from '../../contexts/ThemeContext';
 
 interface AppTextInputProps {
   label?: string;
@@ -32,6 +33,7 @@ export function AppTextInput({
   style,
   leftIcon,
 }: AppTextInputProps) {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
 
   const [isFocused, setIsFocused] = useState(false);
@@ -91,7 +93,7 @@ export function AppTextInput({
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     marginBottom: Spacing.lg,
   },

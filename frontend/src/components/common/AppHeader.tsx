@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { Spacing } from '../../constants/spacing';
+import { useThemedStyles } from '../../contexts/ThemeContext';
 
 interface AppHeaderProps {
   title: string;
@@ -25,6 +26,7 @@ export function AppHeader({
   rightAccessibilityLabel,
   transparent = false,
 }: AppHeaderProps) {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -79,6 +81,7 @@ interface SectionHeaderProps {
 }
 
 export function SectionHeader({ title, actionText, onAction }: SectionHeaderProps) {
+  const styles = useThemedStyles(baseStyles);
   return (
     <View style={styles.sectionContainer}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -91,7 +94,7 @@ export function SectionHeader({ title, actionText, onAction }: SectionHeaderProp
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     backgroundColor: Colors.white,
     borderBottomWidth: 1,

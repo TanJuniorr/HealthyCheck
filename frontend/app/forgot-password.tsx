@@ -21,8 +21,10 @@ import { AppTextInput } from '../src/components/common/AppTextInput';
 import { PrimaryButton } from '../src/components/common/Buttons';
 import { sendRecoveryEmail } from '../src/lib/authRecovery';
 import { authErrorMessage, isValidEmail } from '../src/lib/authErrors';
+import { useThemedStyles } from '../src/contexts/ThemeContext';
 
 export default function ForgotPasswordScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
 
   const router = useRouter();
@@ -147,7 +149,7 @@ export default function ForgotPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: Colors.white,

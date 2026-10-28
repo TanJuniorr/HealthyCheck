@@ -21,8 +21,10 @@ import { Typography } from '../src/constants/typography';
 import { Spacing, Radius } from '../src/constants/spacing';
 import { AppTextInput } from '../src/components/common/AppTextInput';
 import { PrimaryButton } from '../src/components/common/Buttons';
+import { useThemedStyles } from '../src/contexts/ThemeContext';
 
 export default function LoginScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
 
   const router = useRouter();
@@ -184,7 +186,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
     backgroundColor: Colors.white,

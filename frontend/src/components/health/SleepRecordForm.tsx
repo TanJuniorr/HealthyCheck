@@ -16,11 +16,13 @@ import { shiftDay, toLocalDateKey } from '../../lib/dateUtils';
 import { sleepLocalTimestamp, unusualSleepDuration, validateCompletedSleep } from '../../lib/sleepValidation';
 import { addSleepRecord, updateSleepRecord } from '../../services/sleepService';
 import type { SleepRecordRow } from '../../types/database';
+import { useThemedStyles } from '../../contexts/ThemeContext';
 
 type Props = { record: SleepRecordRow | null; onClose: () => void; onSaved: (wakeDate: string) => void };
 function clock(date: Date) { return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`; }
 
 export function SleepRecordForm({ record, onClose, onSaved }: Props) {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [startDate, setStartDate] = useState(() => record ? toLocalDateKey(new Date(record.sleep_start)) : shiftDay(new Date(), -1));
@@ -111,7 +113,7 @@ export function SleepRecordForm({ record, onClose, onSaved }: Props) {
     </KeyboardAvoidingView>
   </Modal>;
 }
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: Spacing.screenPadding, gap: Spacing.lg, width: '100%', maxWidth: 640, alignSelf: 'center' },
   header: { minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', position: 'relative' },

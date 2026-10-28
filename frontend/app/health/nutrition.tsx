@@ -19,8 +19,10 @@ import { aggregateNutrition, calculateFoodNutrition } from '../../src/lib/health
 import { safeNumber } from '../../src/lib/dataValidation';
 import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { CalendarDatePicker } from '../../src/components/common/CalendarDatePicker';
+import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 export default function NutritionScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
 
   const router = useRouter();
@@ -260,7 +262,7 @@ export default function NutritionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

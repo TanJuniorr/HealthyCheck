@@ -9,6 +9,7 @@ import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Layout } from '../../src/constants/spacing';
 import { PrimaryButton } from '../../src/components/common/Buttons';
+import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 interface SharingFeature {
   icon: string;
@@ -38,6 +39,7 @@ const rawSHARING_FEATURES: SharingFeature[] = [
 ];
 
 export default function SharingScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const SHARING_FEATURES = localizeStaticData(rawSHARING_FEATURES);
 
@@ -108,7 +110,7 @@ export default function SharingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: Colors.background,

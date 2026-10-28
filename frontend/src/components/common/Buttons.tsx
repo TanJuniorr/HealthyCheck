@@ -12,6 +12,7 @@ import {
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { Radius, Spacing } from '../../constants/spacing';
+import { useThemedStyles } from '../../contexts/ThemeContext';
 
 type PrimaryButtonProps = {
   title: string;
@@ -28,6 +29,7 @@ export function PrimaryButton({
   disabled = false,
   loading = false,
 }: PrimaryButtonProps) {
+  const styles = useThemedStyles(baseStyles);
   const isBusy = disabled || loading;
 
   return (
@@ -62,7 +64,7 @@ export function PrimaryButton({
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   primaryButton: {
     minHeight: 50,
     paddingHorizontal: Spacing.lg,

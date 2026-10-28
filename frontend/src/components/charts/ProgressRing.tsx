@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
+import { getThemedColor, useTheme, useThemedStyles } from '../../contexts/ThemeContext';
 
 interface ProgressRingProps {
   progress: number; // 0 to 1
@@ -21,6 +22,10 @@ export function ProgressRing({
   trackColor = Colors.border,
   children,
 }: ProgressRingProps) {
+  const styles = useThemedStyles(baseStyles);
+  const { isDark } = useTheme();
+  const themedColor = getThemedColor(color, isDark);
+  const themedTrackColor = getThemedColor(trackColor, isDark, 'background');
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - Math.min(Math.max(progress, 0), 1));
@@ -34,7 +39,7 @@ export function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={trackColor}
+          stroke={themedTrackColor}
           strokeWidth={strokeWidth}
         />
         {/* Progress */}
@@ -43,7 +48,7 @@ export function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={color}
+          stroke={themedColor}
           strokeWidth={strokeWidth}
           strokeDasharray={`${circumference}`}
           strokeDashoffset={strokeDashoffset}
@@ -75,6 +80,10 @@ export function ProgressBar({
   value,
   showLabel = true,
 }: ProgressBarProps) {
+  const styles = useThemedStyles(baseStyles);
+  const { isDark } = useTheme();
+  const themedColor = getThemedColor(color, isDark);
+  const themedTrackColor = getThemedColor(trackColor, isDark, 'background');
   const clampedProgress = Math.min(Math.max(progress, 0), 1);
 
   return (
@@ -85,13 +94,13 @@ export function ProgressBar({
           {value && <Text style={styles.barValue}>{value}</Text>}
         </View>
       )}
-      <View style={[styles.barTrack, { height, backgroundColor: trackColor, borderRadius: height / 2 }]}>
+      <View style={[styles.barTrack, { height, backgroundColor: themedTrackColor, borderRadius: height / 2 }]}>
         <View
           style={[
             styles.barFill,
             {
               width: `${clampedProgress * 100}%`,
-              backgroundColor: color,
+              backgroundColor: themedColor,
               height,
               borderRadius: height / 2,
             },
@@ -102,7 +111,7 @@ export function ProgressBar({
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',

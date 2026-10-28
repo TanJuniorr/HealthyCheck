@@ -21,9 +21,11 @@ import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 import { CalendarDatePicker } from '../../src/components/common/CalendarDatePicker';
+import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 type Period = 'Today' | 'Week' | 'Month';
 export default function StepsScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
 
   const [selectedPeriod, setSelectedPeriod] = useState<Period>('Today');
@@ -261,7 +263,7 @@ export default function StepsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

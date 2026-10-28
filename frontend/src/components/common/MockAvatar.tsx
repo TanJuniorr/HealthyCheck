@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { Spacing } from '../../constants/spacing';
+import { useThemedStyles } from '../../contexts/ThemeContext';
 
 interface MockAvatarProps {
   initials: string;
@@ -15,6 +16,7 @@ export function MockAvatar({
   size = 44,
   backgroundColor = Colors.primaryLight,
 }: MockAvatarProps) {
+  const styles = useThemedStyles(baseStyles);
   return (
     <View
       style={[
@@ -48,6 +50,7 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ title, description }: EmptyStateProps) {
+  const styles = useThemedStyles(baseStyles);
   return (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyTitle}>{title}</Text>
@@ -56,7 +59,7 @@ export function EmptyState({ title, description }: EmptyStateProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   avatar: {
     alignItems: 'center',
     justifyContent: 'center',

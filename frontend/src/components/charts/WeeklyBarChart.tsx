@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Rect, Text as SvgText } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
+import { getThemedColor, useTheme, useThemedStyles } from '../../contexts/ThemeContext';
 
 interface BarDataItem {
   label: string;
@@ -32,6 +33,10 @@ export function WeeklyBarChart({
   showValues = false,
   unit = '',
 }: WeeklyBarChartProps) {
+  const styles = useThemedStyles(baseStyles);
+  const { isDark } = useTheme();
+  const themedColor = getThemedColor(color, isDark);
+  const themedHighlightColor = highlightColor ? getThemedColor(highlightColor, isDark) : themedColor;
   useTranslation();
   const [totalWidth, setTotalWidth] = useState(0);
   const max = maxValue && maxValue > 0 ? maxValue : Math.max(1,...data.map((d) => d.value)) * 1.1;
@@ -47,7 +52,7 @@ export function WeeklyBarChart({
           const x = gap + index * (barWidth + gap);
           const y = chartHeight - barHeight;
           const isHighlighted = item.highlighted;
-          const barColor = isHighlighted ? (highlightColor || color) : color;
+          const barColor = isHighlighted ? themedHighlightColor : themedColor;
           const opacity = isHighlighted ? 1 : 0.5;
 
           return (
@@ -103,7 +108,7 @@ export function WeeklyBarChart({
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     width: '100%',
   },

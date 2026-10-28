@@ -6,7 +6,9 @@ import { Colors } from '../../constants/colors';
 import { Spacing } from '../../constants/spacing';
 import { Typography } from '../../constants/typography';
 import { TextButton } from './Buttons';
+import { useTheme } from '../../contexts/ThemeContext';
 export function DataFeedback({ isLoading, error, empty, refresh }: { isLoading: boolean; error: string | null; empty?: boolean; refresh: () => Promise<void> }) {
+  useTheme();
   const { t } = useTranslation();
 
  return <View style={{ paddingVertical: Spacing.sm }}>

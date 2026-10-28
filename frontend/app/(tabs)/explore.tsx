@@ -18,8 +18,10 @@ import { CategoryChip } from '../../src/components/health/HealthComponents';
 import { SectionHeader } from '../../src/components/common/AppHeader';
 import { ArticleCard } from '../../src/components/articles/ArticleCard';
 import { articles as rawArticles, featuredArticle as rawFeaturedArticle, exploreCategories as rawExploreCategories } from '../../src/data/articles';
+import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 export default function ExploreScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const articles = localizeStaticData(rawArticles);
   const featuredArticle = localizeStaticData(rawFeaturedArticle);
@@ -154,7 +156,7 @@ export default function ExploreScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: Colors.background,

@@ -6,7 +6,9 @@ import { useAppLanguage } from '../../i18n/LanguageProvider';
 import { Colors } from '../../constants/colors';
 import { Radius,Spacing } from '../../constants/spacing';
 import { Typography } from '../../constants/typography';
+import { useTheme } from '../../contexts/ThemeContext';
 export function LanguageSelector({ compact = false }: { compact?: boolean }) {
+  useTheme();
  const { t } = useTranslation();
  const { language,changeLanguage,persistenceError } = useAppLanguage();
  return <View style={{ backgroundColor:Colors.surface,borderRadius:Radius.lg,borderWidth:compact ? 0 : 1,borderColor:Colors.border,paddingHorizontal:compact ? 0 : Spacing.lg,marginBottom:Spacing.lg }}>

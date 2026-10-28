@@ -8,12 +8,19 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 import { StepSensorProvider } from '../src/contexts/StepSensorContext';
 import { Colors } from '../src/constants/colors';
+import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
+
+function ThemedStatusBar() {
+  const { isDark } = useTheme();
+  return <StatusBar style={isDark ? 'light' : 'dark'} />;
+}
 
 function AuthNavigator() {
   const { t } = useTranslation();
+  const { isDark } = useTheme();
 
   const { isLoading, isAuthenticated, isRecovery } = useAuth();
-  if (isLoading) return <View style={{ flex: 1, backgroundColor: Colors.white, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={Colors.primary} accessibilityLabel={t("auth.restoring")} /></View>;
+  if (isLoading) return <View style={{ flex: 1, backgroundColor: isDark ? Colors.background : Colors.white, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={Colors.primary} accessibilityLabel={t("auth.restoring")} /></View>;
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={!isAuthenticated} redirectTo={isRecovery ? '/reset-password' : '/(tabs)'}>
@@ -38,5 +45,5 @@ function AuthNavigator() {
   );
 }
 export default function RootLayout() {
-  return <SafeAreaProvider><LanguageProvider><StatusBar style="dark" /><AuthProvider><StepSensorProvider><AuthNavigator /></StepSensorProvider></AuthProvider></LanguageProvider></SafeAreaProvider>;
+  return <SafeAreaProvider><ThemeProvider><LanguageProvider><ThemedStatusBar /><AuthProvider><StepSensorProvider><AuthNavigator /></StepSensorProvider></AuthProvider></LanguageProvider></ThemeProvider></SafeAreaProvider>;
 }

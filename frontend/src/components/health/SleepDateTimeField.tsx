@@ -8,8 +8,10 @@ import { appLocale, formatDate, formatTime } from '../../i18n/formatting';
 import { parseLocalDate, toLocalDateKey } from '../../lib/dateUtils';
 import { sleepLocalTimestamp } from '../../lib/sleepValidation';
 import type { SleepDateTimeFieldProps } from './SleepDateTimeField.types';
+import { useThemedStyles } from '../../contexts/ThemeContext';
 
 export function SleepDateTimeField({ label, date, time, activeMode, onActiveModeChange, onChange, disabled }: SleepDateTimeFieldProps) {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const togglePicker = (next: 'date' | 'time') => onActiveModeChange(activeMode === next ? null : next);
   let value: Date;
@@ -50,7 +52,7 @@ export function SleepDateTimeField({ label, date, time, activeMode, onActiveMode
   </View>;
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: { gap: 8 },
   label: { color: Colors.textSecondary, fontWeight: '600' },
   fields: { flexDirection: 'row', gap: 8 },

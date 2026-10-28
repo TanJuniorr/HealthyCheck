@@ -18,6 +18,7 @@ import { AppHeader, SectionHeader } from '../src/components/common/AppHeader';
 import { ScreenContainer } from '../src/components/common/ScreenContainer';
 import { AppTextInput } from '../src/components/common/AppTextInput';
 import { PrimaryButton } from '../src/components/common/Buttons';
+import { useThemedStyles } from '../src/contexts/ThemeContext';
 
 interface DataCategory {
   id: string;
@@ -51,6 +52,7 @@ const rawPRIVACY_LEVELS = [
 ];
 
 export default function SharingSetupScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const PRIVACY_LEVELS = localizeStaticData(rawPRIVACY_LEVELS);
 
@@ -279,7 +281,7 @@ export default function SharingSetupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

@@ -23,6 +23,7 @@ import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
+import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 export default function SleepScreen() {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ export default function SleepScreen() {
 }
 
 function SleepContent() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -165,7 +167,7 @@ function SleepContent() {
   </View>;
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   flex: { flex: 1 },
   controls: { gap: Spacing.sm, marginTop: Spacing.md },
   controlsRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },

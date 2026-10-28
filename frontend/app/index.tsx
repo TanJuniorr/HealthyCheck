@@ -9,8 +9,10 @@ import { Colors } from '../src/constants/colors';
 import { Typography } from '../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../src/constants/spacing';
 import { PrimaryButton } from '../src/components/common/Buttons';
+import { useThemedStyles } from '../src/contexts/ThemeContext';
 
 export default function WelcomeScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
 
   const router = useRouter();
@@ -98,7 +100,7 @@ export default function WelcomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.white,

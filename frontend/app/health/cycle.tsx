@@ -15,8 +15,10 @@ import {
   feelings as rawFeelings,
   cycleInsights as rawCycleInsights,
 } from '../../src/data/cycle';
+import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 export default function CycleTrackingScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const cycleData = localizeStaticData(rawCycleData);
   const cycleWeekDates = localizeStaticData(rawCycleWeekDates);
@@ -225,7 +227,7 @@ export default function CycleTrackingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

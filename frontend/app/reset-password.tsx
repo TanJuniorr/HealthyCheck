@@ -12,8 +12,10 @@ import { Typography } from '../src/constants/typography';
 import { AppHeader } from '../src/components/common/AppHeader';
 import { AppTextInput } from '../src/components/common/AppTextInput';
 import { PrimaryButton, TextButton } from '../src/components/common/Buttons';
+import { useTheme } from '../src/contexts/ThemeContext';
 
 export default function ResetPasswordScreen() {
+  useTheme();
   const { t } = useTranslation();
 
   const { isRecovery, session, finishRecovery, signOut, isAuthenticated } = useAuth();
@@ -42,7 +44,7 @@ export default function ResetPasswordScreen() {
     catch (error) { setFeedback(authErrorMessage(error)); }
     finally { pending.current = false; setBusy(false); }
   };
-  return <View style={{ flex: 1, backgroundColor: Colors.white }}>
+  return <View style={{ flex: 1, backgroundColor: Colors.background }}>
     <AppHeader title={t("auth.reset")} showBack={false} />
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: Spacing.screenPadding, paddingBottom: insets.bottom + Spacing.xl, gap: Spacing.md }}>

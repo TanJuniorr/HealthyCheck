@@ -7,9 +7,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Layout } from '../../src/constants/spacing';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function TabLayout() {
   const { t } = useTranslation();
+  useTheme();
 
   const insets = useSafeAreaInsets();
   const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 0 : 8);
@@ -18,8 +20,8 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#0EA5A4',
-        tabBarInactiveTintColor: '#94A3A8',
+        tabBarActiveTintColor: Colors.tabActive,
+        tabBarInactiveTintColor: Colors.tabInactive,
         tabBarStyle: {
           backgroundColor: Colors.tabBarBg,
           borderTopColor: Colors.tabBarBorder,

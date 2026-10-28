@@ -10,6 +10,7 @@ import { TrendLineChart } from '../../src/components/charts/TrendLineChart';
 import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
+import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 const rawWeeklyHeartData = [
   { label: "weekday.mon", value: 68 },
@@ -22,6 +23,7 @@ const rawWeeklyHeartData = [
 ];
 
 export default function HeartRateScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const weeklyHeartData = localizeStaticData(rawWeeklyHeartData);
 
@@ -158,7 +160,7 @@ export default function HeartRateScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

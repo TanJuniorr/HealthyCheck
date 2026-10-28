@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/colors';
 import { Spacing } from '../../constants/spacing';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface ScreenContainerProps {
   children: ReactNode;
@@ -22,6 +23,7 @@ export function ScreenContainer({
   style,
   contentContainerStyle,
 }: ScreenContainerProps) {
+  const { isDark } = useTheme();
   const insets = useSafeAreaInsets();
 
   const containerStyle: ViewStyle = {
@@ -38,7 +40,7 @@ export function ScreenContainer({
   if (scrollable) {
     return (
       <View style={[containerStyle, style]}>
-        <StatusBar style="dark" />
+        <StatusBar style={isDark ? 'light' : 'dark'} />
         <ScrollView
           contentContainerStyle={contentStyle}
           showsVerticalScrollIndicator={false}
@@ -52,7 +54,7 @@ export function ScreenContainer({
 
   return (
     <View style={[containerStyle, { paddingHorizontal: padded ? Spacing.screenPadding : 0 }, style]}>
-      <StatusBar style="dark" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       {children}
     </View>
   );

@@ -5,6 +5,7 @@ import { I18nextProvider, useTranslation } from 'react-i18next';
 import i18n, { initialization } from './index';
 import { isAppLanguage, persistLanguage, readLanguage, type AppLanguage } from './languageStorage';
 import { Colors } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 type LanguageContextValue = { changeLanguage:(language:AppLanguage)=>Promise<void>; persistenceError:boolean };
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 let bootstrap: Promise<void> | null = null;
@@ -18,6 +19,7 @@ function initializeLanguage() {
  return bootstrap;
 }
 export function LanguageProvider({ children }: React.PropsWithChildren) {
+  useTheme();
  const selection = useRef(0);
  const [ready,setReady] = useState(false);
  const [persistenceError,setPersistenceError] = useState(false);
@@ -34,7 +36,7 @@ export function LanguageProvider({ children }: React.PropsWithChildren) {
   update(); i18n.on('languageChanged',update); return () => { i18n.off('languageChanged',update); };
  },[]);
  return <I18nextProvider i18n={i18n}><LanguageContext.Provider value={{ changeLanguage,persistenceError }}>
-  {ready ? children : <View style={{ flex:1,alignItems:'center',justifyContent:'center',backgroundColor:Colors.white }}><ActivityIndicator color={Colors.primary} /></View>}
+  {ready ? children : <View style={{ flex:1,alignItems:'center',justifyContent:'center',backgroundColor:Colors.background }}><ActivityIndicator color={Colors.primary} /></View>}
  </LanguageContext.Provider></I18nextProvider>;
 }
 export function useAppLanguage() {

@@ -26,8 +26,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { uploadAvatar, createAvatarSignedUrl, deleteAvatar } from '../src/services/avatarService';
 import { DataAccessError, dataError } from '../src/lib/dataErrors';
 import { toLocalDateKey } from '../src/lib/dateUtils';
+import { useThemedStyles } from '../src/contexts/ThemeContext';
 
 export default function ProfileScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
 
   const router = useRouter();
@@ -357,7 +359,7 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

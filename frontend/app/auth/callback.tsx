@@ -10,8 +10,10 @@ import { Colors } from '../../src/constants/colors';
 import { Spacing } from '../../src/constants/spacing';
 import { Typography } from '../../src/constants/typography';
 import { PrimaryButton } from '../../src/components/common/Buttons';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function AuthCallbackScreen() {
+  useTheme();
   const { t } = useTranslation();
 
   const params = useLocalSearchParams<{ code?: string; error?: string }>();
@@ -31,7 +33,7 @@ export default function AuthCallbackScreen() {
     return () => { alive = false; };
   }, [code]);
   if (complete) return <Redirect href={isRecovery ? '/reset-password' : '/(tabs)'} />;
-  return <View style={{ flex: 1, justifyContent: 'center', padding: Spacing.screenPadding, backgroundColor: Colors.white, gap: Spacing.lg }}>
+  return <View style={{ flex: 1, justifyContent: 'center', padding: Spacing.screenPadding, backgroundColor: Colors.background, gap: Spacing.lg }}>
     {feedback ? <><Text accessibilityRole="alert" style={{ ...Typography.body, color: Colors.error }}>{localizeMessage(feedback)}</Text><PrimaryButton title={t("auth.backToLogin")} onPress={() => router.replace('/login')} /></> : <ActivityIndicator color={Colors.primary} accessibilityLabel={t("auth.verifying")} />}
   </View>;
 }

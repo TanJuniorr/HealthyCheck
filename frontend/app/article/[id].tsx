@@ -17,8 +17,10 @@ import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 import { articles as rawArticles } from '../../src/data/articles';
 import { PrimaryButton } from '../../src/components/common/Buttons';
+import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 export default function ArticleDetailScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const articles = localizeStaticData(rawArticles);
 
@@ -224,7 +226,7 @@ export default function ArticleDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.white,

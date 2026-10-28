@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { appLocale } from '../../i18n/formatting';
 import { Colors } from '../../constants/colors';
 import type { SleepDateTimeFieldProps } from './SleepDateTimeField.types';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Browser controls stay in this web-only module; native builds use the native picker.
 export function SleepDateTimeField({ label, date, time, onChange, disabled }: SleepDateTimeFieldProps) {
+  useTheme();
   const { t } = useTranslation();
   const style: React.CSSProperties = { minHeight: 48, padding: 10, border: `1px solid ${Colors.border}`, borderRadius: 12,
     background: Colors.background, color: Colors.textPrimary, font: 'inherit', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', flex: '1 1 140px' };

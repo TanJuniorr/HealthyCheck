@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { Spacing, Radius, Shadows } from '../../constants/spacing';
+import { useThemedStyles } from '../../contexts/ThemeContext';
 
 interface ArticleCardProps {
   id: string;
@@ -24,6 +25,7 @@ export function ArticleCard({
   readTime,
   featured = false,
 }: ArticleCardProps) {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
 
   const router = useRouter();
@@ -79,7 +81,7 @@ export function ArticleCard({
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   // Featured card
   featuredCard: {
     backgroundColor: Colors.surface,

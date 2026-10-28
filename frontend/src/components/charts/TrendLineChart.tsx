@@ -5,6 +5,7 @@ import { View, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Polyline, Circle, Line, Text as SvgText } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
 import { Spacing } from '../../constants/spacing';
+import { getThemedColor, useTheme, useThemedStyles } from '../../contexts/ThemeContext';
 
 interface LineDataItem {
   label: string;
@@ -30,6 +31,9 @@ export function TrendLineChart({
   showGrid = true,
   yAxisSuffix = '',
 }: TrendLineChartProps) {
+  const styles = useThemedStyles(baseStyles);
+  const { isDark } = useTheme();
+  const themedColor = getThemedColor(color, isDark);
   useTranslation();
   const screenWidth = Dimensions.get('window').width - Spacing.screenPadding * 2;
   const paddingLeft = 40;
@@ -91,7 +95,7 @@ export function TrendLineChart({
         <Polyline
           points={polylinePoints}
           fill="none"
-          stroke={color}
+          stroke={themedColor}
           strokeWidth={2.5}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -101,7 +105,7 @@ export function TrendLineChart({
         {showDots &&
           points.map((p, i) => (
             <React.Fragment key={i}>
-              <Circle cx={p.x} cy={p.y} r={5} fill={Colors.white} stroke={color} strokeWidth={2.5} />
+              <Circle cx={p.x} cy={p.y} r={5} fill={Colors.white} stroke={themedColor} strokeWidth={2.5} />
             </React.Fragment>
           ))}
 
@@ -124,7 +128,7 @@ export function TrendLineChart({
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     width: '100%',
   },

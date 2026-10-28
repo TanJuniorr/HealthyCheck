@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { Colors } from '../../constants/colors';
 import { Typography } from '../../constants/typography';
 import { Spacing, Radius } from '../../constants/spacing';
+import { getThemedColor, useTheme, useThemedStyles } from '../../contexts/ThemeContext';
 
 interface HealthMetricCardProps {
   category: string;
@@ -25,20 +26,24 @@ export function HealthMetricCard({
   bgColor,
   route,
 }: HealthMetricCardProps) {
+  const styles = useThemedStyles(baseStyles);
+  const { isDark } = useTheme();
+  const themedColor = getThemedColor(color, isDark);
+  const themedBgColor = getThemedColor(bgColor, isDark, 'background');
   const router = useRouter();
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: bgColor }]}
+      style={[styles.card, { backgroundColor: themedBgColor }]}
       onPress={() => router.push(route as any)}
       activeOpacity={0.7}
     >
-      <View style={[styles.iconContainer, { backgroundColor: color + '18' }]}>
-        <Ionicons name={getIonIcon(icon)} size={20} color={color} />
+      <View style={[styles.iconContainer, { backgroundColor: themedColor + '18' }]}>
+        <Ionicons name={getIonIcon(icon)} size={20} color={themedColor} />
       </View>
       <Text style={styles.category}>{category}</Text>
       <View style={styles.valueRow}>
-        <Text style={[styles.value, { color }]}>{value}</Text>
+        <Text style={[styles.value, { color: themedColor }]}>{value}</Text>
         {unit ? <Text style={styles.unit}> {unit}</Text> : null}
       </View>
     </TouchableOpacity>
@@ -64,7 +69,11 @@ export function MetricListItem({
   bgColor,
   route,
 }: MetricListItemProps) {
+  const styles = useThemedStyles(baseStyles);
+  const { isDark } = useTheme();
   const router = useRouter();
+  const themedColor = getThemedColor(color, isDark);
+  const themedBgColor = getThemedColor(bgColor, isDark, 'background');
 
   return (
     <TouchableOpacity
@@ -72,8 +81,8 @@ export function MetricListItem({
       onPress={() => router.push(route as any)}
       activeOpacity={0.7}
     >
-      <View style={[styles.listIconContainer, { backgroundColor: bgColor }]}>
-        <Ionicons name={icon as any} size={20} color={color} />
+      <View style={[styles.listIconContainer, { backgroundColor: themedBgColor }]}>
+        <Ionicons name={icon as any} size={20} color={themedColor} />
       </View>
       <View style={styles.listContent}>
         <Text style={styles.listName}>{name}</Text>
@@ -93,6 +102,7 @@ interface StatPillProps {
 }
 
 export function StatPill({ label, value, icon }: StatPillProps) {
+  const styles = useThemedStyles(baseStyles);
   return (
     <View style={styles.pill}>
       <Ionicons name={icon as any} size={16} color={Colors.primary} />
@@ -121,17 +131,21 @@ export function CategoryChip({
   selected = false,
   onPress,
 }: CategoryChipProps) {
+  const styles = useThemedStyles(baseStyles);
+  const { isDark } = useTheme();
+  const themedColor = getThemedColor(color, isDark);
+  const themedBgColor = getThemedColor(bgColor, isDark, 'background');
   return (
     <TouchableOpacity
       style={[
         styles.chip,
-        { backgroundColor: selected ? color : bgColor },
+        { backgroundColor: selected ? themedColor : themedBgColor },
       ]}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Ionicons name={icon as any} size={16} color={selected ? Colors.white : color} />
-      <Text style={[styles.chipLabel, { color: selected ? Colors.white : color }]}>{label}</Text>
+      <Ionicons name={icon as any} size={16} color={selected ? Colors.white : themedColor} />
+      <Text style={[styles.chipLabel, { color: selected ? Colors.white : themedColor }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -145,6 +159,7 @@ interface SettingsRowProps {
 }
 
 export function SettingsRow({ title, value, icon, onPress, showChevron = true }: SettingsRowProps) {
+  const styles = useThemedStyles(baseStyles);
   return (
     <TouchableOpacity
       style={styles.settingsRow}
@@ -177,7 +192,7 @@ function getIonIcon(icon: string): any {
   return iconMap[icon] || `${icon}-outline`;
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   card: {
     flex: 1,
     borderRadius: Radius.lg,

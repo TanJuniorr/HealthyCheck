@@ -17,6 +17,7 @@ import { AppHeader, SectionHeader } from '../src/components/common/AppHeader';
 import { ScreenContainer } from '../src/components/common/ScreenContainer';
 import { PrimaryButton } from '../src/components/common/Buttons';
 import { sleepData as rawSleepData, sleepTips as rawSleepTips } from '../src/data/sleep';
+import { useThemedStyles } from '../src/contexts/ThemeContext';
 
 const rawDAYS_OF_WEEK = [
   { id: 'M', label: "weekday.mon", full: "weekday.monday" },
@@ -29,6 +30,7 @@ const rawDAYS_OF_WEEK = [
 ];
 
 export default function SleepScheduleScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const router = useRouter();
   const sleepData = localizeStaticData(rawSleepData);
@@ -253,7 +255,7 @@ export default function SleepScheduleScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

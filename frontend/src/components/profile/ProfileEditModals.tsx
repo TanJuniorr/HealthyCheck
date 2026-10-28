@@ -13,6 +13,7 @@ import { parseLocalDate, toLocalDateKey } from '../../lib/dateUtils';
 import type { HealthGoalInsert, ProfileGender } from '../../types/database';
 import { AppTextInput } from '../common/AppTextInput';
 import { PrimaryButton, TextButton } from '../common/Buttons';
+import { useThemedStyles } from '../../contexts/ThemeContext';
 
 export type PersonalProfileDraft = {
   fullName: string;
@@ -41,6 +42,7 @@ export function formatBirthDate(date: string) {
 }
 
 export function PersonalProfileModal({ visible, initial, onClose, onSave }: PersonalProfileModalProps) {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState(initial);
@@ -142,6 +144,7 @@ const goalKeys = ['daily_steps', 'daily_calories', 'daily_water_ml', 'target_sle
 export type EditableHealthGoals = Required<Pick<HealthGoalInsert, (typeof goalKeys)[number]>>;
 
 export function HealthGoalsModal({ visible, initial, onClose, onSave }: GoalsModalProps) {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [values, setValues] = useState<Record<(typeof goalKeys)[number], string>>({
@@ -188,7 +191,7 @@ export function HealthGoalsModal({ visible, initial, onClose, onSave }: GoalsMod
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: Spacing.screenPadding, gap: Spacing.lg, width: '100%', maxWidth: 640, alignSelf: 'center' },
   title: { ...Typography.sectionTitle, color: Colors.textPrimary },

@@ -23,8 +23,10 @@ import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { displayName, initials, profileText } from '../../src/lib/profileRepository';
 import { useHealthQuery } from '../../src/hooks/useHealthQuery';
 import { createAvatarSignedUrl } from '../../src/services/avatarService';
+import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 export default function OverviewScreen() {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const highlightDefinitions = localizeStaticData(rawHighlightDefinitions);
   const featuredArticle = localizeStaticData(rawFeaturedArticle);
@@ -186,7 +188,7 @@ export default function OverviewScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: Colors.background,

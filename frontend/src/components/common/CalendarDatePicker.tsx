@@ -7,6 +7,7 @@ import { Typography } from '../../constants/typography';
 import { Radius, Spacing, Shadows } from '../../constants/spacing';
 import { appLocale, formatDate } from '../../i18n/formatting';
 import { parseLocalDate, toLocalDateKey } from '../../lib/dateUtils';
+import { useThemedStyles } from '../../contexts/ThemeContext';
 
 type CalendarDatePickerProps = {
   visible: boolean;
@@ -19,6 +20,7 @@ type CalendarDatePickerProps = {
 const pad = (value: number) => String(value).padStart(2, '0');
 
 export function CalendarDatePicker({ visible, date, title, onClose, onSelect }: CalendarDatePickerProps) {
+  const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const [month, setMonth] = useState(() => parseLocalDate(date));
 
@@ -80,7 +82,7 @@ export function CalendarDatePicker({ visible, date, title, onClose, onSelect }: 
   );
 }
 
-const styles = StyleSheet.create({
+const baseStyles = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Spacing.screenPadding, backgroundColor: 'rgba(0,0,0,0.45)' },
   dialog: { width: '100%', maxWidth: 420, backgroundColor: Colors.white, borderRadius: Radius.xl, padding: Spacing.lg, ...Shadows.md },
   title: { ...Typography.cardTitle, color: Colors.textPrimary, marginBottom: Spacing.md },
