@@ -18,10 +18,61 @@ export type WeightRecordRow = { id: string; user_id: string; weight_kg: Numeric;
 export type WeightRecordInsert = Pick<WeightRecordRow, 'weight_kg'> & Partial<Pick<WeightRecordRow, 'recorded_at'>>;
 export type WaterRecordRow = { id: string; user_id: string; amount_ml: number; recorded_at: string; created_at: string };
 export type WaterRecordInsert = Pick<WaterRecordRow, 'amount_ml'> & Partial<Pick<WaterRecordRow, 'recorded_at'>>;
+export type PrivacyLevel = 'specific' | 'family' | 'community';
+export type SharingStatus = 'active' | 'paused' | 'revoked';
+export type SharingInviteRow = {
+  id: string;
+  owner_id: string;
+  recipient_label: string;
+  recipient_email: string | null;
+  privacy_level: PrivacyLevel;
+  share_steps: boolean;
+  share_sleep: boolean;
+  share_nutrition: boolean;
+  share_heart: boolean;
+  share_cycle: boolean;
+  notify_on_view: boolean;
+  weekly_digest: boolean;
+  status: SharingStatus;
+  created_at: string;
+  updated_at: string;
+};
+export type SharingInviteInsert = {
+  recipient_label: string;
+  recipient_email?: string | null;
+  privacy_level: PrivacyLevel;
+  share_steps?: boolean;
+  share_sleep?: boolean;
+  share_nutrition?: boolean;
+  share_heart?: boolean;
+  share_cycle?: boolean;
+  notify_on_view?: boolean;
+  weekly_digest?: boolean;
+  status?: SharingStatus;
+  created_at?: string;
+  updated_at?: string;
+};
+export type SharingInviteUpdate = Partial<
+  Pick<
+    SharingInviteRow,
+    | 'recipient_label'
+    | 'recipient_email'
+    | 'privacy_level'
+    | 'share_steps'
+    | 'share_sleep'
+    | 'share_nutrition'
+    | 'share_heart'
+    | 'share_cycle'
+    | 'notify_on_view'
+    | 'weekly_digest'
+    | 'status'
+    | 'updated_at'
+  >
+>;
 export type Rows = { profiles: ProfileRow; health_goals: HealthGoalRow; step_records: StepRecordRow; sleep_records: SleepRecordRow; foods: FoodRow; meal_records: MealRecordRow; weight_records: WeightRecordRow; water_records: WaterRecordRow };
 export type PersonalTable = Exclude<keyof Rows, 'profiles' | 'foods'>;
 export type Inputs = { health_goals: HealthGoalInsert; step_records: StepRecordInsert; sleep_records: SleepRecordInsert; meal_records: MealRecordInsert; weight_records: WeightRecordInsert; water_records: WaterRecordInsert };
-type Table<R, I> = { Row: R; Insert: I; Update: Partial<I>; Relationships: [] };
+type Table<R, I, U = Partial<I>> = { Row: R; Insert: I; Update: U; Relationships: [] };
 export type Database = { public: { Tables: {
   profiles: Table<ProfileRow, { id: string } & ProfileUpdate>;
   health_goals: Table<HealthGoalRow, HealthGoalInsert & { user_id: string }>;
@@ -31,4 +82,5 @@ export type Database = { public: { Tables: {
   meal_records: Omit<Table<MealRecordRow, MealRecordInsert & { user_id: string }>, 'Relationships'> & { Relationships: [{ foreignKeyName: string; columns: ['food_id']; isOneToOne: false; referencedRelation: 'foods'; referencedColumns: ['id'] }] };
   weight_records: Table<WeightRecordRow, WeightRecordInsert & { user_id: string }>;
   water_records: Table<WaterRecordRow, WaterRecordInsert & { user_id: string }>;
+  sharing_invites: Table<SharingInviteRow, SharingInviteInsert & { owner_id: string }, SharingInviteUpdate>;
 }; Views: { [_ in never]: never }; Functions: { [_ in never]: never }; Enums: { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };
