@@ -42,16 +42,20 @@ test('weekly and monthly sleep averages sum distinct daily sessions and exclude 
 
 // Small hook driver for exercising rendered event handlers with the project's Node test runner.
 // Native controls are boundaries; business logic, translations and async handlers are real.
-function uiFixture(extra={}) {
+function uiFixture(extra={}, realAnalysis=false) {
  const slots=[];let cursor=0;const effects=[];
  const same=(a,b)=>a&&b&&a.length===b.length&&a.every((v,i)=>Object.is(v,b[i]));
  const hooks={...require('react'),
   useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return [slots[i],value=>{slots[i]=typeof value==='function'?value(slots[i]):value;}];},
+  useMemo(fn,deps){return hooks.useCallback(fn,deps)();},
   useRef(value){const i=cursor++;if(!(i in slots))slots[i]={current:value};return slots[i];},
   useCallback(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps))slots[i]={fn,deps};return slots[i].fn;},
   useEffect(fn,deps){const i=cursor++;if(!slots[i]||!same(slots[i].deps,deps)){const previous=slots[i];slots[i]={deps};effects.push(()=>{previous?.cleanup?.();slots[i].cleanup=fn();});}}
  };
- const loader=createLoader({react:hooks,'react-native':{View:'View',Text:'Text',TextInput:'TextInput',TouchableOpacity:'TouchableOpacity',Modal:'Modal',KeyboardAvoidingView:'KeyboardAvoidingView',ScrollView:'ScrollView',Platform:{OS:'web',select:()=>undefined},StyleSheet:{create:x=>x}},
+ const loader=createLoader({react:hooks,'@expo/vector-icons':{Ionicons:'Ionicons'},
+  [path.resolve(__dirname,'../src/components/health/SleepScheduleCard.tsx')]:{SleepScheduleCard:'SleepScheduleCard'},
+  [path.resolve(__dirname,'../src/contexts/ThemeContext.tsx')]:{useThemedStyles:styles=>styles,useTheme:()=>({isDark:false})},
+  ...(!realAnalysis ? {[path.resolve(__dirname,'../src/components/health/SleepAnalysis.tsx')]:{SleepAnalysis:'SleepAnalysis'}} : {}),'react-native':{View:'View',Pressable:'Pressable',Text:'Text',TextInput:'TextInput',TouchableOpacity:'TouchableOpacity',Modal:'Modal',KeyboardAvoidingView:'KeyboardAvoidingView',ScrollView:'ScrollView',Platform:{OS:'web',select:()=>undefined},StyleSheet:{create:x=>x}},
   'react-native-safe-area-context':{useSafeAreaInsets:()=>({top:0,bottom:0})},
   'react-i18next':{...require('react-i18next'),useTranslation:()=>({t:(...args)=>loader('src/i18n/index').default.t(...args)})},
   [path.resolve(__dirname,'../src/services/sleepService.ts')]:{addSleepRecord:async()=>{},updateSleepRecord:async()=>{}},
@@ -136,4 +140,53 @@ test('Sleep deletion requires confirmation and keeps the record visible when the
  await elements(tree).find(e=>e.type==='PrimaryButton'&&e.props.title==='Delete sleep record').props.onPress();
  tree=render();assert.equal(calls,2);assert.equal(elements(tree).find(e=>e.type==='Modal').props.visible,false);
  assert.ok(elements(tree).some(e=>e.props?.accessibilityRole==='alert'&&e.props.children==='Sleep record deleted.'));
+});
+
+test('single duration chart switches week/month and distinguishes missing records',async()=>{
+ const f=uiFixture({},true),i18n=f.load('src/i18n/index').default;await i18n.changeLanguage('en');
+ const Analysis=f.load('src/components/health/SleepAnalysis').SleepAnalysis;
+ const row=(id,month,day,hours)=>({...record,id,sleep_start:new Date(2020,month,day,0).toISOString(),sleep_end:new Date(2020,month,day,hours).toISOString()});
+ const props={date:'2020-10-27',period:'week',onPeriodChange:value=>{props.period=value;},onMove:offset=>{props.date=dates.shiftDay(props.date,offset*7);},rows:[row('a',9,5,6),row('b',9,27,8),row('c',10,1,7)]};
+ const render=()=>f.render(()=>Analysis(props));
+ const bars=tree=>elements(tree).filter(e=>e.props?.accessibilityLabel?.includes(': ')&&!e.props.accessibilityLabel.includes(i18n.t('common.noRecords'))).map(e=>e.props.accessibilityLabel);
+ let tree=render();assert.equal(bars(tree).length,2);assert.ok(bars(tree).some(label=>label.includes('November 1')));
+ elements(tree).find(e=>e.type==='TouchableOpacity'&&elements(e).some(child=>child.props?.children==='Month')).props.onPress();
+ tree=render();assert.equal(bars(tree).length,2);assert.ok(bars(tree).some(label=>label.includes('October 5')));assert.ok(bars(tree).every(label=>!label.includes('November')));
+ const text=elements(tree).filter(e=>e.type==='Text').map(e=>e.props.children).join(' ');assert.doesNotMatch(text,/Planned and actual|deviation/);
+ await i18n.changeLanguage('vi');tree=render();assert.ok(elements(tree).some(e=>e.props?.children==='Biểu đồ và xu hướng giấc ngủ'));
+ props.rows=[];tree=render();assert.equal(bars(tree).length,0);assert.ok(elements(tree).some(e=>e.props?.children===i18n.t('common.noRecords')));
+});
+
+test('calendar navigates months and years, highlights selection and blocks future dates',async()=>{
+ const f=uiFixture(),i18n=f.load('src/i18n/index').default;await i18n.changeLanguage('en');
+ const Calendar=f.load('src/components/common/CalendarDatePicker').CalendarDatePicker;
+ let selected=null;const props={visible:true,date:'2020-10-27',title:'Calendar',maxDate:'2020-10-27',markedDates:['2020-10-27'],onClose(){},onSelect:value=>{selected=value;}};
+ const render=()=>f.render(()=>Calendar(props));let tree=render();
+ const day=elements(tree).find(e=>e.props?.accessibilityLabel==='October 27, 2020');assert.equal(day.props.accessibilityState.selected,true);day.props.onPress();assert.equal(selected,'2020-10-27');
+ const future=elements(tree).find(e=>e.props?.accessibilityLabel==='October 28, 2020');assert.equal(future.props.disabled,true);future.props.onPress();assert.equal(selected,'2020-10-27');
+ elements(tree).find(e=>e.props?.accessibilityLabel==='Next month').props.onPress();tree=render();assert.ok(elements(tree).some(e=>e.props?.children==='November 2020'));
+ elements(tree).find(e=>e.props?.accessibilityLabel==='Previous year').props.onPress();tree=render();assert.ok(elements(tree).some(e=>e.props?.children==='November 2019'));
+ elements(tree).find(e=>e.props?.accessibilityLabel==='Next year').props.onPress();tree=render();assert.ok(elements(tree).some(e=>e.props?.children==='November 2020'));
+ props.maxDate=dates.toLocalDateKey();tree=render();elements(tree).find(e=>e.type==='TouchableOpacity'&&elements(e).some(child=>child.props?.children==='Today')).props.onPress();assert.equal(selected,dates.toLocalDateKey());
+});
+
+test('sleep screen has one chart, no latest-session card, and calendar/day selection stays independent of chart periods',async()=>{
+ let captured;const today=dates.toLocalDateKey(),yesterday=dates.shiftDay(today,-1);
+ const current={...record,sleep_start:new Date(Date.now()-8*3600000).toISOString(),sleep_end:new Date().toISOString()};
+ const f=uiFixture({
+  [path.resolve(__dirname,'../src/contexts/AuthContext.tsx')]:{useAuth:()=>({user:{id:A}})},
+  [path.resolve(__dirname,'../src/hooks/healthHooks.ts')]:{useSleepRecords:(range,date)=>{captured={range,date};return {data:[current],isLoading:false,error:null,refresh:async()=>{}};},useHealthGoals:()=>({data:null,isLoading:false,error:null,refresh:async()=>{}})},
+  [path.resolve(__dirname,'../src/components/common/AppHeader.tsx')]:{AppHeader:'AppHeader'},
+  [path.resolve(__dirname,'../src/components/common/ScreenContainer.tsx')]:{ScreenContainer:'ScreenContainer'},
+ });
+ const i18n=f.load('src/i18n/index').default;await i18n.changeLanguage('en');
+ const Screen=f.load('app/health/sleep').default,render=()=>f.render(()=>Screen().type());let tree=render();
+ assert.equal(elements(tree).filter(e=>e.type==='SleepAnalysis').length,1);assert.ok(!elements(tree).some(e=>e.props?.children===i18n.t('sleep.latest')));
+ assert.equal(elements(tree).filter(e=>e.type==='SleepScheduleCard').length,1);
+ elements(tree).find(e=>e.props?.accessibilityLabel==='Previous day').props.onPress();tree=render();assert.equal(captured.date,yesterday);
+ elements(tree).find(e=>e.props?.accessibilityLabel==='Next day').props.onPress();tree=render();assert.equal(captured.date,today);
+ elements(tree).find(e=>e.props?.accessibilityLabel===i18n.t('sleep.openCalendar')).props.onPress();tree=render();
+ const calendar=elements(tree).find(e=>e.type?.name==='CalendarDatePicker');assert.ok(calendar);calendar.props.onSelect('2020-10-27');tree=render();assert.equal(captured.date,'2020-10-27');assert.ok(!elements(tree).some(e=>e.type?.name==='CalendarDatePicker'));
+ const chart=elements(tree).find(e=>e.type==='SleepAnalysis');assert.equal(chart.props.period,'week');chart.props.onMove(-1);tree=render();assert.equal(captured.date,'2020-10-27');assert.equal(elements(tree).find(e=>e.type==='SleepAnalysis').props.date,'2020-10-20');
+ elements(tree).find(e=>e.type==='SleepAnalysis').props.onPeriodChange('month');tree=render();assert.equal(captured.date,'2020-10-27');assert.equal(captured.range.start,'2020-10-01');
 });

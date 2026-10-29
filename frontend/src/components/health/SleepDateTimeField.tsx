@@ -10,7 +10,7 @@ import { sleepLocalTimestamp } from '../../lib/sleepValidation';
 import type { SleepDateTimeFieldProps } from './SleepDateTimeField.types';
 import { useThemedStyles } from '../../contexts/ThemeContext';
 
-export function SleepDateTimeField({ label, date, time, activeMode, onActiveModeChange, onChange, disabled }: SleepDateTimeFieldProps) {
+export function SleepDateTimeField({ label, hideDate, date, time, activeMode, onActiveModeChange, onChange, disabled }: SleepDateTimeFieldProps) {
   const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const togglePicker = (next: 'date' | 'time') => onActiveModeChange(activeMode === next ? null : next);
@@ -20,12 +20,12 @@ export function SleepDateTimeField({ label, date, time, activeMode, onActiveMode
   return <View style={styles.container}>
     <Text style={styles.label}>{label}</Text>
     <View style={styles.fields}>
-      <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('sleep.chooseDate', { field: label })}
+      {!hideDate && <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('sleep.chooseDate', { field: label })}
         accessibilityState={{ disabled: Boolean(disabled) }} disabled={disabled} onPress={() => togglePicker('date')}
         style={[styles.fieldButton, styles.dateButton]}>
         <Ionicons name="calendar-outline" size={19} color={Colors.primary} />
         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={styles.dateValue}>{date ? formatDate(date) : t('sleep.chooseDate', { field: label })}</Text>
-      </TouchableOpacity>
+      </TouchableOpacity>}
       {time !== undefined && <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('sleep.chooseTime', { field: label })}
         accessibilityState={{ disabled: Boolean(disabled) }} disabled={disabled} onPress={() => togglePicker('time')}
         style={[styles.fieldButton, styles.timeButton]}>

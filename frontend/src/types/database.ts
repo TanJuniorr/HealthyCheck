@@ -1,5 +1,7 @@
 // Maintained from the eight-table schema verified and supplied by the project owner.
 // No CLI-generated schema was available in this workspace. Regenerate when connected.
+export type SleepScheduleInput = { bedtime: string; wake_time: string; active_days: number[]; reminder_enabled: boolean; reminder_minutes_before: number };
+export type SleepScheduleRow = SleepScheduleInput & { id: string; user_id: string; created_at: string; updated_at: string };
 export type Numeric = number | string;
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 export type ProfileGender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
@@ -74,6 +76,7 @@ export type PersonalTable = Exclude<keyof Rows, 'profiles' | 'foods'>;
 export type Inputs = { health_goals: HealthGoalInsert; step_records: StepRecordInsert; sleep_records: SleepRecordInsert; meal_records: MealRecordInsert; weight_records: WeightRecordInsert; water_records: WaterRecordInsert };
 type Table<R, I, U = Partial<I>> = { Row: R; Insert: I; Update: U; Relationships: [] };
 export type Database = { public: { Tables: {
+  sleep_schedules: Table<SleepScheduleRow, SleepScheduleInput & { user_id: string }>;
   profiles: Table<ProfileRow, { id: string } & ProfileUpdate>;
   health_goals: Table<HealthGoalRow, HealthGoalInsert & { user_id: string }>;
   step_records: Table<StepRecordRow, StepRecordInsert & { user_id: string }>;

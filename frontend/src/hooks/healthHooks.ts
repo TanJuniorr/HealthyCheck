@@ -11,7 +11,15 @@ import { getWeekRange,toLocalDateKey } from '../lib/dateUtils';
 export type DateRange = { start: string; end: string };
 export function useSteps(range: DateRange) { return useHealthQuery(() => getStepsSummary(range.start,range.end),'steps:'+range.start+':'+range.end); }
 export function useSleep(range: DateRange) { return useHealthQuery(() => getSleepSummary(range.start,range.end),'sleep:'+range.start+':'+range.end); }
-export function useSleepRecords(range: DateRange) { return useHealthQuery(() => getSleepByDateRange(range.start,range.end),'sleep-records:'+range.start+':'+range.end); }
+export function useSleepRecords(range: DateRange, selectedDate?: string) {
+ const extraDate = selectedDate && (selectedDate < range.start || selectedDate > range.end) ? selectedDate : undefined;
+ return useHealthQuery(async () => {
+  const inside = !selectedDate || (selectedDate >= range.start && selectedDate <= range.end);
+  if (inside) return getSleepByDateRange(range.start,range.end);
+  const [period,day] = await Promise.all([getSleepByDateRange(range.start,range.end),getSleepByDateRange(selectedDate!,selectedDate!)]);
+  return [...period,...day];
+ },'sleep-records:'+range.start+':'+range.end+':'+(extraDate ?? ''));
+}
 export function useNutrition(range: DateRange) { return useHealthQuery(() => getNutritionSummary(range.start,range.end),'nutrition:'+range.start+':'+range.end); }
 export function useWater(range: DateRange) { return useHealthQuery(async () => aggregateWater(await getWaterRecordsByDateRange(range.start,range.end),range.start,range.end),'water:'+range.start+':'+range.end); }
 export function useWeight(range: DateRange) { return useHealthQuery(() => getWeightTrend(range.start,range.end),'weight:'+range.start+':'+range.end); }

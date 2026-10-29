@@ -18,16 +18,16 @@ import { addSleepRecord, updateSleepRecord } from '../../services/sleepService';
 import type { SleepRecordRow } from '../../types/database';
 import { useThemedStyles } from '../../contexts/ThemeContext';
 
-type Props = { record: SleepRecordRow | null; onClose: () => void; onSaved: (wakeDate: string) => void };
+type Props = { record: SleepRecordRow | null; initialDate?: string; onClose: () => void; onSaved: (wakeDate: string) => void };
 function clock(date: Date) { return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`; }
 
-export function SleepRecordForm({ record, onClose, onSaved }: Props) {
+export function SleepRecordForm({ record, initialDate, onClose, onSaved }: Props) {
   const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const [startDate, setStartDate] = useState(() => record ? toLocalDateKey(new Date(record.sleep_start)) : shiftDay(new Date(), -1));
+  const [startDate, setStartDate] = useState(() => record ? toLocalDateKey(new Date(record.sleep_start)) : shiftDay(initialDate ?? new Date(), -1));
   const [startTime, setStartTime] = useState(() => record ? clock(new Date(record.sleep_start)) : '23:00');
-  const [endDate, setEndDate] = useState(() => record ? toLocalDateKey(new Date(record.sleep_end)) : toLocalDateKey());
+  const [endDate, setEndDate] = useState(() => record ? toLocalDateKey(new Date(record.sleep_end)) : (initialDate ?? toLocalDateKey()));
   const [endTime, setEndTime] = useState(() => record ? clock(new Date(record.sleep_end)) : '07:00');
   const [quality, setQuality] = useState<number | null>(record?.quality_rating ?? null);
   const [notes, setNotes] = useState(record?.notes ?? '');

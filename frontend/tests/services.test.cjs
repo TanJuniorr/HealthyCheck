@@ -273,3 +273,15 @@ test('sleep rejects unconfirmed INSERT/UPDATE responses and expired or changed o
  f.setOwner(B);release();await assert.rejects(operation,e=>e.code==='AUTH_CHANGED');
  assert.equal(f.calls.some(r=>r.method==='POST'),false);
 });
+const scheduleInput={bedtime:'23:00',wake_time:'07:00',active_days:[1,2,3,4,5],reminder_enabled:true,reminder_minutes_before:15};
+test('sleep schedules roundtrip with session ownership and unique-owner upsert',async()=>{
+ const f=fixture(r=>({data:[{id:B,user_id:A,...scheduleInput,...r.body}]})),service=f.load('src/services/sleepScheduleService');
+ await service.saveSleepSchedule(scheduleInput);assert.equal((await service.getMySleepSchedule()).bedtime,'23:00');await service.updateSleepSchedule({...scheduleInput,bedtime:'22:30'});await service.deleteSleepSchedule();
+ assert.equal(f.calls[0].body.user_id,A);assert.equal(f.calls[0].url.searchParams.get('on_conflict'),'user_id');
+ assert.ok(f.calls.filter(r=>r.method!=='POST').every(r=>r.url.searchParams.get('user_id')==='eq.'+A));
+ await assert.rejects(service.saveSleepSchedule({...scheduleInput,user_id:B}),e=>e.code==='INVALID_INPUT');
+});
+test('sleep schedule failures and PostgreSQL overlap violations remain localized errors',async()=>{
+ const f=fixture(()=>({status:403,data:{code:'42501'}}));await assert.rejects(f.load('src/services/sleepScheduleService').saveSleepSchedule(scheduleInput),e=>e.code==='PERMISSION_DENIED');
+ assert.equal(f.load('src/lib/dataErrors').dataError({code:'23P01'}).message,'sleep.overlap');
+});

@@ -7,7 +7,7 @@ import type { SleepDateTimeFieldProps } from './SleepDateTimeField.types';
 import { useTheme } from '../../contexts/ThemeContext';
 
 // Browser controls stay in this web-only module; native builds use the native picker.
-export function SleepDateTimeField({ label, date, time, onChange, disabled }: SleepDateTimeFieldProps) {
+export function SleepDateTimeField({ label, hideDate, date, time, onChange, disabled }: SleepDateTimeFieldProps) {
   useTheme();
   const { t } = useTranslation();
   const style: React.CSSProperties = { minHeight: 48, padding: 10, border: `1px solid ${Colors.border}`, borderRadius: 12,
@@ -15,8 +15,8 @@ export function SleepDateTimeField({ label, date, time, onChange, disabled }: Sl
   return <View style={{ gap: 8 }}>
     <Text style={{ color: Colors.textSecondary }}>{label}</Text>
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-      <input aria-label={t('sleep.chooseDate', { field: label })} lang={appLocale()} type="date" value={date} disabled={disabled}
-        onChange={event => onChange(event.target.value, time)} style={style} />
+      {!hideDate && <input aria-label={t('sleep.chooseDate', { field: label })} lang={appLocale()} type="date" value={date} disabled={disabled}
+        onChange={event => onChange(event.target.value, time)} style={style} />}
       {time !== undefined && <input aria-label={t('sleep.chooseTime', { field: label })} lang={appLocale()} type="time" value={time} disabled={disabled}
         onChange={event => onChange(date, event.target.value)} style={style} />}
     </View>

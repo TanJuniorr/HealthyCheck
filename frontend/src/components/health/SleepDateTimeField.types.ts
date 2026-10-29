@@ -2,6 +2,7 @@ export type SleepDateTimePickerMode = 'date' | 'time' | null;
 
 export type SleepDateTimeFieldProps = {
   label: string;
+  hideDate?: boolean;
   date: string;
   time?: string;
   activeMode: SleepDateTimePickerMode;
