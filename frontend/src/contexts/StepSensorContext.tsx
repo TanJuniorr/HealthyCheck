@@ -1,3 +1,4 @@
+import { onboardingComplete } from '../lib/healthOnboarding';
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Linking } from 'react-native';
 import { Pedometer } from 'expo-sensors';
@@ -35,8 +36,8 @@ type StepSensorContextValue = StepSensorState & {
 const StepSensorContext = createContext<StepSensorContextValue | null>(null);
 
 export function StepSensorProvider({ children }: React.PropsWithChildren) {
-  const { user, isRecovery } = useAuth();
-  const userId = user?.id;
+  const { user, isRecovery, profile, profileChecked } = useAuth();
+  const userId = profileChecked && onboardingComplete(profile) ? user?.id : undefined;
   const [state, setState] = useState<StepSensorState>(initialState);
   const [retrying, setRetrying] = useState(false);
   const retryStart = useRef<(() => Promise<void>) | null>(null);

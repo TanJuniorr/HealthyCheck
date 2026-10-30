@@ -1,4 +1,25 @@
 {
+  "onboarding": {
+    "title": "Thiết lập hồ sơ sức khỏe",
+    "description": "Hãy cung cấp một số thông tin cơ bản để HealthyCheck có thể theo dõi và tính toán các chỉ số sức khỏe của bạn chính xác hơn.",
+    "step": "Bước {{step}} / {{total}}",
+    "personalStep": "Thông tin cá nhân",
+    "bodyStep": "Chỉ số cơ thể",
+    "height": "Chiều cao (cm)",
+    "weight": "Cân nặng (kg)",
+    "age": "Tuổi: {{value}}",
+    "weightHint": "Cân nặng sẽ được lưu vào lịch sử cân nặng của bạn.",
+    "finish": "Hoàn tất",
+    "required": "Vui lòng nhập thông tin này.",
+    "requiredGender": "Vui lòng chọn một lựa chọn giới tính.",
+    "invalidBirthDate": "Ngày sinh phải hợp lệ và không ở tương lai.",
+    "invalidHeight": "Nhập chiều cao từ 30 đến 300 cm, ví dụ 170,5.",
+    "invalidWeight": "Nhập cân nặng lớn hơn 0 và tối đa 500 kg, ví dụ 65,5.",
+    "invalidInput": "Vui lòng kiểm tra đủ ngày sinh, giới tính, chiều cao và cân nặng hợp lệ.",
+    "busy": "Đang lưu hồ sơ sức khỏe. Vui lòng chờ.",
+    "checkingProfile": "Đang kiểm tra hồ sơ sức khỏe",
+    "profileLoadError": "Không tải được hồ sơ sức khỏe. Kiểm tra kết nối và thử lại."
+  },
   "common": {
     "delete": "Xóa",
     "cancel": "Hủy",

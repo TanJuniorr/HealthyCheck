@@ -3,6 +3,9 @@ import { AppState, Platform } from 'react-native';
 import type { Session, User } from '@supabase/supabase-js';
 import { authConfigurationError, supabase } from '../lib/supabase';
 import { authErrorMessage } from '../lib/authErrors';
+import { completeHealthOnboarding } from '../services/healthOnboardingService';
+import type { HealthOnboardingInput } from '../lib/healthOnboarding';
+import { DataAccessError } from '../lib/dataErrors';
 import { loadProfile, type Profile } from '../lib/profileRepository';
 
 type AuthContextValue = {
@@ -14,6 +17,8 @@ type AuthContextValue = {
   isRecovery: boolean;
   profile: Profile | null;
   profileLoading: boolean;
+  profileChecked: boolean;
+  finishHealthOnboarding: (input: HealthOnboardingInput) => Promise<void>;
   profileError: string | null;
   refreshProfile: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -28,9 +33,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
   const [initializationError, setInitializationError] = useState<string | null>(authConfigurationError);
   const [recoveryUserId, setRecoveryUserId] = useState<string | null>(null);
   const isRecovery = Boolean(session && recoveryUserId === session.user.id);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileState,setProfileState] = useState<{owner:string|null;data:Profile|null;checked:boolean;loading:boolean;error:string|null}>({owner:null,data:null,checked:false,loading:false,error:null});
   const userId = session?.user.id;
   const currentUserId = useRef(userId);
   const profileRequest = useRef(0);
@@ -45,8 +48,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
       authChanged = true;
       if (currentUserId.current !== next?.user.id) {
         profileRequest.current++;
-        setProfile(null);
-        setProfileError(null);
+        setProfileState({owner:null,data:null,checked:false,loading:false,error:null});
       }
       currentUserId.current = next?.user.id;
       setSession(next);
@@ -79,17 +81,15 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
 
   const refreshProfile = useCallback(async () => {
     const request = ++profileRequest.current;
-    if (!userId) { setProfile(null); setProfileError(null); setProfileLoading(false); return; }
-    setProfileLoading(true);
-    setProfileError(null);
+    if (!userId) { setProfileState({owner:null,data:null,checked:false,loading:false,error:null}); return; }
+    setProfileState(previous => ({owner:userId,data:previous.owner===userId?previous.data:null,checked:previous.owner===userId&&previous.checked,loading:true,error:null}));
     try {
       const next = await loadProfile(userId);
-      if (request === profileRequest.current && currentUserId.current === userId) setProfile(next);
+      if (request === profileRequest.current && currentUserId.current === userId) setProfileState({owner:userId,data:next,checked:true,loading:false,error:null});
     } catch {
-      if (request === profileRequest.current && currentUserId.current === userId) setProfileError('Không tải được hồ sơ. Vui lòng kiểm tra kết nối hoặc quyền truy cập.');
-    } finally {
-      if (request === profileRequest.current && currentUserId.current === userId) setProfileLoading(false);
+      if (request === profileRequest.current && currentUserId.current === userId) setProfileState({owner:userId,data:null,checked:false,loading:false,error:'onboarding.profileLoadError'});
     }
+
   }, [userId]);
   const invalidateProfileRequest = useCallback(() => { profileRequest.current++; }, []);
   useEffect(() => {
@@ -118,8 +118,9 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
     if (error) throw error;
     setSession(null);
     setRecoveryUserId(null);
-    setProfile(null);
-    setProfileError(null);
+    profileRequest.current++;
+    currentUserId.current=undefined;
+    setProfileState({owner:null,data:null,checked:false,loading:false,error:null});
   });
   const finishRecovery = (password: string) => run(async () => {
     if (!isRecovery || !session) throw new Error('Invalid recovery session');
@@ -129,7 +130,19 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
     if (error) throw error;
     setRecoveryUserId(null);
   });
-  return <AuthContext.Provider value={{ session, user: session?.user ?? null, isAuthenticated: Boolean(session), isLoading, initializationError, isRecovery, profile: profile?.id === userId ? profile : null, profileLoading, profileError, refreshProfile, signIn, signUp, signOut, finishRecovery }}>{children}</AuthContext.Provider>;
+  const finishHealthOnboarding = async (input:HealthOnboardingInput) => {
+    const expected=userId;
+    const next=await completeHealthOnboarding(input);
+    if(!expected || currentUserId.current!==expected || next.id!==expected)throw new DataAccessError('AUTH_CHANGED','errors.accountChangedReload');
+    profileRequest.current++;
+    setProfileState({owner:expected,data:next,checked:true,loading:false,error:null});
+  };
+  const matchesProfile=Boolean(userId)&&profileState.owner===userId;
+  const profile=matchesProfile?profileState.data:null;
+  const profileChecked=matchesProfile&&profileState.checked;
+  const profileLoading=Boolean(userId)&&(!matchesProfile||profileState.loading);
+  const profileError=matchesProfile?profileState.error:null;
+  return <AuthContext.Provider value={{ session, user: session?.user ?? null, isAuthenticated: Boolean(session), isLoading, initializationError, isRecovery, profile: profile?.id === userId ? profile : null, profileLoading, profileChecked, finishHealthOnboarding, profileError, refreshProfile, signIn, signUp, signOut, finishRecovery }}>{children}</AuthContext.Provider>;
 }
 export function useAuth() {
   const context = useContext(AuthContext);

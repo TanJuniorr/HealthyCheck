@@ -1,4 +1,25 @@
 {
+  "onboarding": {
+    "title": "Set up your health profile",
+    "description": "Share a few basic details so HealthyCheck can track and calculate your health measurements more accurately.",
+    "step": "Step {{step}} / {{total}}",
+    "personalStep": "Personal details",
+    "bodyStep": "Body measurements",
+    "height": "Height (cm)",
+    "weight": "Weight (kg)",
+    "age": "Age: {{value}}",
+    "weightHint": "Your weight will be saved in your weight history.",
+    "finish": "Finish",
+    "required": "Please enter this information.",
+    "requiredGender": "Please select a gender option.",
+    "invalidBirthDate": "Enter a valid birth date that is not in the future.",
+    "invalidHeight": "Enter a height from 30 to 300 cm, e.g. 170.5.",
+    "invalidWeight": "Enter a weight greater than 0 and no more than 500 kg, e.g. 65.5.",
+    "invalidInput": "Check that all four health profile fields are complete and valid.",
+    "busy": "Saving your health profile. Please wait.",
+    "checkingProfile": "Checking your health profile",
+    "profileLoadError": "Unable to load your health profile. Check your connection and try again."
+  },
   "common": {
     "delete": "Delete",
     "cancel": "Cancel",

@@ -5,7 +5,7 @@ export type SleepScheduleRow = SleepScheduleInput & { id: string; user_id: strin
 export type Numeric = number | string;
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 export type ProfileGender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
-export type ProfileRow = { id: string; full_name: string | null; date_of_birth: string | null; height_cm: Numeric | null; gender: ProfileGender | null; avatar_url: string | null; created_at: string; updated_at: string };
+export type ProfileRow = { health_onboarding_completed_at: string | null; id: string; full_name: string | null; date_of_birth: string | null; height_cm: Numeric | null; gender: ProfileGender | null; avatar_url: string | null; created_at: string; updated_at: string };
 export type ProfileUpdate = Partial<Pick<ProfileRow, 'full_name' | 'date_of_birth' | 'height_cm' | 'gender' | 'avatar_url'>>;
 export type HealthGoalRow = { id: string; user_id: string; daily_steps: number | null; daily_calories: number | null; daily_water_ml: number | null; target_sleep_minutes: number | null; effective_from: string; created_at: string };
 export type HealthGoalInsert = { daily_steps?: number; daily_calories?: number; daily_water_ml?: number; target_sleep_minutes?: number; effective_from?: string };
@@ -84,4 +84,4 @@ export type Database = { public: { Tables: {
   weight_records: Table<WeightRecordRow, WeightRecordInsert & { user_id: string }>;
   water_records: Table<WaterRecordRow, WaterRecordInsert & { user_id: string }>;
   sharing_invites: Table<SharingInviteRow, SharingInviteInsert & { owner_id: string }, SharingInviteUpdate>;
-}; Views: { [_ in never]: never }; Functions: { [_ in never]: never }; Enums: { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };
+}; Views: { [_ in never]: never }; Functions: { complete_health_onboarding: { Args: { p_date_of_birth:string; p_gender:string; p_height_cm:number; p_weight_kg:number }; Returns:ProfileRow[] } }; Enums: { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };

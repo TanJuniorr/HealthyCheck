@@ -1,3 +1,4 @@
+import { onboardingComplete } from '../lib/healthOnboarding';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AppState, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -9,8 +10,8 @@ import { Colors } from '../constants/colors';
 const ReminderContext=createContext('off');
 export const useSleepReminderStatus=()=>useContext(ReminderContext);
 export function SleepReminderProvider({children}:{children:React.ReactNode}) {
- const {user,isLoading}=useAuth();const {t,i18n}=useTranslation();const [status,setStatus]=useState('off');
- const owner=user?.id??null;
+ const {user,isLoading,isRecovery,profile,profileChecked}=useAuth();const {t,i18n}=useTranslation();const [status,setStatus]=useState('off');
+ const owner=profileChecked && onboardingComplete(profile) && !isRecovery ? user?.id??null : null;
  useEffect(()=>{
   if(isLoading) return;
   let alive=true;let generation=0;

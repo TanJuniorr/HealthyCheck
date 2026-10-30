@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { ageFromBirthDate, healthDecimal } from '../src/lib/healthOnboarding';
 import { formatNumber } from '../src/i18n/formatting';
 import { localizeMessage } from '../src/i18n/localize';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
@@ -119,8 +120,9 @@ export default function ProfileScreen() {
   };
   const handleSavePersonal = async (draft: PersonalProfileDraft) => {
     if (!user) throw new Error('Vui lòng đăng nhập để cập nhật hồ sơ.');
-    const heightValue = draft.heightCm.trim() ? Number(draft.heightCm.trim()) : null;
-    const weightValue = draft.weightKg.trim() ? Number(draft.weightKg.trim()) : null;
+    const heightValue = draft.heightCm.trim() ? healthDecimal(draft.heightCm) : null;
+    const weightValue = draft.weightKg.trim() ? healthDecimal(draft.weightKg) : null;
+    if ((draft.heightCm.trim() && heightValue===null) || (draft.weightKg.trim() && weightValue===null)) throw new DataAccessError('INVALID_INPUT',t('profile.invalidPersonal'));
     if (heightValue !== null && (!Number.isFinite(heightValue) || heightValue < 30 || heightValue > 300)) throw new DataAccessError('INVALID_INPUT', t('profile.invalidPersonal'));
     if (draft.fullName.trim().length > 120) throw new DataAccessError('INVALID_INPUT', t('profile.invalidPersonal'));
     if (weightValue !== null && (!Number.isFinite(weightValue) || weightValue <= 0 || weightValue > 500)) throw new DataAccessError('INVALID_INPUT', t('profile.invalidPersonal'));
@@ -189,6 +191,7 @@ export default function ProfileScreen() {
             <View style={styles.infoTextContainer}>
               <Text style={styles.infoLabel}>{t("profile.birthDate")}</Text>
               <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={styles.infoValue}>{birthDate === '—' ? birthDate : formatBirthDate(birthDate)}</Text>
+              <Text style={styles.infoLabel}>{t('onboarding.age',{value:formatNumber(ageFromBirthDate(birthDate))})}</Text>
             </View>
           </View>
 

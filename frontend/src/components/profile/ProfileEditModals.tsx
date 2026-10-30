@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import React, { useRef, useState } from 'react';
+import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../../constants/colors';
 import { Radius, Spacing } from '../../constants/spacing';
 import { Typography } from '../../constants/typography';
-import { appLocale } from '../../i18n/formatting';
+import { formatDate } from '../../i18n/formatting';
+import { BirthDateField, GenderField } from './PersonalHealthFields';
 import { localizeMessage } from '../../i18n/localize';
 import { dataError } from '../../lib/dataErrors';
-import { parseLocalDate, toLocalDateKey } from '../../lib/dateUtils';
 import type { HealthGoalInsert, ProfileGender } from '../../types/database';
 import { AppTextInput } from '../common/AppTextInput';
 import { PrimaryButton, TextButton } from '../common/Buttons';
@@ -30,34 +29,25 @@ type PersonalProfileModalProps = {
   onSave: (draft: PersonalProfileDraft) => Promise<void>;
 };
 
-const pad = (value: number) => String(value).padStart(2, '0');
-
-export function formatBirthDate(date: string) {
-  try {
-    const value = parseLocalDate(date);
-    return `${pad(value.getMonth() + 1)}/${pad(value.getDate())}/${value.getFullYear()}`;
-  } catch {
-    return '—';
-  }
-}
+export function formatBirthDate(date: string) { return formatDate(date); }
 
 export function PersonalProfileModal({ visible, initial, onClose, onSave }: PersonalProfileModalProps) {
   const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState(initial);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const pending=useRef(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   const close = () => {
     if (!saving) {
-      setShowDatePicker(false);
       onClose();
     }
   };
 
   const save = async () => {
+    if(pending.current)return;pending.current=true;
     setSaving(true);
     setError('');
     try {
@@ -67,15 +57,9 @@ export function PersonalProfileModal({ visible, initial, onClose, onSave }: Pers
     } catch (failure) {
       setError(dataError(failure).message);
       setSaving(false);
-    }
+    } finally {pending.current=false;}
   };
 
-  let pickerValue: Date;
-  try {
-    pickerValue = draft.dateOfBirth ? parseLocalDate(draft.dateOfBirth) : new Date(new Date().getFullYear() - 18, 0, 1);
-  } catch {
-    pickerValue = new Date(new Date().getFullYear() - 18, 0, 1);
-  }
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={close}>
@@ -83,47 +67,10 @@ export function PersonalProfileModal({ visible, initial, onClose, onSave }: Pers
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content, { paddingTop: insets.top + Spacing.lg, paddingBottom: insets.bottom + Spacing.xl }]}>
           <Text accessibilityRole="header" style={styles.title}>{t('profile.editPersonal')}</Text>
           <AppTextInput label={t('profile.fullName')} value={draft.fullName} onChangeText={fullName => setDraft(previous => ({ ...previous, fullName }))} autoCapitalize="words" />
-          <View style={styles.field}>
-            <Text style={styles.label}>{t('profile.birthDate')}</Text>
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('profile.chooseBirthDate')} disabled={saving} onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
-              <Text style={[styles.dateText, !draft.dateOfBirth && styles.placeholder]}>{draft.dateOfBirth ? formatBirthDate(draft.dateOfBirth) : t('profile.chooseBirthDate')}</Text>
-            </TouchableOpacity>
-            {showDatePicker && <DateTimePicker
-              value={pickerValue}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              locale={appLocale()}
-              maximumDate={new Date()}
-              onDismiss={() => setShowDatePicker(false)}
-              onValueChange={(_event, selected) => {
-                if (selected) setDraft(previous => ({ ...previous, dateOfBirth: toLocalDateKey(selected) }));
-                if (Platform.OS !== 'ios') setShowDatePicker(false);
-              }}
-            />}
-            {showDatePicker && Platform.OS === 'ios' && <TouchableOpacity accessibilityRole="button" onPress={() => setShowDatePicker(false)} style={styles.doneButton}>
-              <Text style={styles.doneText}>{t('common.done')}</Text>
-            </TouchableOpacity>}
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>{t('health.gender')}</Text>
-            <View style={styles.genderChoices}>
-              {(['male', 'female', 'other', 'prefer_not_to_say'] as const).map(gender => {
-                const selected = draft.gender === gender;
-                return <TouchableOpacity
-                  key={gender}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected, disabled: saving }}
-                  disabled={saving}
-                  onPress={() => setDraft(previous => ({ ...previous, gender }))}
-                  style={[styles.genderChoice, selected && styles.genderChoiceSelected]}
-                >
-                  <Text style={[styles.genderChoiceText, selected && styles.genderChoiceTextSelected]}>{t(`profile.genderOptions.${gender}`)}</Text>
-                </TouchableOpacity>;
-              })}
-            </View>
-          </View>
-          <AppTextInput label={`${t('health.height')} (cm)`} value={draft.heightCm} onChangeText={heightCm => setDraft(previous => ({ ...previous, heightCm }))} keyboardType="numeric" />
-          <AppTextInput label={`${t('health.weight')} (kg)`} value={draft.weightKg} onChangeText={weightKg => setDraft(previous => ({ ...previous, weightKg }))} keyboardType="numeric" />
+          <BirthDateField value={draft.dateOfBirth} disabled={saving} onChange={dateOfBirth=>setDraft(previous=>({...previous,dateOfBirth}))}/>
+          <GenderField value={draft.gender} disabled={saving} onChange={gender=>setDraft(previous=>({...previous,gender}))}/>
+          <AppTextInput label={`${t('health.height')} (cm)`} value={draft.heightCm} onChangeText={heightCm => setDraft(previous => ({ ...previous, heightCm }))} keyboardType="decimal-pad" />
+          <AppTextInput label={`${t('health.weight')} (kg)`} value={draft.weightKg} onChangeText={weightKg => setDraft(previous => ({ ...previous, weightKg }))} keyboardType="decimal-pad" />
           {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
           <PrimaryButton title={t(saving ? 'profile.saving' : 'common.save')} onPress={save} loading={saving} />
           <TextButton title={t('common.cancel')} onPress={close} disabled={saving} />
