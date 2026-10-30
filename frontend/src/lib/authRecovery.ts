@@ -6,6 +6,11 @@ export function recoveryRedirectUrl() {
   return Platform.OS === 'web' ? Linking.createURL('/auth/callback') : 'healthycheck://auth/callback';
 }
 
+export function oauthRedirectUrl() {
+  // Expo Go uses an exp:// URL; installed builds use the app scheme from app.json.
+  return Linking.createURL('/auth/callback');
+}
+
 let pendingExchange: { code: string; promise: Promise<void> } | null = null;
 // Share an in-flight exchange across Strict Mode effects; never replay a consumed code.
 export function exchangeAuthCode(code: string): Promise<void> {
