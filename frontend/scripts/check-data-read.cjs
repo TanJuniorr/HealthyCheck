@@ -8,7 +8,7 @@ async function main() {
  if (!url || !key) { console.error('Missing public Supabase configuration.'); process.exitCode=1; return; }
  const client=createClient(url,key,{ auth:{ persistSession:false,autoRefreshToken:false,detectSessionInUrl:false } });
  const load=createLoader({ [path.resolve(__dirname,'../src/lib/supabase.ts')]:{ supabase:client } });
- try { const page=await load('src/services/foodsService').getAllFoods({ pageSize:1 }); console.log(JSON.stringify({ verified:'foods SELECT with service columns and pagination',returnedRows:page.data.length,totalRows:page.total }));
+ try { const page=await load('src/services/foodsService').getAllFoods({ pageSize:1 }); console.log(JSON.stringify({ verified:'bounded food search RPC with service pagination',returnedRows:page.data.length,totalRows:page.total }));
   const foods = load('src/services/foodsService');
   const first=page.data[0];
   if (first) {

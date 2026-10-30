@@ -84,8 +84,8 @@ test('local article content translates by stable IDs; identities, authors and ro
  assert.deepEqual(english.map(item=>item.categoryId),vietnamese.map(item=>item.categoryId));
  assert.equal(english[0].author,vietnamese[0].author);
  assert.equal(raw[0].title,'articles.items.article1.title');
- const cycle=load('src/data/cycle').cycleData;
- assert.equal(localizeStaticData(cycle).phase,vi.cycle.luteal);
+ const cycle=load('src/data/cycle').symptoms;
+ assert.equal(localizeStaticData(cycle)[0].name,vi.cycle.cramps);
  const metrics=localizeStaticData(load('src/data/health').healthMetrics);
  assert.equal(metrics.find(item=>item.id==='calories').name,vi.calories.burned);
  assert.equal(metrics.find(item=>item.id==='nutrition').unit,vi.units.caloriesEaten);

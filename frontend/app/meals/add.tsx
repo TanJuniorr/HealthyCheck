@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,13 +11,13 @@ import { AppHeader } from '../../src/components/common/AppHeader';
 import { PrimaryButton, TextButton } from '../../src/components/common/Buttons';
 import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { FoodPortionForm } from '../../src/components/health/FoodPortionForm';
-import { fetchFoods } from '../../src/lib/healthData';
+import { useFoodSearch } from '../../src/hooks/useFoodSearch';
 import { useHealthQuery } from '../../src/hooks/useHealthQuery';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useThemedStyles } from '../../src/contexts/ThemeContext';
 import { addMealItems, deleteMealRecord, getMealsByDateRange, updateMealRecord } from '../../src/services/mealsService';
 import { calculateFoodNutrition } from '../../src/lib/healthCalculations';
-import { FOOD_GROUPS, filterFoods, foodName, pieceWeight, type FoodGroup } from '../../src/lib/foodPortions';
+import { FOOD_GROUPS, foodName, pieceWeight, portionUnitKey, type FoodGroup } from '../../src/lib/foodPortions';
 import { safeNumber } from '../../src/lib/dataValidation';
 import { dataError } from '../../src/lib/dataErrors';
 import { formatDate, formatNumber, formatTime } from '../../src/i18n/formatting';
@@ -44,9 +44,9 @@ export function MealEditor({date,mealType}:{date?:string;mealType?:string}) {
  const [busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null),[saved,setSaved]=useState(false);
  const lock=useRef(false),mounted=useRef(true);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
- const catalogue=useHealthQuery(fetchFoods,'food-catalogue');
+ const catalogue=useFoodSearch(search,group);
  const existing=useHealthQuery(()=>getMealsByDateRange(mealDate,mealDate),'meal-editor:'+mealDate);
- const foods=useMemo(()=>filterFoods(catalogue.data??[],search,group),[catalogue.data,search,group]);
+ const foods=catalogue.data??[];
  const rows=(existing.data??[]).filter(row=>row.meal_type===selectedMealType);
  const total=drafts.reduce((sum,item)=>{
   const n=calculateFoodNutrition(item.food,item.grams);
@@ -80,9 +80,10 @@ export function MealEditor({date,mealType}:{date?:string;mealType?:string}) {
   <AppHeader title={t('meals.addMeal')} showBack/>
   <Text style={[styles.foodServing,{padding:12}]}>{formatDate(mealDate)}</Text>
   <View style={styles.mealTypeBar}>{MEAL_TYPES.map(type=><TouchableOpacity key={type} accessibilityRole="button" accessibilityState={{selected:type===selectedMealType,disabled:busy}} disabled={busy} onPress={()=>setSelectedMealType(type)} style={[styles.mealTypeTab,type===selectedMealType&&styles.mealTypeTabSelected]}><Text style={styles.mealTypeLabel}>{t(`meals.${type}`)}</Text></TouchableOpacity>)}</View>
-  <View style={styles.searchSection}><View style={styles.searchBox}><Ionicons name="search-outline" size={20} color={Colors.textMuted}/><TextInput accessibilityLabel={t('meals.search')} style={styles.searchInput} placeholder={t('meals.search')} placeholderTextColor={Colors.textMuted} value={search} onChangeText={setSearch} autoCapitalize="none" clearButtonMode="while-editing"/></View></View>
-  <View><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingHorizontal:16,gap:8,paddingVertical:8}}>{[null,...FOOD_GROUPS].map(value=><TouchableOpacity key={value??'all'} accessibilityRole="button" accessibilityState={{selected:group===value}} onPress={()=>setGroup(value)} style={[styles.mealTypeTab,group===value&&styles.mealTypeTabSelected]}><Text style={styles.mealTypeLabel}>{t(value?`meals.groups.${value}`:'meals.allGroups')}</Text></TouchableOpacity>)}</ScrollView></View>
-  <FlatList data={foods} keyExtractor={item=>item.id} keyboardShouldPersistTaps="handled" initialNumToRender={12} windowSize={7} contentContainerStyle={[styles.listContent,{paddingBottom:20}]} extraData={[drafts,language,busy]}
+  <View style={styles.searchSection}><View style={styles.searchBox}><Ionicons name="search-outline" size={20} color={Colors.textMuted}/><TextInput accessibilityLabel={t('meals.search')} style={styles.searchInput} placeholder={t('meals.search')} placeholderTextColor={Colors.textMuted} value={search} onChangeText={setSearch} autoCapitalize="none" clearButtonMode="while-editing" maxLength={160}/></View></View>
+  <View><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingHorizontal:16,gap:8,paddingVertical:8}}>{[null,...FOOD_GROUPS].map(value=><TouchableOpacity key={value??'all'} accessibilityRole="button" accessibilityState={{selected:group===value}} onPress={()=>setGroup(value)} style={[styles.mealTypeTab,{flexGrow:0,flexShrink:0},group===value&&styles.mealTypeTabSelected]}><Text style={styles.mealTypeLabel}>{t(value?`meals.groups.${value}`:'meals.allGroups')}</Text></TouchableOpacity>)}</ScrollView></View>
+  <FlatList data={foods} keyExtractor={item=>item.id} keyboardShouldPersistTaps="handled" initialNumToRender={12} windowSize={7} contentContainerStyle={[styles.listContent,{paddingBottom:20}]} extraData={[drafts,language,busy]} onEndReached={()=>{if(catalogue.hasMore&&!catalogue.error)void catalogue.loadMore();}} onEndReachedThreshold={0.4}
+   ListFooterComponent={catalogue.hasMore?<TextButton title={t('meals.loadMore')} onPress={catalogue.loadMore} loading={catalogue.loadingMore}/>:undefined}
    ListHeaderComponent={<View>
     <DataFeedback {...existing}/>
     {rows.length>0&&<Text style={styles.listSectionTitle}>{t('meals.savedItems')}</Text>}
@@ -93,14 +94,14 @@ export function MealEditor({date,mealType}:{date?:string;mealType?:string}) {
     {catalogue.isLoading||catalogue.error?<DataFeedback {...catalogue}/>:null}
    </View>}
    ListEmptyComponent={!catalogue.isLoading&&!catalogue.error?<View style={styles.emptyContainer}><Text style={styles.emptyTitle}>{t('meals.emptySearch')}</Text><Text style={styles.emptySubtitle}>{t('meals.searchHint')}</Text></View>:undefined}
-   renderItem={({item})=>{const selected=drafts.find(draft=>draft.food.id===item.id&&draft.mealType===selectedMealType);return <TouchableOpacity accessibilityRole="button" accessibilityLabel={foodName(item,language)} disabled={busy} onPress={()=>openFood(item)} style={[styles.foodRow,selected&&{borderColor:Colors.primary}]}><View style={styles.foodIconWrapper}><Ionicons name="nutrition-outline" size={20} color={Colors.orange}/></View><View style={styles.foodInfo}><Text style={styles.foodName}>{foodName(item,language)}</Text><Text style={styles.foodServing}>{t('meals.calorieReference',{value:formatNumber(item.calories_per_100g)})}</Text><Text style={styles.foodServing}>{t('meals.unitGram')}{pieceWeight(item)!==null?` · ${t('meals.unitPiece')}`:''}{selected?` · ${formatNumber(selected.grams)} g`:''}</Text></View><Ionicons name={selected?'checkmark-circle':'add-circle-outline'} size={24} color={Colors.primary}/></TouchableOpacity>;}}
+   renderItem={({item})=>{const selected=drafts.find(draft=>draft.food.id===item.id&&draft.mealType===selectedMealType);return <TouchableOpacity accessibilityRole="button" accessibilityLabel={foodName(item,language)} disabled={busy} onPress={()=>openFood(item)} style={[styles.foodRow,selected&&{borderColor:Colors.primary}]}><View style={styles.foodIconWrapper}><Ionicons name="nutrition-outline" size={20} color={Colors.orange}/></View><View style={styles.foodInfo}><Text style={styles.foodName}>{foodName(item,language)}</Text><Text style={styles.foodServing}>{t('meals.calorieReference',{value:formatNumber(item.calories_per_100g)})}</Text><Text style={styles.foodServing}>{t('meals.unitGram')}{pieceWeight(item)!==null?` · ${t(portionUnitKey(item))}`:''}{selected?` · ${formatNumber(selected.grams)} g`:''}</Text></View><Ionicons name={selected?'checkmark-circle':'add-circle-outline'} size={24} color={Colors.primary}/></TouchableOpacity>;}}
   />
   <View style={[styles.bottomBar,{position:'relative',paddingBottom:Math.max(12,insets.bottom),gap:8}]}>
    {error ? <Text accessibilityRole="alert" style={{color:Colors.error}}>{localizeMessage(error)}</Text> : null}
    {saved&&<Text accessibilityRole="text" style={{color:Colors.primary}}>{t('meals.saved')}</Text>}
    <Text style={styles.summaryValue}>{formatNumber(total.calories,1)} kcal</Text>
    <Text style={styles.foodServing}>{(['protein','carbs','fat'] as const).map(key=>`${t(`nutrition.${key}`)} ${formatNumber(total[key],1)} g`).join(' · ')}</Text>
-   <PrimaryButton title={t('meals.saveSelection',{count:drafts.length})} onPress={logMeal} loading={busy} disabled={!drafts.length || catalogue.isLoading || !existing.data || existing.isLoading || !!existing.error}/>
+   <PrimaryButton title={t('meals.saveSelection',{count:drafts.length})} onPress={logMeal} loading={busy} disabled={!drafts.length || !existing.data || existing.isLoading || !!existing.error}/>
   </View>
   {editor&&<FoodPortionForm key={editor.record?.id??editor.mealType+editor.food.id} food={editor.food} grams={editor.grams} onSave={savePortion} onClose={()=>setEditor(null)}/>}
   {deleting ? <Modal visible transparent animationType="fade" onRequestClose={()=>{if(!lock.current)setDeleting(null);}}><View style={{flex:1,justifyContent:'center',padding:24,backgroundColor:Colors.overlay}}><View style={[styles.foodRow,{flexDirection:'column',alignItems:'stretch',gap:12}]}><Text style={styles.foodName}>{t('meals.deleteConfirm')}</Text><Text style={styles.foodServing}>{deleting.food?rowLabel(deleting.food,safeNumber(deleting.quantity_g)):t('nutrition.unavailableFood')}</Text>{error ? <Text accessibilityRole="alert" style={{color:Colors.error}}>{localizeMessage(error)}</Text> : null}<PrimaryButton title={t('common.delete')} onPress={remove} loading={busy}/><TextButton title={t('common.cancel')} disabled={busy} onPress={()=>setDeleting(null)}/></View></View></Modal> : null}

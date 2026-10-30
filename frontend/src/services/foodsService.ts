@@ -1,32 +1,27 @@
 import { supabase } from '../lib/supabase';
 import type { FoodRow } from '../types/database';
 import { validId, normalizeRow, normalizePagination } from '../lib/dataValidation';
-import { filterFoods } from '../lib/foodPortions';
-import { columns, queryResult, readPages, type HistoryOptions } from './queryCore';
+import { FOOD_GROUPS } from '../lib/foodPortions';
+import { DataAccessError } from '../lib/dataErrors';
+import { columns, queryResult, type HistoryOptions } from './queryCore';
 export { calculateFoodNutrition, getFoodServingGrams } from '../lib/healthCalculations';
 export type FoodOptions = HistoryOptions & { search?: string; category?: string };
 export async function getAllFoods(options: FoodOptions = {}) {
  const pagination=normalizePagination(options);
- const matches=filterFoods(await readFoodCatalogue(),options.search ?? '',options.category ?? null);
- return {data:matches.slice(pagination.from,pagination.from+pagination.pageSize),page:pagination.page,
-  pageSize:pagination.pageSize,total:matches.length,hasMore:pagination.from+pagination.pageSize<matches.length};
+ const size=Math.min(pagination.pageSize,100),offset=(pagination.page-1)*size;
+ const query=(options.search??'').normalize('NFC').trim();
+ if(query.length>160)throw new DataAccessError('INVALID_INPUT','meals.searchTooLong');
+ const result=await queryResult(supabase.rpc('search_foods',{p_query:query,p_category:options.category||null,p_offset:offset,p_limit:size}));
+ if(!result || !Array.isArray(result.data) || !Number.isSafeInteger(result.total) || result.total<0 || result.data.length>size)throw new DataAccessError('DATABASE','errors.database');
+ return {data:result.data.map(row=>normalizeRow('foods',row)),page:pagination.page,pageSize:size,total:result.total,hasMore:offset+result.data.length<result.total};
 }
 export const searchFoods = (search: string, options: FoodOptions = {}) => getAllFoods({ ...options, search });
 export const getFoodsByCategory = (category: string, options: FoodOptions = {}) => getAllFoods({ ...options, category });
 export async function getFoodById(id: string) { validId(id); const row = await queryResult(supabase.from('foods').select(columns.foods).eq('id',id).maybeSingle()); return row ? normalizeRow('foods',row) : null; }
 export async function getFoodCategories() {
- return [...new Set((await readFoodCatalogue()).map(row => row.category).filter((category): category is string => Boolean(category)))].sort();
+ return [...FOOD_GROUPS];
 }
-// The shared public catalogue contains no account data. Historical lookups above stay unfiltered.
-let cached: {foods: FoodRow[]; expires: number} | null = null;
-let pending: Promise<FoodRow[]> | null = null;
-async function loadCatalogue(): Promise<FoodRow[]> {
- return (await readPages((from,to) => supabase.from('foods').select(columns.foods, { count: 'exact' }).order('name').order('id').range(from,to), { pageSize: 200 }, true)).data.map(row => normalizeRow('foods',row));
-}
-export async function readFoodCatalogue(): Promise<FoodRow[]> {
- if(cached && cached.expires>Date.now())return filterFoods(cached.foods,'',null);
- if(!pending)pending=loadCatalogue();
- const request=pending;
- try {const foods=await request;cached={foods,expires:Date.now()+60000};return filterFoods(foods,'',null);}
- finally {if(pending===request)pending=null;}
+// Compatibility surface is intentionally bounded. Call getAllFoods for subsequent pages.
+export async function readFoodCatalogue(options:FoodOptions={}):Promise<FoodRow[]> {
+ return (await getAllFoods({...options,pageSize:options.pageSize??30})).data;
 }

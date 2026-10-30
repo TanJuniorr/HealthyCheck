@@ -127,36 +127,17 @@ test('weekly dashboard makes range queries once per table and applies goal histo
  assert.equal(result.length,7); assert.equal(result[0].steps.goal,8000); assert.equal(result[3].steps.goal,9000);
  assert.equal(result[0].sleep.minutes,null); assert.equal(result[0].weight.bmi,null); assert.equal(f.calls.length,9);
 });
-test('food search never sends user text as database patterns and reuses the shared read-only catalogue',async () => {
- const f=fixture(() => ({data:[],total:0}));
+test('food search sends bounded server RPC parameters and keeps historical lookups readable',async()=>{
+ const historical={id:A,name:'Legacy',calories_per_100g:100,protein_per_100g:1,carbs_per_100g:2,fat_per_100g:3,catalog_metadata:{selectable:false}};
+ const f=fixture(request=>request.url.pathname.endsWith('/rpc/search_foods')?{data:{data:request.body.p_offset===0?[{...historical,id:B,catalog_metadata:null}]:[],total:101}}:{data:[historical]});
  const service=f.load('src/services/foodsService');
- await service.searchFoods('rice_%',{category:'Grains'}); await service.getFoodById(A); await service.getFoodCategories();
- assert.equal(f.calls[0].url.searchParams.get('category'),null);
- assert.equal(f.calls[0].url.searchParams.get('name'),null);
- assert.equal(f.calls.length,2); // catalogue once, plus the explicit historical by-ID lookup
- assert.ok(f.calls.every(request=>request.method==='GET'));
-});
-
-test('service and screen use the same ranked search across catalogue pages, excluding retired choices only from selection',async()=>{
- const base={calories_per_100g:155,protein_per_100g:12.58,carbs_per_100g:1.12,fat_per_100g:10.61,serving_size:'cá hồi',catalog_metadata:null};
- const rows=[{...base,id:B,name:'Canh cá hồi',category:'prepared'},
-  {...base,id:'00000000-0000-4000-8000-000000000001',name:'Cá hồi',category:'meat'},
-  {...base,id:'00000000-0000-4000-8000-000000000002',name:'Cá thu',category:'meat'},
-  {...base,id:'00000000-0000-4000-8000-000000000003',name:'Bắp cải sống',category:'vegetables'},
-  {...base,id:A,name:'Trứng gà luộc',category:'Protein',protein_per_100g:12.6,catalog_metadata:{selectable:false}}];
- const f=fixture(request=>{
-  const id=request.url.searchParams.get('id');if(id)return {data:rows.filter(row=>'eq.'+row.id===id)};
-  const offset=Number(request.url.searchParams.get('offset'));return {data:rows.slice(offset,offset+2),total:rows.length};
- }),service=f.load('src/services/foodsService'),shared=f.load('src/lib/foodPortions');
- const catalogue=await service.readFoodCatalogue();assert.equal(catalogue.length,4);assert.equal(f.calls.length,3);
- for(const search of ['cá','ca hoi','cá hồi','CÁ HỒI']){
-  const result=await service.searchFoods(search,{pageSize:200});assert.deepEqual(result.data.map(row=>row.id),shared.filterFoods(catalogue,search,null).map(row=>row.id));
- }
- assert.equal(f.calls.length,3);
- const page=await service.searchFoods('cá',{category:'meat',pageSize:1,page:2});assert.equal(page.data[0].name,'Cá thu');assert.equal(page.total,2);assert.equal(page.hasMore,false);
- assert.equal((await service.searchFoods('cá',{category:'vegetables'})).data.length,0);
- assert.equal((await service.getFoodById(A)).protein_per_100g,12.6);
- assert.ok(f.calls.every(request=>request.method==='GET'&&!request.url.searchParams.has('name')));
+ const result=await service.searchFoods('ca hoi',{category:'meat',pageSize:30,page:1});assert.equal(result.data.length,1);assert.equal(result.total,101);assert.equal(result.hasMore,true);
+ assert.deepEqual(f.calls[0].body,{p_query:'ca hoi',p_category:'meat',p_offset:0,p_limit:30});assert.ok(f.calls[0].url.pathname.endsWith('/rpc/search_foods'));
+ await service.searchFoods('rice_%',{category:'Grains',pageSize:200,page:2});assert.equal(f.calls[1].body.p_limit,100);assert.equal(f.calls[1].body.p_offset,100);assert.equal(f.calls[1].body.p_query,'rice_%');
+ assert.equal((await service.getFoodById(A)).catalog_metadata.selectable,false);
+ const before=f.calls.length;await service.getFoodCategories();assert.equal(f.calls.length,before);
+ await assert.rejects(service.searchFoods('a'.repeat(161)),e=>e.code==='INVALID_INPUT');assert.equal(f.calls.length,before);
+ assert.ok(f.calls.every(request=>request.method==='GET'||request.url.pathname.endsWith('/rpc/search_foods')));
 });
 
 test('profile updates allow only verified editable fields and retain unspecified values',async () => {

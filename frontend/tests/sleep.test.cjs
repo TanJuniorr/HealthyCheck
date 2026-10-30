@@ -138,8 +138,8 @@ test('calendar navigates months and years, highlights selection and blocks futur
  const day=elements(tree).find(e=>e.props?.accessibilityLabel==='October 27, 2020');assert.equal(day.props.accessibilityState.selected,true);day.props.onPress();assert.equal(selected,'2020-10-27');
  const future=elements(tree).find(e=>e.props?.accessibilityLabel==='October 28, 2020');assert.equal(future.props.disabled,true);future.props.onPress();assert.equal(selected,'2020-10-27');
  elements(tree).find(e=>e.props?.accessibilityLabel==='Next month').props.onPress();tree=render();assert.ok(elements(tree).some(e=>e.props?.children==='November 2020'));
- elements(tree).find(e=>e.props?.accessibilityLabel==='Previous year').props.onPress();tree=render();assert.ok(elements(tree).some(e=>e.props?.children==='November 2019'));
- elements(tree).find(e=>e.props?.accessibilityLabel==='Next year').props.onPress();tree=render();assert.ok(elements(tree).some(e=>e.props?.children==='November 2020'));
+ for(let i=0;i<12;i++){elements(tree).find(e=>e.props?.accessibilityLabel==='Previous month').props.onPress();tree=render();}assert.ok(elements(tree).some(e=>e.props?.children==='November 2019'));
+ for(let i=0;i<12;i++){elements(tree).find(e=>e.props?.accessibilityLabel==='Next month').props.onPress();tree=render();}assert.ok(elements(tree).some(e=>e.props?.children==='November 2020'));
  props.maxDate=dates.toLocalDateKey();tree=render();elements(tree).find(e=>e.type==='TouchableOpacity'&&elements(e).some(child=>child.props?.children==='Today')).props.onPress();assert.equal(selected,dates.toLocalDateKey());
 });
 
@@ -158,7 +158,7 @@ test('sleep screen has one chart, no latest-session card, and calendar/day selec
  assert.equal(elements(tree).filter(e=>e.type==='SleepScheduleCard').length,1);
  elements(tree).find(e=>e.props?.accessibilityLabel==='Previous day').props.onPress();tree=render();assert.equal(captured.date,yesterday);
  elements(tree).find(e=>e.props?.accessibilityLabel==='Next day').props.onPress();tree=render();assert.equal(captured.date,today);
- elements(tree).find(e=>e.props?.accessibilityLabel===i18n.t('sleep.openCalendar')).props.onPress();tree=render();
+ elements(tree).find(e=>e.type==='AppHeader').props.onRightPress();tree=render();
  const calendar=elements(tree).find(e=>e.type?.name==='CalendarDatePicker');assert.ok(calendar);calendar.props.onSelect('2020-10-27');tree=render();assert.equal(captured.date,'2020-10-27');assert.ok(!elements(tree).some(e=>e.type?.name==='CalendarDatePicker'));
  const chart=elements(tree).find(e=>e.type==='SleepAnalysis');assert.equal(chart.props.period,'week');chart.props.onMove(-1);tree=render();assert.equal(captured.date,'2020-10-27');assert.equal(elements(tree).find(e=>e.type==='SleepAnalysis').props.date,'2020-10-20');
  elements(tree).find(e=>e.type==='SleepAnalysis').props.onPeriodChange('month');tree=render();assert.equal(captured.date,'2020-10-27');assert.equal(captured.range.start,'2020-10-01');

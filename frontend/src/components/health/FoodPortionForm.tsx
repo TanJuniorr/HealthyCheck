@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, Vi
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import type { FoodRow } from '../../types/database';
-import { foodName, pieceWeight, portionGrams, portionText, type PortionUnit } from '../../lib/foodPortions';
+import { foodName, pieceWeight, portionGrams, portionText, portionUnitKey, type PortionUnit } from '../../lib/foodPortions';
 import { calculateFoodNutrition } from '../../lib/healthCalculations';
 import { dataError } from '../../lib/dataErrors';
 import { localizeMessage } from '../../i18n/localize';
@@ -36,10 +36,11 @@ export function FoodPortionForm({ food, grams: initial, onSave, onClose }: Props
  return <Modal visible animationType="slide" onRequestClose={close}><KeyboardAvoidingView style={styles.screen} behavior={Platform.OS==='ios'?'padding':'height'}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content,{paddingTop:insets.top+20,paddingBottom:insets.bottom+20}]}>
   <Text accessibilityRole="header" style={styles.title}>{name}</Text>
   <Text style={styles.text}>{t('meals.calorieReference',{value:formatNumber(food.calories_per_100g)})}</Text>
-  <View style={styles.row}><TextButton title={t('meals.unitGram')} disabled={busy || grams===null} onPress={()=>switchUnit('g')}/>{weight!==null && <TextButton title={t('meals.unitPiece')} disabled={busy || grams===null} onPress={()=>switchUnit('piece')}/>}</View>
-  <AppTextInput label={t(unit==='g'?(food.catalog_metadata?.edible_portion?'meals.edibleWeight':'meals.quantityGram'):'meals.quantityPiece')} keyboardType="decimal-pad" editable={!busy} value={text} onChangeText={value=>{setText(value);setGrams(portionGrams(food,value,unit));}}/>
+  <View style={styles.row}><TextButton title={t('meals.unitGram')} disabled={busy || grams===null} onPress={()=>switchUnit('g')}/>{weight!==null && <TextButton title={t(portionUnitKey(food))} disabled={busy || grams===null} onPress={()=>switchUnit('piece')}/>}</View>
+  <AppTextInput label={t(unit==='g'?(food.catalog_metadata?.edible_portion?'meals.edibleWeight':'meals.quantityGram'):food.catalog_metadata?.unit_kind==='slice'?'meals.quantitySlice':'meals.quantityPiece')} keyboardType="decimal-pad" editable={!busy} value={text} onChangeText={value=>{setText(value);setGrams(portionGrams(food,value,unit));}}/>
   {grams===null && <Text accessibilityRole="alert" style={styles.error}>{t('meals.invalidPortion')}</Text>}
-  {weight!==null && <Text style={styles.text}>{t('meals.pieceEstimate',{weight:formatNumber(weight)})} · {t('meals.referencePortion')}: {food.catalog_metadata?.unit_description}</Text>}
+  {weight!==null && <Text style={styles.text}>{t(food.catalog_metadata?.unit_kind==='slice'?'meals.sliceEstimate':'meals.pieceEstimate',{weight:formatNumber(weight)})} · {t('meals.referencePortion')}: {i18n.resolvedLanguage==='vi'?food.catalog_metadata?.unit_description_vi??t('meals.sourcePortion'):food.catalog_metadata?.unit_description}</Text>}
+  {food.catalog_metadata?.preparation_state==='cooked' && <Text style={styles.text}>{t('meals.cookedReference',{method:t(`meals.methods.${food.catalog_metadata.reference_method??'cooked'}`)})}</Text>}
   <Text style={styles.text}>{t('meals.canonicalGrams',{value:grams===null?'—':formatNumber(grams)})}</Text>
   <View style={styles.preview}>
    <Text style={styles.title}>{nutrition ? formatNumber(nutrition.calories,1) : '—'} kcal</Text>
@@ -47,6 +48,7 @@ export function FoodPortionForm({ food, grams: initial, onSave, onClose }: Props
   </View>
   {food.catalog_metadata?.source ? <Text selectable style={styles.text}>{t('meals.dataSource')}: {food.catalog_metadata.source} · {food.catalog_metadata.source_id}{'\n'}{food.catalog_metadata.source_url}</Text> : null}
   {food.catalog_metadata?.recipe_reference ? <Text style={styles.text}>{t('meals.recipeReference')}</Text> : null}
+  {!food.catalog_metadata?.source_id && <Text style={styles.text}>{t('meals.unverifiedSource')}</Text>}
   {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
   <PrimaryButton title={t('common.save')} onPress={save} disabled={grams===null} loading={busy}/><TextButton title={t('common.cancel')} onPress={close} disabled={busy}/>
  </ScrollView></KeyboardAvoidingView></Modal>;

@@ -2,23 +2,15 @@ import type { FoodRow } from '../types/database';
 export const FOOD_GROUPS = ['meat','grains','vegetables','fruits','dairy_legumes','seasonings','prepared','beverages'] as const;
 export type FoodGroup = typeof FOOD_GROUPS[number];
 export type PortionUnit = 'g' | 'piece';
+export function portionUnitKey(food:FoodRow) {return food.catalog_metadata?.unit_kind==='slice'?'meals.unitSlice':'meals.unitPiece';}
 export function normalizeFoodSearch(value: string) {
  return value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toLowerCase().trim();
 }
 export function foodName(food: FoodRow, language: string) {
- return (language.startsWith('vi') ? food.catalog_metadata?.name_vi : food.catalog_metadata?.name_en ?? legacyNames[food.name]) || food.name;
+ return (language.startsWith('vi') ? food.catalog_metadata?.name_vi : food.catalog_metadata?.name_en) || food.name;
 }
-// Exact labels from the original catalogue; these do not assert a USDA source or portion weight.
-const legacyNames: Record<string,string> = {
- 'Bánh mì':'Bread','Cá hồi chín':'Cooked salmon','Cam':'Orange','Chuối':'Banana',
- 'Cơm trắng':'Cooked white rice','Đậu hũ':'Tofu','Hạnh nhân':'Almonds',
- 'Khoai lang luộc':'Boiled sweet potato','Rau cải luộc':'Boiled mustard greens',
- 'Sữa chua không đường':'Plain yogurt','Sữa tươi không đường':'Unsweetened milk',
- 'Táo':'Apple','Trứng gà luộc':'Boiled chicken egg','Ức gà chín':'Cooked chicken breast','Yến mạch khô':'Dry oats',
-};
 const legacyGroups: Record<string,FoodGroup> = { Protein:'meat',Grains:'grains',Vegetables:'vegetables',Fruit:'fruits',Dairy:'dairy_legumes',Nuts:'dairy_legumes' };
 export function foodGroup(food: FoodRow): FoodGroup | null {
- if (!food.catalog_metadata?.group && ['Đậu hũ','Trứng gà luộc'].includes(food.name)) return 'dairy_legumes';
  const value = food.catalog_metadata?.group ?? food.category;
  return FOOD_GROUPS.includes(value as FoodGroup) ? value as FoodGroup : legacyGroups[value ?? ''] ?? null;
 }
@@ -27,7 +19,7 @@ function nameWords(value: string): string[] {
 }
 function foodNames(food: FoodRow): string[][] {
  return [...new Set([food.name,food.catalog_metadata?.name_vi,food.catalog_metadata?.name_en,
-  legacyNames[food.name],...(food.catalog_metadata?.aliases ?? [])].filter((name): name is string => typeof name === 'string' && Boolean(name.trim())))].map(nameWords);
+  ...(food.catalog_metadata?.aliases ?? [])].filter((name): name is string => typeof name === 'string' && Boolean(name.trim())))].map(nameWords);
 }
 // Each query word must occur in order. Only the final word may be a prefix;
 // a short single word (notably "cá") must match a complete word.

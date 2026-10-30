@@ -35,6 +35,7 @@ test('actual navigator blocks every app/deep-link route for onboarding, loading 
  const Stack=Object.assign(()=>null,{Protected:'Protected',Screen:'Screen'});
  const f=uiFixture({'expo-router':{Stack},'expo-status-bar':{StatusBar:'StatusBar'},
   [boundary('src/contexts/AuthContext.tsx')]:{useAuth:()=>auth},
+  [boundary('src/contexts/NotificationInboxContext.tsx')]:{NotificationInboxProvider:'NotificationInboxProvider'},
   [boundary('src/contexts/SleepReminderContext.tsx')]:{SleepReminderProvider:'SleepReminderProvider'},
   [boundary('src/contexts/StepSensorContext.tsx')]:{StepSensorProvider:'StepSensorProvider'},
   [boundary('src/i18n/LanguageProvider.tsx')]:{LanguageProvider:'LanguageProvider'}});

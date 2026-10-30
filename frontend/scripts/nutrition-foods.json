@@ -1,638 +1,3818 @@
 [
   {
     "fdc_id": "168230",
-    "name_vi": "Thịt heo thăn nạc sống",
+    "name_vi": "Thịt heo thăn nạc (sống)",
     "name_en": "Pork, fresh, loin, whole, separable lean only, raw",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Thịt heo thăn nạc sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168230"
   },
   {
     "fdc_id": "167812",
-    "name_vi": "Thịt ba chỉ heo sống",
+    "name_vi": "Thịt heo ba chỉ (sống)",
     "name_en": "Pork, fresh, belly, raw",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Thịt ba chỉ heo sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:167812"
   },
   {
     "fdc_id": "174030",
-    "name_vi": "Thịt bò xay 90% nạc sống",
+    "name_vi": "Thịt bò xay (sống, 90% nạc)",
     "name_en": "Beef, ground, 90% lean meat / 10% fat, raw",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Thịt bò xay 90% nạc sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174030"
   },
   {
     "fdc_id": "171477",
-    "name_vi": "Ức gà bỏ da nướng",
+    "name_vi": "Ức gà (chín, không da)",
     "name_en": "Chicken, broilers or fryers, breast, meat only, cooked, roasted",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Ức gà bỏ da nướng"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:171477"
   },
   {
     "fdc_id": "172410",
-    "name_vi": "Thịt vịt bỏ da sống",
+    "name_vi": "Thịt vịt (sống, không da)",
     "name_en": "Duck, domesticated, meat only, raw",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Thịt vịt bỏ da sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:172410"
   },
   {
     "fdc_id": "175167",
-    "name_vi": "Cá hồi Đại Tây Dương nuôi sống",
+    "name_vi": "Cá hồi (sống)",
     "name_en": "Fish, salmon, Atlantic, farmed, raw",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Cá hồi Đại Tây Dương nuôi sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:175167"
   },
   {
     "fdc_id": "175168",
-    "name_vi": "Cá hồi Đại Tây Dương nuôi chín nhiệt khô",
+    "name_vi": "Cá hồi (chín)",
     "name_en": "Fish, salmon, Atlantic, farmed, cooked, dry heat",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Cá hồi Đại Tây Dương nuôi chín nhiệt khô"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:175168"
   },
   {
     "fdc_id": "175119",
-    "name_vi": "Cá thu Đại Tây Dương sống",
+    "name_vi": "Cá thu Đại Tây Dương (sống)",
     "name_en": "Fish, mackerel, Atlantic, raw",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Cá thu Đại Tây Dương sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:175119"
   },
   {
     "fdc_id": "175176",
-    "name_vi": "Cá rô phi sống",
+    "name_vi": "Cá rô phi (sống)",
     "name_en": "Fish, tilapia, raw",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Cá rô phi sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:175176"
   },
   {
     "fdc_id": "171955",
-    "name_vi": "Cá tuyết Đại Tây Dương sống",
+    "name_vi": "Cá tuyết (sống)",
     "name_en": "Fish, cod, Atlantic, raw",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Cá tuyết Đại Tây Dương sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171955"
   },
   {
     "fdc_id": "174223",
-    "name_vi": "Mực nhiều loài sống",
+    "name_vi": "Mực ống (sống)",
     "name_en": "Mollusks, squid, mixed species, raw",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Mực nhiều loài sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174223"
   },
   {
     "fdc_id": "174204",
-    "name_vi": "Cua xanh sống",
+    "name_vi": "Ghẹ xanh Đại Tây Dương (sống)",
     "name_en": "Crustaceans, crab, blue, raw",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Cua xanh sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174204"
   },
   {
     "fdc_id": "174216",
-    "name_vi": "Vẹm xanh sống",
+    "name_vi": "Vẹm xanh Đại Tây Dương (sống)",
     "name_en": "Mollusks, mussel, blue, raw",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Vẹm xanh sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174216"
   },
   {
     "fdc_id": "175139",
-    "name_vi": "Cá mòi hộp ngâm dầu đã ráo có xương",
+    "name_vi": "Cá mòi hộp ngâm dầu (ráo dầu, có xương)",
     "name_en": "Fish, sardine, Atlantic, canned in oil, drained solids with bone",
-    "group": "meat"
+    "group": "meat",
+    "aliases": [
+      "Cá mòi hộp ngâm dầu đã ráo có xương"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:175139"
   },
   {
     "fdc_id": "168878",
-    "name_vi": "Cơm gạo trắng hạt dài tăng cường vi chất",
+    "name_vi": "Cơm trắng (hạt dài, bổ sung vi chất)",
     "name_en": "Rice, white, long-grain, regular, enriched, cooked",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Cơm gạo trắng hạt dài tăng cường vi chất"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168878"
   },
   {
     "fdc_id": "168877",
-    "name_vi": "Gạo trắng hạt dài khô tăng cường vi chất",
+    "name_vi": "Gạo trắng (hạt dài, bổ sung vi chất)",
     "name_en": "Rice, white, long-grain, regular, raw, enriched",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Gạo trắng hạt dài khô tăng cường vi chất"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168877"
   },
   {
     "fdc_id": "168914",
-    "name_vi": "Bún gạo chín",
+    "name_vi": "Bún gạo (chín)",
     "name_en": "Rice noodles, cooked",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Bún gạo chín"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168914"
   },
   {
     "fdc_id": "169742",
-    "name_vi": "Bún gạo khô",
+    "name_vi": "Bún gạo (khô)",
     "name_en": "Rice noodles, dry",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Bún gạo khô"
+    ],
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:169742"
   },
   {
     "fdc_id": "168919",
-    "name_vi": "Mì trứng chín có muối",
+    "name_vi": "Mì trứng (chín, có muối)",
     "name_en": "Noodles, egg, cooked, enriched, with added salt",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Mì trứng chín có muối"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168919"
   },
   {
     "fdc_id": "172818",
-    "name_vi": "Bánh mì trắng công nghiệp",
+    "name_vi": "Bánh mì trắng (ít muối)",
     "name_en": "Bread, white, commercially prepared, low sodium, no salt",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Bánh mì trắng công nghiệp"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:172818"
   },
   {
     "fdc_id": "172688",
-    "name_vi": "Bánh mì nguyên cám công nghiệp",
+    "name_vi": "Bánh mì nguyên cám",
     "name_en": "Bread, whole-wheat, commercially prepared",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Bánh mì nguyên cám công nghiệp"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:172688"
   },
   {
     "fdc_id": "168484",
-    "name_vi": "Khoai lang luộc bỏ vỏ",
+    "name_vi": "Khoai lang (chín, bỏ vỏ)",
     "name_en": "Sweet potato, cooked, boiled, without skin",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Khoai lang luộc bỏ vỏ"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168484"
   },
   {
     "fdc_id": "170440",
-    "name_vi": "Khoai tây luộc bỏ vỏ không muối",
+    "name_vi": "Khoai tây (chín, bỏ vỏ, không muối)",
     "name_en": "Potatoes, boiled, cooked without skin, flesh, without salt",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Khoai tây luộc bỏ vỏ không muối"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170440"
   },
   {
     "fdc_id": "169999",
-    "name_vi": "Bắp ngọt vàng luộc không muối",
+    "name_vi": "Bắp ngọt (chín, không muối)",
     "name_en": "Corn, sweet, yellow, cooked, boiled, drained, without salt",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Bắp ngọt vàng luộc không muối"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169999"
   },
   {
     "fdc_id": "168917",
-    "name_vi": "Hạt diêm mạch chín",
+    "name_vi": "Hạt diêm mạch (chín)",
     "name_en": "Quinoa, cooked",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Hạt diêm mạch chín"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168917"
   },
   {
     "fdc_id": "170285",
-    "name_vi": "Lúa mạch ngọc trai chín",
+    "name_vi": "Lúa mạch ngọc trai (chín)",
     "name_en": "Barley, pearled, cooked",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Lúa mạch ngọc trai chín"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170285"
   },
   {
     "fdc_id": "168871",
-    "name_vi": "Hạt kê chín",
+    "name_vi": "Hạt kê (chín)",
     "name_en": "Millet, cooked",
-    "group": "grains"
+    "group": "grains",
+    "aliases": [
+      "Hạt kê chín"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168871"
   },
   {
     "fdc_id": "170379",
-    "name_vi": "Bông cải xanh sống",
+    "name_vi": "Bông cải xanh (sống)",
     "name_en": "Broccoli, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Bông cải xanh sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170379"
   },
   {
     "fdc_id": "169967",
-    "name_vi": "Bông cải xanh luộc không muối",
+    "name_vi": "Bông cải xanh (chín, không muối)",
     "name_en": "Broccoli, cooked, boiled, drained, without salt",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Bông cải xanh luộc không muối"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169967"
   },
   {
     "fdc_id": "170390",
-    "name_vi": "Cải thìa sống",
+    "name_vi": "Cải thìa (sống)",
     "name_en": "Cabbage, chinese (pak-choi), raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Cải thìa sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170390"
   },
   {
     "fdc_id": "169256",
-    "name_vi": "Cải bẹ xanh sống",
+    "name_vi": "Cải bẹ xanh (sống)",
     "name_en": "Mustard greens, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Cải bẹ xanh sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169256"
   },
   {
     "fdc_id": "170393",
-    "name_vi": "Cà rốt sống",
+    "name_vi": "Cà rốt (sống)",
     "name_en": "Carrots, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Cà rốt sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170393"
   },
   {
     "fdc_id": "170457",
     "name_vi": "Cà chua đỏ chín tươi",
     "name_en": "Tomatoes, red, ripe, raw, year round average",
-    "group": "vegetables"
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170457",
+    "aliases": []
   },
   {
     "fdc_id": "168409",
-    "name_vi": "Dưa leo còn vỏ sống",
+    "name_vi": "Dưa leo còn vỏ (sống)",
     "name_en": "Cucumber, with peel, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Dưa leo còn vỏ sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168409"
   },
   {
     "fdc_id": "168448",
-    "name_vi": "Bí đỏ sống",
+    "name_vi": "Bí đỏ (sống)",
     "name_en": "Pumpkin, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Bí đỏ sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168448"
   },
   {
     "fdc_id": "169249",
-    "name_vi": "Xà lách lá xanh sống",
+    "name_vi": "Xà lách lá xanh (sống)",
     "name_en": "Lettuce, green leaf, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Xà lách lá xanh sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169249"
   },
   {
     "fdc_id": "168462",
-    "name_vi": "Rau bina sống",
+    "name_vi": "Rau bina (sống)",
     "name_en": "Spinach, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Rau bina sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168462"
   },
   {
     "fdc_id": "169986",
-    "name_vi": "Bông cải trắng sống",
+    "name_vi": "Bông cải trắng (sống)",
     "name_en": "Cauliflower, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Bông cải trắng sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169986"
   },
   {
     "fdc_id": "169975",
-    "name_vi": "Bắp cải sống",
+    "name_vi": "Bắp cải (sống)",
     "name_en": "Cabbage, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Bắp cải sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169975"
   },
   {
     "fdc_id": "169228",
-    "name_vi": "Cà tím sống",
+    "name_vi": "Cà tím (sống)",
     "name_en": "Eggplant, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Cà tím sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169228"
   },
   {
     "fdc_id": "169251",
-    "name_vi": "Nấm mỡ trắng sống",
+    "name_vi": "Nấm mỡ trắng (sống)",
     "name_en": "Mushrooms, white, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Nấm mỡ trắng sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169251"
   },
   {
     "fdc_id": "170108",
-    "name_vi": "Ớt chuông đỏ sống",
+    "name_vi": "Ớt chuông đỏ (sống)",
     "name_en": "Peppers, sweet, red, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Ớt chuông đỏ sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170108"
   },
   {
     "fdc_id": "169961",
-    "name_vi": "Đậu cô ve xanh sống",
+    "name_vi": "Đậu cô ve xanh (sống)",
     "name_en": "Beans, snap, green, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Đậu cô ve xanh sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169961"
   },
   {
     "fdc_id": "170419",
-    "name_vi": "Đậu Hà Lan sống",
+    "name_vi": "Đậu Hà Lan (sống)",
     "name_en": "Peas, green, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Đậu Hà Lan sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170419"
   },
   {
     "fdc_id": "168389",
-    "name_vi": "Măng tây sống",
+    "name_vi": "Măng tây (sống)",
     "name_en": "Asparagus, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Măng tây sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168389"
   },
   {
     "fdc_id": "169988",
-    "name_vi": "Cần tây sống",
+    "name_vi": "Cần tây (sống)",
     "name_en": "Celery, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Cần tây sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169988"
   },
   {
     "fdc_id": "169291",
-    "name_vi": "Bí ngòi cả vỏ sống",
+    "name_vi": "Bí ngòi cả vỏ (sống)",
     "name_en": "Squash, summer, zucchini, includes skin, raw",
-    "group": "vegetables"
+    "group": "vegetables",
+    "aliases": [
+      "Bí ngòi cả vỏ sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169291"
   },
   {
     "fdc_id": "173944",
-    "name_vi": "Chuối tươi (phần ăn được)",
+    "name_vi": "Chuối",
     "name_en": "Bananas, raw",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Chuối tươi (phần ăn được)"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173944"
   },
   {
     "fdc_id": "171688",
-    "name_vi": "Táo tươi còn vỏ (phần ăn được)",
+    "name_vi": "Táo (còn vỏ)",
     "name_en": "Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Táo tươi còn vỏ (phần ăn được)"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171688"
   },
   {
     "fdc_id": "169097",
-    "name_vi": "Cam tươi (phần ăn được)",
+    "name_vi": "Cam",
     "name_en": "Oranges, raw, all commercial varieties",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Cam tươi (phần ăn được)"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169097"
   },
   {
     "fdc_id": "169105",
-    "name_vi": "Quýt tươi (phần ăn được)",
+    "name_vi": "Quýt",
     "name_en": "Tangerines, (mandarin oranges), raw",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Quýt tươi (phần ăn được)"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169105"
   },
   {
     "fdc_id": "169910",
-    "name_vi": "Xoài tươi (phần ăn được)",
+    "name_vi": "Xoài",
     "name_en": "Mangos, raw",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Xoài tươi (phần ăn được)"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169910"
   },
   {
     "fdc_id": "167776",
-    "name_vi": "Lê tươi (phần ăn được)",
+    "name_vi": "Lê Bartlett",
     "name_en": "Pears, raw, bartlett (Includes foods for USDA's Food Distribution Program)",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Lê tươi (phần ăn được)"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:167776"
   },
   {
     "fdc_id": "167765",
-    "name_vi": "Dưa hấu tươi (phần ăn được)",
+    "name_vi": "Dưa hấu",
     "name_en": "Watermelon, raw",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Dưa hấu tươi (phần ăn được)"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:167765"
   },
   {
     "fdc_id": "169124",
-    "name_vi": "Dứa tươi (phần ăn được)",
+    "name_vi": "Dứa",
     "name_en": "Pineapple, raw, all varieties",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Dứa tươi (phần ăn được)",
+      "Khóm",
+      "Thơm"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169124"
   },
   {
     "fdc_id": "171705",
-    "name_vi": "Bơ quả tươi (phần ăn được)",
+    "name_vi": "Bơ",
     "name_en": "Avocados, raw, all commercial varieties",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Bơ quả tươi (phần ăn được)"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171705"
   },
   {
     "fdc_id": "174683",
-    "name_vi": "Nho đỏ hoặc xanh tươi",
+    "name_vi": "Nho đỏ hoặc xanh",
     "name_en": "Grapes, red or green (European type, such as Thompson seedless), raw",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Nho đỏ hoặc xanh tươi"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174683"
   },
   {
     "fdc_id": "169926",
-    "name_vi": "Đu đủ tươi (phần ăn được)",
+    "name_vi": "Đu đủ",
     "name_en": "Papayas, raw",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Đu đủ tươi (phần ăn được)"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169926"
   },
   {
     "fdc_id": "167762",
-    "name_vi": "Dâu tây tươi",
+    "name_vi": "Dâu tây",
     "name_en": "Strawberries, raw",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Dâu tây tươi"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:167762"
   },
   {
     "fdc_id": "173044",
-    "name_vi": "Ổi tươi",
+    "name_vi": "Ổi",
     "name_en": "Guavas, common, raw",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Ổi tươi"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173044"
   },
   {
     "fdc_id": "168153",
-    "name_vi": "Kiwi xanh tươi (phần ăn được)",
+    "name_vi": "Kiwi xanh",
     "name_en": "Kiwifruit, green, raw",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Kiwi xanh tươi (phần ăn được)"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168153"
   },
   {
     "fdc_id": "169928",
-    "name_vi": "Đào vàng tươi",
+    "name_vi": "Đào vàng",
     "name_en": "Peaches, yellow, raw",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Đào vàng tươi"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169928"
   },
   {
     "fdc_id": "169949",
-    "name_vi": "Mận tươi",
+    "name_vi": "Mận",
     "name_en": "Plums, raw",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Mận tươi"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169949"
   },
   {
     "fdc_id": "169086",
-    "name_vi": "Vải tươi (phần ăn được)",
+    "name_vi": "Vải",
     "name_en": "Litchis, raw",
-    "group": "fruits"
+    "group": "fruits",
+    "aliases": [
+      "Vải tươi (phần ăn được)"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169086"
   },
   {
     "fdc_id": "171287",
-    "name_vi": "Trứng gà sống",
-    "aliases": ["Trứng gà tươi sống (phần ăn được)"],
+    "name_vi": "Trứng gà (sống)",
+    "aliases": [
+      "Trứng gà sống",
+      "Trứng gà tươi sống (phần ăn được)"
+    ],
     "edible_portion": true,
     "name_en": "Egg, whole, raw, fresh",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171287"
   },
   {
     "fdc_id": "173424",
     "name_vi": "Trứng gà luộc",
-    "aliases": ["Trứng gà luộc chín (phần ăn được)", "Trứng gà luộc (phần ăn được)"],
+    "aliases": [
+      "Trứng gà luộc (phần ăn được)",
+      "Trứng gà luộc chín (phần ăn được)"
+    ],
     "edible_portion": true,
     "name_en": "Egg, whole, cooked, hard-boiled",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173424"
   },
   {
     "fdc_id": "172189",
-    "name_vi": "Trứng vịt sống",
-    "aliases": ["Trứng vịt tươi sống"],
+    "name_vi": "Trứng vịt (sống)",
+    "aliases": [
+      "Trứng vịt sống",
+      "Trứng vịt tươi sống"
+    ],
     "edible_portion": true,
     "name_en": "Egg, duck, whole, fresh, raw",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:172189"
   },
   {
     "fdc_id": "172183",
-    "name_vi": "Lòng trắng trứng gà sống",
+    "name_vi": "Lòng trắng trứng gà (sống)",
     "name_en": "Egg, white, raw, fresh",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "aliases": [
+      "Lòng trắng trứng gà sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:172183"
   },
   {
     "fdc_id": "171265",
-    "name_vi": "Sữa bò nguyên kem 3,25% béo",
+    "name_vi": "Sữa tươi nguyên kem (3,25% béo)",
     "name_en": "Milk, whole, 3.25% milkfat, with added vitamin D",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "aliases": [
+      "Sữa bò nguyên kem",
+      "Sữa bò nguyên kem 3,25% béo"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171265"
   },
   {
     "fdc_id": "171269",
-    "name_vi": "Sữa bò tách béo tăng cường vitamin",
+    "name_vi": "Sữa tươi tách béo",
     "name_en": "Milk, nonfat, fluid, with added vitamin A and vitamin D (fat free or skim)",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "aliases": [
+      "Sữa bò tách béo tăng cường vitamin"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171269"
   },
   {
     "fdc_id": "171284",
-    "name_vi": "Sữa chua nguyên kem không thêm đường",
+    "name_vi": "Sữa chua nguyên kem (không đường)",
     "name_en": "Yogurt, plain, whole milk",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "aliases": [
+      "Sữa chua nguyên kem không thêm đường"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171284"
   },
   {
     "fdc_id": "170845",
-    "name_vi": "Phô mai mozzarella nguyên kem",
+    "name_vi": "Phô mai mozzarella (nguyên kem)",
     "name_en": "Cheese, mozzarella, whole milk",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "aliases": [
+      "Phô mai mozzarella nguyên kem"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170845"
   },
   {
     "fdc_id": "172476",
-    "name_vi": "Đậu hũ thường kết tủa canxi sulfat",
+    "name_vi": "Đậu hũ thường (kết tủa canxi sulfat)",
     "name_en": "Tofu, raw, regular, prepared with calcium sulfate",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "aliases": [
+      "Đậu hũ thường kết tủa canxi sulfat"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:172476"
   },
   {
     "fdc_id": "173735",
-    "name_vi": "Đậu đen luộc không muối",
+    "name_vi": "Đậu đen (chín, không muối)",
     "name_en": "Beans, black, mature seeds, cooked, boiled, without salt",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "aliases": [
+      "Đậu đen luộc không muối"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173735"
   },
   {
     "fdc_id": "174257",
-    "name_vi": "Đậu xanh luộc không muối",
+    "name_vi": "Đậu xanh (chín, không muối)",
     "name_en": "Mung beans, mature seeds, cooked, boiled, without salt",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "aliases": [
+      "Đậu xanh luộc không muối"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:174257"
   },
   {
     "fdc_id": "172421",
-    "name_vi": "Đậu lăng luộc không muối",
+    "name_vi": "Đậu lăng (chín, không muối)",
     "name_en": "Lentils, mature seeds, cooked, boiled, without salt",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "aliases": [
+      "Đậu lăng luộc không muối"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:172421"
   },
   {
     "fdc_id": "173757",
-    "name_vi": "Đậu gà luộc không muối",
+    "name_vi": "Đậu gà (chín, không muối)",
     "name_en": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
-    "group": "dairy_legumes"
+    "group": "dairy_legumes",
+    "aliases": [
+      "Đậu gà luộc không muối"
+    ],
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173757"
   },
   {
     "fdc_id": "173468",
     "name_vi": "Muối ăn",
     "name_en": "Salt, table",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:173468",
+    "aliases": []
   },
   {
     "fdc_id": "169655",
     "name_vi": "Đường cát",
     "name_en": "Sugars, granulated",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:169655",
+    "aliases": []
   },
   {
     "fdc_id": "174531",
-    "name_vi": "Nước mắm dùng ngay",
+    "name_vi": "Nước mắm",
     "name_en": "Sauce, fish, ready-to-serve",
-    "group": "seasonings"
+    "group": "seasonings",
+    "aliases": [
+      "Nước mắm dùng ngay"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:174531"
   },
   {
     "fdc_id": "174277",
     "name_vi": "Nước tương shoyu",
     "name_en": "Soy sauce made from soy and wheat (shoyu)",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:174277",
+    "aliases": []
   },
   {
     "fdc_id": "171411",
     "name_vi": "Dầu đậu nành",
     "name_en": "Oil, soybean, salad or cooking",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171411",
+    "aliases": [
+      "Dầu ăn đậu nành"
+    ]
   },
   {
     "fdc_id": "171413",
     "name_vi": "Dầu ô liu",
     "name_en": "Oil, olive, salad or cooking",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171413",
+    "aliases": [
+      "Dầu ăn ô liu"
+    ]
   },
   {
     "fdc_id": "173410",
-    "name_vi": "Bơ sữa có muối",
+    "name_vi": "Bơ sữa (có muối)",
     "name_en": "Butter, salted",
-    "group": "seasonings"
+    "group": "seasonings",
+    "aliases": [
+      "Bơ sữa có muối"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:173410"
   },
   {
     "fdc_id": "171401",
     "name_vi": "Mỡ heo",
     "name_en": "Lard",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171401",
+    "aliases": []
   },
   {
     "fdc_id": "168556",
     "name_vi": "Tương cà",
     "name_en": "Catsup",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:168556",
+    "aliases": []
   },
   {
     "fdc_id": "174527",
     "name_vi": "Sốt ớt dùng ngay",
     "name_en": "Sauce, ready-to-serve, pepper or hot",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:174527",
+    "aliases": []
   },
   {
     "fdc_id": "169640",
     "name_vi": "Mật ong",
     "name_en": "Honey",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:169640",
+    "aliases": []
   },
   {
     "fdc_id": "170931",
     "name_vi": "Tiêu đen",
     "name_en": "Spices, pepper, black",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170931",
+    "aliases": []
   },
   {
     "fdc_id": "169230",
-    "name_vi": "Tỏi sống",
+    "name_vi": "Tỏi (sống)",
     "name_en": "Garlic, raw",
-    "group": "seasonings"
+    "group": "seasonings",
+    "aliases": [
+      "Tỏi sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169230"
   },
   {
     "fdc_id": "170000",
-    "name_vi": "Hành tây sống",
+    "name_vi": "Hành tây (sống)",
     "name_en": "Onions, raw",
-    "group": "seasonings"
+    "group": "seasonings",
+    "aliases": [
+      "Hành tây sống"
+    ],
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170000"
   },
   {
     "fdc_id": "169231",
     "name_vi": "Gừng tươi",
     "name_en": "Ginger root, raw",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169231",
+    "aliases": []
   },
   {
     "fdc_id": "172237",
     "name_vi": "Giấm chưng cất",
     "name_en": "Vinegar, distilled",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:172237",
+    "aliases": []
   },
   {
     "fdc_id": "171016",
     "name_vi": "Dầu mè",
     "name_en": "Oil, sesame, salad or cooking",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171016",
+    "aliases": [
+      "Dầu ăn mè"
+    ]
   },
   {
     "fdc_id": "171412",
     "name_vi": "Dầu dừa",
     "name_en": "Oil, coconut",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171412",
+    "aliases": [
+      "Dầu ăn dừa"
+    ]
   },
   {
     "fdc_id": "172470",
     "name_vi": "Bơ đậu phộng mịn không muối",
     "name_en": "Peanut butter, smooth style, without salt",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:172470",
+    "aliases": []
   },
   {
     "fdc_id": "172231",
     "name_vi": "Bột nghệ",
     "name_en": "Spices, turmeric, ground",
-    "group": "seasonings"
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:172231",
+    "aliases": []
   },
   {
     "fdc_id": "173933",
-    "name_vi": "Nước táo không đường (theo 100 g)",
+    "name_vi": "Nước ép táo (không đường)",
     "name_en": "Apple juice, canned or bottled, unsweetened, without added ascorbic acid",
-    "group": "beverages"
+    "group": "beverages",
+    "aliases": [
+      "Nước táo không đường (theo 100 g)"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:173933"
   },
   {
     "fdc_id": "171890",
-    "name_vi": "Cà phê pha nước (theo 100 g)",
+    "name_vi": "Cà phê đen (pha nước)",
     "name_en": "Beverages, coffee, brewed, prepared with tap water",
-    "group": "beverages"
+    "group": "beverages",
+    "aliases": [
+      "Cà phê pha nước (theo 100 g)"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171890"
   },
   {
     "fdc_id": "173227",
-    "name_vi": "Trà đen pha nước (theo 100 g)",
+    "name_vi": "Trà đen (pha nước)",
     "name_en": "Beverages, tea, black, brewed, prepared with tap water",
-    "group": "beverages"
+    "group": "beverages",
+    "aliases": [
+      "Trà đen pha nước (theo 100 g)"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:173227"
   },
   {
     "fdc_id": "174831",
-    "name_vi": "Nước dừa đóng hộp không đường (theo 100 g)",
+    "name_vi": "Nước dừa đóng hộp (không đường)",
     "name_en": "Beverages, Coconut water, ready-to-drink, unsweetened",
-    "group": "beverages"
+    "group": "beverages",
+    "aliases": [
+      "Nước dừa đóng hộp không đường (theo 100 g)"
+    ],
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:174831"
   },
   {
     "fdc_id": "170693",
-    "name_vi": "Hamburger đơn không sốt (tham khảo USDA)",
+    "name_vi": "Hamburger bò (không sốt)",
     "name_en": "Fast foods, hamburger; single, regular patty; plain",
-    "group": "prepared"
+    "group": "prepared",
+    "aliases": [
+      "Hamburger đơn không sốt (tham khảo USDA)"
+    ],
+    "preparation_state": "prepared",
+    "canonical_key": "usda-sr:170693"
   },
   {
     "fdc_id": "171543",
-    "name_vi": "Súp mì gà hộp cô đặc (tham khảo USDA)",
+    "name_vi": "Súp mì gà hộp (cô đặc)",
     "name_en": "Soup, chicken noodle, canned, condensed",
-    "group": "prepared"
+    "group": "prepared",
+    "aliases": [
+      "Súp mì gà hộp cô đặc (tham khảo USDA)"
+    ],
+    "preparation_state": "prepared",
+    "canonical_key": "usda-sr:171543"
   },
   {
     "fdc_id": "172105",
-    "name_vi": "Chả giò rau đông lạnh chế biến (tham khảo USDA)",
+    "name_vi": "Chả giò rau đông lạnh (chế biến sẵn)",
     "name_en": "Egg rolls, vegetable, frozen, prepared",
-    "group": "prepared"
+    "group": "prepared",
+    "aliases": [
+      "Chả giò rau đông lạnh chế biến (tham khảo USDA)"
+    ],
+    "preparation_state": "prepared",
+    "canonical_key": "usda-sr:172105"
   },
   {
     "fdc_id": "172455",
-    "name_vi": "Chả đậu falafel công thức gia đình USDA",
+    "name_vi": "Chả đậu falafel (công thức USDA)",
     "name_en": "Falafel, home-prepared",
-    "group": "prepared"
+    "group": "prepared",
+    "aliases": [
+      "Chả đậu falafel công thức gia đình USDA"
+    ],
+    "preparation_state": "prepared",
+    "canonical_key": "usda-sr:172455"
+  },
+  {
+    "fdc_id": "168225",
+    "name_vi": "Thịt heo đùi nạc (chín)",
+    "name_en": "Pork, fresh, leg (ham), whole, separable lean only, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168225",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168224",
+    "name_vi": "Thịt heo đùi nạc (sống)",
+    "name_en": "Pork, fresh, leg (ham), whole, separable lean only, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168224",
+    "aliases": []
+  },
+  {
+    "fdc_id": "167845",
+    "name_vi": "Thịt heo vai nạc (sống)",
+    "name_en": "Pork, fresh, shoulder, whole, separable lean only, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:167845",
+    "aliases": []
+  },
+  {
+    "fdc_id": "167846",
+    "name_vi": "Thịt heo vai nạc (chín)",
+    "name_en": "Pork, fresh, shoulder, whole, separable lean only, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:167846",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168233",
+    "name_vi": "Thịt heo thăn nạc (chín)",
+    "name_en": "Pork, fresh, loin, whole, separable lean only, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168233",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168249",
+    "name_vi": "Thịt heo thăn nội (sống)",
+    "name_en": "Pork, fresh, loin, tenderloin, separable lean only, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168249",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168250",
+    "name_vi": "Thịt heo thăn nội (chín)",
+    "name_en": "Pork, fresh, loin, tenderloin, separable lean only, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168250",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168622",
+    "name_vi": "Óc bò (sống)",
+    "name_en": "Beef, variety meats and by-products, brain, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168622",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168624",
+    "name_vi": "Óc bò (chín)",
+    "name_en": "Beef, variety meats and by-products, brain, cooked, simmered",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168624",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168625",
+    "name_vi": "Tim bò (sống)",
+    "name_en": "Beef, variety meats and by-products, heart, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168625",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169448",
+    "name_vi": "Tim bò (chín)",
+    "name_en": "Beef, variety meats and by-products, heart, cooked, simmered",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169448",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169451",
+    "name_vi": "Gan bò (sống)",
+    "name_en": "Beef, variety meats and by-products, liver, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169451",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168626",
+    "name_vi": "Gan bò (chín)",
+    "name_en": "Beef, variety meats and by-products, liver, cooked, braised",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168626",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169449",
+    "name_vi": "Cật bò (sống)",
+    "name_en": "Beef, variety meats and by-products, kidneys, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169449",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169450",
+    "name_vi": "Cật bò (chín)",
+    "name_en": "Beef, variety meats and by-products, kidneys, cooked, simmered",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169450",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168628",
+    "name_vi": "Phổi bò (sống)",
+    "name_en": "Beef, variety meats and by-products, lungs, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168628",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168629",
+    "name_vi": "Phổi bò (chín)",
+    "name_en": "Beef, variety meats and by-products, lungs, cooked, braised",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168629",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169454",
+    "name_vi": "Lá lách bò (sống)",
+    "name_en": "Beef, variety meats and by-products, spleen, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169454",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170597",
+    "name_vi": "Lá lách bò (chín)",
+    "name_en": "Beef, variety meats and by-products, spleen, cooked, braised",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170597",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170196",
+    "name_vi": "Lưỡi bò (sống)",
+    "name_en": "Beef, variety meats and by-products, tongue, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170196",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170598",
+    "name_vi": "Lưỡi bò (chín)",
+    "name_en": "Beef, variety meats and by-products, tongue, cooked, simmered",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170598",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170599",
+    "name_vi": "Dạ dày bò (sống)",
+    "name_en": "Beef, variety meats and by-products, tripe, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170599",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174769",
+    "name_vi": "Dạ dày bò (chín)",
+    "name_en": "Beef, variety meats and by-products, tripe, cooked, simmered",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:174769",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171458",
+    "name_vi": "Tim gà (sống)",
+    "name_en": "Chicken, heart, all classes, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171458",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171059",
+    "name_vi": "Tim gà (chín)",
+    "name_en": "Chicken, heart, all classes, cooked, simmered",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:171059",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171060",
+    "name_vi": "Gan gà (sống)",
+    "name_en": "Chicken, liver, all classes, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171060",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171061",
+    "name_vi": "Gan gà (chín)",
+    "name_en": "Chicken, liver, all classes, cooked, simmered",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:171061",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171456",
+    "name_vi": "Mề gà (sống)",
+    "name_en": "Chicken, gizzard, all classes, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171456",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171457",
+    "name_vi": "Mề gà (chín)",
+    "name_en": "Chicken, gizzard, all classes, cooked, simmered",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:171457",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171474",
+    "name_vi": "Ức gà (sống, có da)",
+    "name_en": "Chicken, broilers or fryers, breast, meat and skin, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171474",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171075",
+    "name_vi": "Ức gà (chín, có da)",
+    "name_en": "Chicken, broilers or fryers, breast, meat and skin, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:171075",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172373",
+    "name_vi": "Đùi tỏi gà (sống, có da)",
+    "name_en": "Chicken, broilers or fryers, drumstick, meat and skin, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:172373",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173612",
+    "name_vi": "Đùi tỏi gà (chín, có da)",
+    "name_en": "Chicken, broilers or fryers, drumstick, meat and skin, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173612",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172385",
+    "name_vi": "Má đùi gà (sống, có da)",
+    "name_en": "Chicken, broilers or fryers, thigh, meat and skin, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:172385",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173625",
+    "name_vi": "Má đùi gà (chín, có da)",
+    "name_en": "Chicken, broilers or fryers, thigh, meat and skin, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173625",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172388",
+    "name_vi": "Má đùi gà (chín, không da)",
+    "name_en": "Chicken, broilers or fryers, thigh, meat only, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:172388",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172390",
+    "name_vi": "Cánh gà (sống, có da)",
+    "name_en": "Chicken, broilers or fryers, wing, meat and skin, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:172390",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173630",
+    "name_vi": "Cánh gà (chín, có da)",
+    "name_en": "Chicken, broilers or fryers, wing, meat and skin, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173630",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173632",
+    "name_vi": "Cánh gà (sống, không da)",
+    "name_en": "Chicken, broilers or fryers, wing, meat only, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173632",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172392",
+    "name_vi": "Cánh gà (chín, không da)",
+    "name_en": "Chicken, broilers or fryers, wing, meat only, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:172392",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172408",
+    "name_vi": "Thịt vịt (sống, có da)",
+    "name_en": "Duck, domesticated, meat and skin, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:172408",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172409",
+    "name_vi": "Thịt vịt (chín, có da)",
+    "name_en": "Duck, domesticated, meat and skin, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:172409",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172411",
+    "name_vi": "Thịt vịt (chín, không da)",
+    "name_en": "Duck, domesticated, meat only, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:172411",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174467",
+    "name_vi": "Gan vịt (sống)",
+    "name_en": "Duck, domesticated, liver, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174467",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171952",
+    "name_vi": "Cá chép (sống)",
+    "name_en": "Fish, carp, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171952",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174185",
+    "name_vi": "Cá chép (chín)",
+    "name_en": "Fish, carp, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:174185",
+    "aliases": []
+  },
+  {
+    "fdc_id": "175177",
+    "name_vi": "Cá rô phi (chín)",
+    "name_en": "Fish, tilapia, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:175177",
+    "aliases": []
+  },
+  {
+    "fdc_id": "175120",
+    "name_vi": "Cá thu Đại Tây Dương (chín)",
+    "name_en": "Fish, mackerel, Atlantic, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:175120",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173672",
+    "name_vi": "Cá thu Thái Bình Dương và cá nục (sống)",
+    "name_en": "Fish, mackerel, Pacific and jack, mixed species, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173672",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171994",
+    "name_vi": "Cá thu Thái Bình Dương và cá nục (chín)",
+    "name_en": "Fish, mackerel, Pacific and jack, mixed species, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:171994",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173673",
+    "name_vi": "Cá thu Tây Ban Nha (sống)",
+    "name_en": "Fish, mackerel, spanish, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173673",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173674",
+    "name_vi": "Cá thu Tây Ban Nha (chín)",
+    "name_en": "Fish, mackerel, spanish, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173674",
+    "aliases": []
+  },
+  {
+    "fdc_id": "175116",
+    "name_vi": "Cá trích Đại Tây Dương (sống)",
+    "name_en": "Fish, herring, Atlantic, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:175116",
+    "aliases": []
+  },
+  {
+    "fdc_id": "175117",
+    "name_vi": "Cá trích Đại Tây Dương (chín)",
+    "name_en": "Fish, herring, Atlantic, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:175117",
+    "aliases": []
+  },
+  {
+    "fdc_id": "175123",
+    "name_vi": "Cá đối (sống)",
+    "name_en": "Fish, mullet, striped, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:175123",
+    "aliases": []
+  },
+  {
+    "fdc_id": "175124",
+    "name_vi": "Cá đối (chín)",
+    "name_en": "Fish, mullet, striped, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:175124",
+    "aliases": []
+  },
+  {
+    "fdc_id": "175156",
+    "name_vi": "Cá ngừ vằn (sống)",
+    "name_en": "Fish, tuna, fresh, skipjack, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:175156",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172005",
+    "name_vi": "Cá ngừ vằn (chín)",
+    "name_en": "Fish, tuna, skipjack, fresh, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:172005",
+    "aliases": []
+  },
+  {
+    "fdc_id": "175159",
+    "name_vi": "Cá ngừ vây vàng (sống)",
+    "name_en": "Fish, tuna, fresh, yellowfin, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:175159",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172006",
+    "name_vi": "Cá ngừ vây vàng (chín)",
+    "name_en": "Fish, tuna, yellowfin, fresh, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:172006",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173706",
+    "name_vi": "Cá ngừ vây xanh (sống)",
+    "name_en": "Fish, tuna, fresh, bluefin, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173706",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173707",
+    "name_vi": "Cá ngừ vây xanh (chín)",
+    "name_en": "Fish, tuna, fresh, bluefin, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173707",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173708",
+    "name_vi": "Cá ngừ hộp ngâm dầu (ráo dầu)",
+    "name_en": "Fish, tuna, light, canned in oil, drained solids",
+    "group": "meat",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:173708",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173709",
+    "name_vi": "Cá ngừ hộp ngâm nước (ráo nước)",
+    "name_en": "Fish, tuna, light, canned in water, drained solids (Includes foods for USDA's Food Distribution Program)",
+    "group": "meat",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:173709",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174182",
+    "name_vi": "Cá cơm châu Âu (sống)",
+    "name_en": "Fish, anchovy, european, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174182",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174183",
+    "name_vi": "Cá cơm hộp ngâm dầu (ráo dầu)",
+    "name_en": "Fish, anchovy, european, canned in oil, drained solids",
+    "group": "meat",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:174183",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174193",
+    "name_vi": "Cá chình (sống)",
+    "name_en": "Fish, eel, mixed species, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174193",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174194",
+    "name_vi": "Cá chình (chín)",
+    "name_en": "Fish, eel, mixed species, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:174194",
+    "aliases": []
+  },
+  {
+    "fdc_id": "175165",
+    "name_vi": "Cá nheo Mỹ nuôi (sống)",
+    "name_en": "Fish, catfish, channel, farmed, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:175165",
+    "aliases": []
+  },
+  {
+    "fdc_id": "175166",
+    "name_vi": "Cá nheo Mỹ nuôi (chín)",
+    "name_en": "Fish, catfish, channel, farmed, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:175166",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173682",
+    "name_vi": "Cá chim Florida (sống)",
+    "name_en": "Fish, pompano, florida, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173682",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173683",
+    "name_vi": "Cá chim Florida (chín)",
+    "name_en": "Fish, pompano, florida, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173683",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173717",
+    "name_vi": "Cá hồi vân nuôi (sống)",
+    "name_en": "Fish, trout, rainbow, farmed, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173717",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173718",
+    "name_vi": "Cá hồi vân nuôi (chín)",
+    "name_en": "Fish, trout, rainbow, farmed, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173718",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174210",
+    "name_vi": "Tôm (sống, có thể có chất giữ ẩm)",
+    "name_en": "Crustaceans, shrimp, mixed species, raw (may contain additives to retain moisture)",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174210",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171971",
+    "name_vi": "Tôm (chín, có thể có chất giữ ẩm)",
+    "name_en": "Crustaceans, shrimp, mixed species, cooked, moist heat (may contain additives to retain moisture)",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:171971",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174205",
+    "name_vi": "Ghẹ xanh Đại Tây Dương (chín)",
+    "name_en": "Crustaceans, crab, blue, cooked, moist heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:174205",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171968",
+    "name_vi": "Cua Dungeness (sống)",
+    "name_en": "Crustaceans, crab, dungeness, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171968",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172007",
+    "name_vi": "Cua Dungeness (chín)",
+    "name_en": "Crustaceans, crab, dungeness, cooked, moist heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:172007",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174208",
+    "name_vi": "Tôm hùm Bắc Đại Tây Dương (sống)",
+    "name_en": "Crustaceans, lobster, northern, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174208",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174209",
+    "name_vi": "Tôm hùm Bắc Đại Tây Dương (chín)",
+    "name_en": "Crustaceans, lobster, northern, cooked, moist heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:174209",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174214",
+    "name_vi": "Nghêu (sống)",
+    "name_en": "Mollusks, clam, mixed species, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174214",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171975",
+    "name_vi": "Nghêu (chín)",
+    "name_en": "Mollusks, clam, mixed species, cooked, moist heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:171975",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174215",
+    "name_vi": "Mực nang (sống)",
+    "name_en": "Mollusks, cuttlefish, mixed species, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174215",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172010",
+    "name_vi": "Mực nang (chín)",
+    "name_en": "Mollusks, cuttlefish, mixed species, cooked, moist heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:172010",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174218",
+    "name_vi": "Bạch tuộc (sống)",
+    "name_en": "Mollusks, octopus, common, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174218",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174249",
+    "name_vi": "Bạch tuộc (chín)",
+    "name_en": "Mollusks, octopus, common, cooked, moist heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:174249",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174219",
+    "name_vi": "Hàu Thái Bình Dương (sống)",
+    "name_en": "Mollusks, oyster, Pacific, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174219",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174250",
+    "name_vi": "Hàu Thái Bình Dương (chín)",
+    "name_en": "Mollusks, oyster, Pacific, cooked, moist heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:174250",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171978",
+    "name_vi": "Hàu Đại Tây Dương (sống)",
+    "name_en": "Mollusks, oyster, eastern, wild, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171978",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171980",
+    "name_vi": "Hàu Đại Tây Dương (chín)",
+    "name_en": "Mollusks, oyster, eastern, wild, cooked, moist heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:171980",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171983",
+    "name_vi": "Ốc biển whelk (sống)",
+    "name_en": "Mollusks, whelk, unspecified, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171983",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171984",
+    "name_vi": "Ốc biển whelk (chín)",
+    "name_en": "Mollusks, whelk, unspecified, cooked, moist heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:171984",
+    "aliases": []
+  },
+  {
+    "fdc_id": "167742",
+    "name_vi": "Sò điệp (chín)",
+    "name_en": "Mollusks, scallop, (bay and sea), cooked, steamed",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:167742",
+    "aliases": []
+  },
+  {
+    "fdc_id": "167744",
+    "name_vi": "Ốc sên (sống)",
+    "name_en": "Mollusks, snail, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:167744",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169301",
+    "name_vi": "Rau muống (sống)",
+    "name_en": "Water convolvulus,raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169301",
+    "aliases": [
+      "Rau muống"
+    ]
+  },
+  {
+    "fdc_id": "169302",
+    "name_vi": "Rau muống (chín, không muối)",
+    "name_en": "Water convolvulus, cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169302",
+    "aliases": [
+      "Rau muống luộc"
+    ]
+  },
+  {
+    "fdc_id": "168419",
+    "name_vi": "Rau đay (sống)",
+    "name_en": "Jute, potherb, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168419",
+    "aliases": [
+      "Rau đay"
+    ]
+  },
+  {
+    "fdc_id": "168420",
+    "name_vi": "Rau đay (chín, không muối)",
+    "name_en": "Jute, potherb, cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168420",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168385",
+    "name_vi": "Rau dền (sống)",
+    "name_en": "Amaranth leaves, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168385",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169202",
+    "name_vi": "Rau dền (chín, không muối)",
+    "name_en": "Amaranth leaves, cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169202",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168393",
+    "name_vi": "Khổ qua (sống)",
+    "name_en": "Balsam-pear (bitter gourd), pods, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168393",
+    "aliases": [
+      "Mướp đắng"
+    ]
+  },
+  {
+    "fdc_id": "168394",
+    "name_vi": "Khổ qua (chín, không muối)",
+    "name_en": "Balsam-pear (bitter gourd), pods, cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168394",
+    "aliases": [
+      "Mướp đắng chín"
+    ]
+  },
+  {
+    "fdc_id": "168414",
+    "name_vi": "Mướp (sống)",
+    "name_en": "Gourd, dishcloth (towelgourd), raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168414",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168415",
+    "name_vi": "Mướp (chín, không muối)",
+    "name_en": "Gourd, dishcloth (towelgourd), cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168415",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169232",
+    "name_vi": "Bầu (sống)",
+    "name_en": "Gourd, white-flowered (calabash), raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169232",
+    "aliases": [
+      "Quả bầu"
+    ]
+  },
+  {
+    "fdc_id": "169233",
+    "name_vi": "Bầu (chín, không muối)",
+    "name_en": "Gourd, white-flowered (calabash), cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169233",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169303",
+    "name_vi": "Rau lang (sống)",
+    "name_en": "Sweet potato leaves, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169303",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169304",
+    "name_vi": "Rau lang (chín, không muối)",
+    "name_en": "Sweet potato leaves, cooked, steamed, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169304",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169210",
+    "name_vi": "Măng tươi (sống)",
+    "name_en": "Bamboo shoots, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169210",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169211",
+    "name_vi": "Măng tươi (chín, không muối)",
+    "name_en": "Bamboo shoots, cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169211",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169250",
+    "name_vi": "Củ sen (sống)",
+    "name_en": "Lotus root, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169250",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168430",
+    "name_vi": "Củ sen (chín, không muối)",
+    "name_en": "Lotus root, cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168430",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168451",
+    "name_vi": "Củ cải trắng (sống)",
+    "name_en": "Radishes, oriental, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168451",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168452",
+    "name_vi": "Củ cải trắng (chín, không muối)",
+    "name_en": "Radishes, oriental, cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168452",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168453",
+    "name_vi": "Củ cải trắng (khô)",
+    "name_en": "Radishes, oriental, dried",
+    "group": "vegetables",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:168453",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169145",
+    "name_vi": "Củ dền (sống)",
+    "name_en": "Beets, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169145",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169146",
+    "name_vi": "Củ dền (chín)",
+    "name_en": "Beets, cooked, boiled, drained",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169146",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169260",
+    "name_vi": "Đậu bắp (sống)",
+    "name_en": "Okra, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169260",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169261",
+    "name_vi": "Đậu bắp (chín, không muối)",
+    "name_en": "Okra, cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169261",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169274",
+    "name_vi": "Rau sam (sống)",
+    "name_en": "Purslane, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169274",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169275",
+    "name_vi": "Rau sam (chín, không muối)",
+    "name_en": "Purslane, cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169275",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169242",
+    "name_vi": "Nấm hương (sống)",
+    "name_en": "Mushrooms, shiitake, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169242",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168436",
+    "name_vi": "Nấm hương (khô)",
+    "name_en": "Mushrooms, shiitake, dried",
+    "group": "vegetables",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:168436",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168437",
+    "name_vi": "Nấm hương (chín, không muối)",
+    "name_en": "Mushrooms, shiitake, cooked, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168437",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169252",
+    "name_vi": "Nấm mỡ trắng (chín, không muối)",
+    "name_en": "Mushrooms, white, cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169252",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168580",
+    "name_vi": "Nấm bào ngư (sống)",
+    "name_en": "Mushrooms, oyster, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168580",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168582",
+    "name_vi": "Nấm rơm hộp (ráo nước)",
+    "name_en": "Mushrooms, straw, canned, drained solids",
+    "group": "vegetables",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:168582",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169382",
+    "name_vi": "Nấm kim châm (sống)",
+    "name_en": "Mushrooms, enoki, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169382",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169403",
+    "name_vi": "Nấm maitake (sống)",
+    "name_en": "Mushrooms, maitake, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169403",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169997",
+    "name_vi": "Rau mùi (sống)",
+    "name_en": "Coriander (cilantro) leaves, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169997",
+    "aliases": [
+      "Ngò rí"
+    ]
+  },
+  {
+    "fdc_id": "168573",
+    "name_vi": "Sả (sống)",
+    "name_en": "Lemon grass (citronella), raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168573",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168457",
+    "name_vi": "Rong biển kelp (tươi)",
+    "name_en": "Seaweed, kelp, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168457",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168458",
+    "name_vi": "Rong biển laver (tươi)",
+    "name_en": "Seaweed, laver, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168458",
+    "aliases": []
+  },
+  {
+    "fdc_id": "167754",
+    "name_vi": "Bưởi",
+    "name_en": "Pummelo, raw",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:167754",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174687",
+    "name_vi": "Mít",
+    "name_en": "Jackfruit, raw",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174687",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168192",
+    "name_vi": "Sầu riêng (tươi hoặc đông lạnh)",
+    "name_en": "Durian, raw or frozen",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168192",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169089",
+    "name_vi": "Nhãn",
+    "name_en": "Longans, raw",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169089",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169907",
+    "name_vi": "Nhãn khô",
+    "name_en": "Longans, dried",
+    "group": "fruits",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:169907",
+    "aliases": []
+  },
+  {
+    "fdc_id": "167759",
+    "name_vi": "Sapôchê",
+    "name_en": "Sapodilla, raw",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:167759",
+    "aliases": []
+  },
+  {
+    "fdc_id": "167761",
+    "name_vi": "Mãng cầu xiêm",
+    "name_en": "Soursop, raw",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:167761",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168175",
+    "name_vi": "Na",
+    "name_en": "Sugar-apples, (sweetsop), raw",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168175",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171725",
+    "name_vi": "Mãng cầu tim bò",
+    "name_en": "Custard-apple, (bullock's-heart), raw",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171725",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169092",
+    "name_vi": "Dưa lưới ruột cam",
+    "name_en": "Melons, cantaloupe, raw",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169092",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169911",
+    "name_vi": "Dưa lê ruột xanh",
+    "name_en": "Melons, honeydew, raw",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169911",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169108",
+    "name_vi": "Chanh dây tím",
+    "name_en": "Passion-fruit, (granadilla), purple, raw",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169108",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170169",
+    "name_vi": "Cùi dừa tươi",
+    "name_en": "Nuts, coconut meat, raw",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170169",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170170",
+    "name_vi": "Cùi dừa khô (không đường)",
+    "name_en": "Nuts, coconut meat, dried (desiccated), not sweetened",
+    "group": "fruits",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:170170",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173033",
+    "name_vi": "Bưởi chùm",
+    "name_en": "Grapefruit, raw, pink and red and white, all areas",
+    "group": "fruits",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173033",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168167",
+    "name_vi": "Chôm chôm hộp ngâm si-rô",
+    "name_en": "Rambutan, canned, syrup pack",
+    "group": "fruits",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:168167",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169090",
+    "name_vi": "Măng cụt hộp ngâm si-rô",
+    "name_en": "Mangosteen, canned, syrup pack",
+    "group": "fruits",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:169090",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169703",
+    "name_vi": "Gạo lứt (hạt dài)",
+    "name_en": "Rice, brown, long-grain, raw (Includes foods for USDA's Food Distribution Program)",
+    "group": "grains",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169703",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169704",
+    "name_vi": "Cơm gạo lứt (hạt dài)",
+    "name_en": "Rice, brown, long-grain, cooked (Includes foods for USDA's Food Distribution Program)",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169704",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169706",
+    "name_vi": "Gạo lứt (hạt vừa)",
+    "name_en": "Rice, brown, medium-grain, raw (Includes foods for USDA's Food Distribution Program)",
+    "group": "grains",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169706",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168875",
+    "name_vi": "Cơm gạo lứt (hạt vừa)",
+    "name_en": "Rice, brown, medium-grain, cooked (Includes foods for USDA's Food Distribution Program)",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168875",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168883",
+    "name_vi": "Gạo nếp",
+    "name_en": "Rice, white, glutinous, unenriched, uncooked",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168883",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169711",
+    "name_vi": "Xôi nếp trắng (không thêm nguyên liệu)",
+    "name_en": "Rice, white, glutinous, unenriched, cooked",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169711",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169760",
+    "name_vi": "Gạo trắng (hạt vừa)",
+    "name_en": "Rice, white, medium-grain, raw, unenriched",
+    "group": "grains",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169760",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168930",
+    "name_vi": "Cơm trắng (hạt vừa)",
+    "name_en": "Rice, white, medium-grain, cooked, unenriched",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168930",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168931",
+    "name_vi": "Gạo trắng (hạt ngắn)",
+    "name_en": "Rice, white, short-grain, raw, unenriched",
+    "group": "grains",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168931",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168932",
+    "name_vi": "Cơm trắng (hạt ngắn)",
+    "name_en": "Rice, white, short-grain, cooked, unenriched",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168932",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168898",
+    "name_vi": "Bột gạo lứt",
+    "name_en": "Rice flour, brown",
+    "group": "grains",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:168898",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169714",
+    "name_vi": "Bột gạo trắng",
+    "name_en": "Rice flour, white, unenriched",
+    "group": "grains",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:169714",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174258",
+    "name_vi": "Miến đậu xanh (khô)",
+    "name_en": "Noodles, chinese, cellophane or long rice (mung beans), dehydrated",
+    "group": "grains",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:174258",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168906",
+    "name_vi": "Mì soba (khô)",
+    "name_en": "Noodles, japanese, soba, dry",
+    "group": "grains",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:168906",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168907",
+    "name_vi": "Mì soba (chín)",
+    "name_en": "Noodles, japanese, soba, cooked",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168907",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168908",
+    "name_vi": "Mì somen (khô)",
+    "name_en": "Noodles, japanese, somen, dry",
+    "group": "grains",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:168908",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168909",
+    "name_vi": "Mì somen (chín)",
+    "name_en": "Noodles, japanese, somen, cooked",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168909",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168927",
+    "name_vi": "Nui và mì pasta (khô, không bổ sung vi chất)",
+    "name_en": "Pasta, dry, unenriched",
+    "group": "grains",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:168927",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168928",
+    "name_vi": "Nui và mì pasta (chín, không muối)",
+    "name_en": "Pasta, cooked, unenriched, without added salt",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168928",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169736",
+    "name_vi": "Nui và mì pasta (khô, bổ sung vi chất)",
+    "name_en": "Pasta, dry, enriched",
+    "group": "grains",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:169736",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169737",
+    "name_vi": "Nui và mì pasta (chín, bổ sung vi chất)",
+    "name_en": "Pasta, cooked, enriched, without added salt",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169737",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169698",
+    "name_vi": "Bột bắp tinh lọc",
+    "name_en": "Cornstarch",
+    "group": "grains",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:169698",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170290",
+    "name_vi": "Bột bắp nguyên hạt",
+    "name_en": "Corn flour, whole-grain, yellow",
+    "group": "grains",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170290",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169717",
+    "name_vi": "Bột báng (khô)",
+    "name_en": "Tapioca, pearl, dry",
+    "group": "grains",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:169717",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168893",
+    "name_vi": "Bột mì nguyên cám",
+    "name_en": "Wheat flour, whole-grain (Includes foods for USDA's Food Distribution Program)",
+    "group": "grains",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:168893",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169761",
+    "name_vi": "Bột mì đa dụng",
+    "name_en": "Wheat flour, white, all-purpose, unenriched",
+    "group": "grains",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:169761",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168872",
+    "name_vi": "Cám yến mạch (khô)",
+    "name_en": "Oat bran, raw",
+    "group": "grains",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168872",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168873",
+    "name_vi": "Cám yến mạch (chín)",
+    "name_en": "Oat bran, cooked",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168873",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173904",
+    "name_vi": "Yến mạch cán (khô)",
+    "name_en": "Cereals, oats, regular and quick, not fortified, dry",
+    "group": "grains",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:173904",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173905",
+    "name_vi": "Yến mạch cán (chín, pha nước)",
+    "name_en": "Cereals, oats, regular and quick, unenriched, cooked with water (includes boiling and microwaving), without salt",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173905",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170286",
+    "name_vi": "Hạt kiều mạch",
+    "name_en": "Buckwheat",
+    "group": "grains",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170286",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170284",
+    "name_vi": "Lúa mạch ngọc trai (khô)",
+    "name_en": "Barley, pearled, raw",
+    "group": "grains",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170284",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169308",
+    "name_vi": "Khoai môn (sống)",
+    "name_en": "Taro, raw",
+    "group": "grains",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169308",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168486",
+    "name_vi": "Khoai môn (chín, không muối)",
+    "name_en": "Taro, cooked, without salt",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168486",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169985",
+    "name_vi": "Khoai mì (sống)",
+    "name_en": "Cassava, raw",
+    "group": "grains",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169985",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170071",
+    "name_vi": "Khoai từ và khoai mỡ (sống)",
+    "name_en": "Yam, raw",
+    "group": "grains",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170071",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170072",
+    "name_vi": "Khoai từ và khoai mỡ (chín, không muối)",
+    "name_en": "Yam, cooked, boiled, drained, or baked, without salt",
+    "group": "grains",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170072",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172675",
+    "name_vi": "Bánh mì baguette",
+    "name_en": "Bread, french or vienna (includes sourdough)",
+    "group": "grains",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:172675",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174091",
+    "name_vi": "Bánh mì baguette nguyên cám",
+    "name_en": "Bread, french or vienna, whole wheat",
+    "group": "grains",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:174091",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172191",
+    "name_vi": "Trứng cút (sống)",
+    "name_en": "Egg, quail, whole, fresh, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:172191",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172430",
+    "name_vi": "Đậu phộng (sống)",
+    "name_en": "Peanuts, all types, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:172430",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173806",
+    "name_vi": "Đậu phộng (rang khô, không muối)",
+    "name_en": "Peanuts, all types, dry-roasted, without salt",
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173806",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174270",
+    "name_vi": "Đậu nành (khô)",
+    "name_en": "Soybeans, mature seeds, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:174270",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169282",
+    "name_vi": "Đậu nành non (sống)",
+    "name_en": "Soybeans, green, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169282",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169283",
+    "name_vi": "Đậu nành non (chín, không muối)",
+    "name_en": "Soybeans, green, cooked, boiled, drained, without salt",
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169283",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169957",
+    "name_vi": "Giá đậu xanh (sống)",
+    "name_en": "Mung beans, mature seeds, sprouted, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169957",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169137",
+    "name_vi": "Giá đậu xanh (chín, không muối)",
+    "name_en": "Mung beans, mature seeds, sprouted, cooked, boiled, drained, without salt",
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169137",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169284",
+    "name_vi": "Giá đậu nành (sống)",
+    "name_en": "Soybeans, mature seeds, sprouted, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169284",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168460",
+    "name_vi": "Giá đậu nành (chín)",
+    "name_en": "Soybeans, mature seeds, sprouted, cooked, steamed",
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168460",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173727",
+    "name_vi": "Đậu đỏ azuki (khô)",
+    "name_en": "Beans, adzuki, mature seeds, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173727",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173728",
+    "name_vi": "Đậu đỏ azuki (chín, không muối)",
+    "name_en": "Beans, adzuki, mature seeds, cooked, boiled, without salt",
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:173728",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173744",
+    "name_vi": "Đậu thận đỏ (khô)",
+    "name_en": "Beans, kidney, red, mature seeds, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173744",
+    "aliases": []
+  },
+  {
+    "fdc_id": "175194",
+    "name_vi": "Đậu thận đỏ (chín, không muối)",
+    "name_en": "Beans, kidney, red, mature seeds, cooked, boiled, without salt",
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:175194",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172475",
+    "name_vi": "Đậu hũ cứng (kết tủa canxi sulfat)",
+    "name_en": "Tofu, raw, firm, prepared with calcium sulfate",
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:172475",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172449",
+    "name_vi": "Đậu hũ mềm (canxi sulfat và nigari)",
+    "name_en": "Tofu, soft, prepared with calcium sulfate and magnesium chloride (nigari)",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:172449",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170567",
+    "name_vi": "Hạnh nhân",
+    "name_en": "Nuts, almonds",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170567",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170158",
+    "name_vi": "Hạnh nhân (rang khô, không muối)",
+    "name_en": "Nuts, almonds, dry roasted, without salt added",
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170158",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170162",
+    "name_vi": "Hạt điều (sống)",
+    "name_en": "Nuts, cashew nuts, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170162",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170571",
+    "name_vi": "Hạt điều (rang khô, không muối)",
+    "name_en": "Nuts, cashew nuts, dry roasted, without salt added",
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170571",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170178",
+    "name_vi": "Hạt mắc ca (sống)",
+    "name_en": "Nuts, macadamia nuts, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170178",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170179",
+    "name_vi": "Hạt mắc ca (rang khô, không muối)",
+    "name_en": "Nuts, macadamia nuts, dry roasted, without salt added",
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170179",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170184",
+    "name_vi": "Hạt dẻ cười (sống)",
+    "name_en": "Nuts, pistachio nuts, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170184",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170185",
+    "name_vi": "Hạt dẻ cười (rang khô, không muối)",
+    "name_en": "Nuts, pistachio nuts, dry roasted, without salt added",
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170185",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170187",
+    "name_vi": "Hạt óc chó",
+    "name_en": "Nuts, walnuts, english",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170187",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170554",
+    "name_vi": "Hạt chia (khô)",
+    "name_en": "Seeds, chia seeds, dried",
+    "group": "dairy_legumes",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:170554",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169414",
+    "name_vi": "Hạt lanh",
+    "name_en": "Seeds, flaxseed",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:169414",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170562",
+    "name_vi": "Nhân hạt hướng dương (khô)",
+    "name_en": "Seeds, sunflower seed kernels, dried",
+    "group": "dairy_legumes",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:170562",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170563",
+    "name_vi": "Nhân hạt hướng dương (rang khô, không muối)",
+    "name_en": "Seeds, sunflower seed kernels, dry roasted, without salt",
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170563",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170556",
+    "name_vi": "Nhân hạt bí (khô)",
+    "name_en": "Seeds, pumpkin and squash seed kernels, dried",
+    "group": "dairy_legumes",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:170556",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170557",
+    "name_vi": "Nhân hạt bí (rang, không muối)",
+    "name_en": "Seeds, pumpkin and squash seed kernels, roasted, without salt",
+    "group": "dairy_legumes",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170557",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170150",
+    "name_vi": "Hạt mè nguyên vỏ (khô)",
+    "name_en": "Seeds, sesame seeds, whole, dried",
+    "group": "dairy_legumes",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:170150",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169412",
+    "name_vi": "Hạt mè bỏ vỏ (khô)",
+    "name_en": "Seeds, sesame seed kernels, dried (decorticated)",
+    "group": "dairy_legumes",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:169412",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170152",
+    "name_vi": "Hạt mè bỏ vỏ (rang, không muối)",
+    "name_en": "Seeds, sesame seed kernels, toasted, without salt added (decorticated)",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170152",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171267",
+    "name_vi": "Sữa tươi (2% béo)",
+    "name_en": "Milk, reduced fat, fluid, 2% milkfat, with added vitamin A and vitamin D",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171267",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170872",
+    "name_vi": "Sữa tươi (1% béo)",
+    "name_en": "Milk, lowfat, fluid, 1% milkfat, with added vitamin A and vitamin D",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170872",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171275",
+    "name_vi": "Sữa đặc có đường",
+    "name_en": "Milk, canned, condensed, sweetened",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171275",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171276",
+    "name_vi": "Sữa đặc không đường",
+    "name_en": "Milk, canned, evaporated, with added vitamin D and without added vitamin A",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171276",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170886",
+    "name_vi": "Sữa chua ít béo (không đường)",
+    "name_en": "Yogurt, plain, low fat",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170886",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170887",
+    "name_vi": "Sữa chua tách béo (không đường)",
+    "name_en": "Yogurt, plain, skim milk",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170887",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170894",
+    "name_vi": "Sữa chua Hy Lạp (không béo, không đường)",
+    "name_en": "Yogurt, Greek, plain, nonfat (Includes foods for USDA's Food Distribution Program)",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170894",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171304",
+    "name_vi": "Sữa chua Hy Lạp (nguyên kem, không đường)",
+    "name_en": "Yogurt, Greek, plain, whole milk",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171304",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173420",
+    "name_vi": "Phô mai feta",
+    "name_en": "Cheese, feta",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:173420",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170848",
+    "name_vi": "Phô mai parmesan cứng",
+    "name_en": "Cheese, parmesan, hard",
+    "group": "dairy_legumes",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170848",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171013",
+    "name_vi": "Dầu cám gạo",
+    "name_en": "Oil, rice bran",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171013",
+    "aliases": [
+      "Dầu ăn cám gạo"
+    ]
+  },
+  {
+    "fdc_id": "171025",
+    "name_vi": "Dầu hướng dương (giàu linoleic)",
+    "name_en": "Oil, sunflower, linoleic, (approx. 65%)",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171025",
+    "aliases": [
+      "Dầu ăn hướng dương (giàu linoleic)"
+    ]
+  },
+  {
+    "fdc_id": "172338",
+    "name_vi": "Dầu hướng dương (giàu oleic)",
+    "name_en": "Oil, sunflower, high oleic (70% and over)",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:172338",
+    "aliases": [
+      "Dầu ăn hướng dương (giàu oleic)"
+    ]
+  },
+  {
+    "fdc_id": "171029",
+    "name_vi": "Dầu bắp",
+    "name_en": "Oil, corn, industrial and retail, all purpose salad or cooking",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171029",
+    "aliases": [
+      "Dầu ăn bắp"
+    ]
+  },
+  {
+    "fdc_id": "171410",
+    "name_vi": "Dầu đậu phộng",
+    "name_en": "Oil, peanut, salad or cooking",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171410",
+    "aliases": [
+      "Dầu ăn đậu phộng"
+    ]
+  },
+  {
+    "fdc_id": "172336",
+    "name_vi": "Dầu cải canola",
+    "name_en": "Oil, canola",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:172336",
+    "aliases": [
+      "Dầu ăn cải canola"
+    ]
+  },
+  {
+    "fdc_id": "171040",
+    "name_vi": "Bơ thực vật (80% béo, không muối)",
+    "name_en": "Margarine, regular, 80% fat, composite, stick, without salt, with added vitamin D",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171040",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171009",
+    "name_vi": "Sốt mayonnaise",
+    "name_en": "Salad dressing, mayonnaise, regular",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171009",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173594",
+    "name_vi": "Sốt mayonnaise ít béo",
+    "name_en": "Salad dressing, mayonnaise, light",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:173594",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172886",
+    "name_vi": "Tương đen hoisin",
+    "name_en": "Sauce, hoisin, ready-to-serve",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:172886",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171167",
+    "name_vi": "Sốt teriyaki",
+    "name_en": "Sauce, teriyaki, ready-to-serve",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171167",
+    "aliases": []
+  },
+  {
+    "fdc_id": "174529",
+    "name_vi": "Dầu hào",
+    "name_en": "Sauce, oyster, ready-to-serve",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:174529",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168833",
+    "name_vi": "Đường nâu",
+    "name_en": "Sugars, brown",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:168833",
+    "aliases": []
+  },
+  {
+    "fdc_id": "168820",
+    "name_vi": "Mật mía",
+    "name_en": "Molasses",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:168820",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170172",
+    "name_vi": "Nước cốt dừa (pha nước)",
+    "name_en": "Nuts, coconut milk, raw (liquid expressed from grated meat and water)",
+    "group": "seasonings",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170172",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170580",
+    "name_vi": "Kem dừa (không pha nước)",
+    "name_en": "Nuts, coconut cream, raw (liquid expressed from grated meat)",
+    "group": "seasonings",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170580",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170173",
+    "name_vi": "Nước cốt dừa đóng hộp",
+    "name_en": "Nuts, coconut milk, canned (liquid expressed from grated meat and water)",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170173",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170005",
+    "name_vi": "Hành lá (cả củ và lá)",
+    "name_en": "Onions, spring or scallions (includes tops and bulb), raw",
+    "group": "seasonings",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170005",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170499",
+    "name_vi": "Hành tím (sống)",
+    "name_en": "Shallots, raw",
+    "group": "seasonings",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170499",
+    "aliases": [
+      "Hành củ"
+    ]
+  },
+  {
+    "fdc_id": "171320",
+    "name_vi": "Bột quế",
+    "name_en": "Spices, cinnamon, ground",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171320",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171321",
+    "name_vi": "Bột đinh hương",
+    "name_en": "Spices, cloves, ground",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171321",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171319",
+    "name_vi": "Bột ớt gia vị",
+    "name_en": "Spices, chili powder",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171319",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171329",
+    "name_vi": "Bột ớt paprika",
+    "name_en": "Spices, paprika",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:171329",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170922",
+    "name_vi": "Hạt ngò",
+    "name_en": "Spices, coriander seed",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170922",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170923",
+    "name_vi": "Hạt thì là Ai Cập",
+    "name_en": "Spices, cumin seed",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170923",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170919",
+    "name_vi": "Bạch đậu khấu",
+    "name_en": "Spices, cardamom",
+    "group": "seasonings",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170919",
+    "aliases": []
+  },
+  {
+    "fdc_id": "170174",
+    "name_vi": "Nước dừa tươi",
+    "name_en": "Nuts, coconut water (liquid from coconuts)",
+    "group": "beverages",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:170174",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169109",
+    "name_vi": "Nước ép chanh dây tím",
+    "name_en": "Passion-fruit juice, purple, raw",
+    "group": "beverages",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169109",
+    "aliases": []
+  },
+  {
+    "fdc_id": "169110",
+    "name_vi": "Nước ép chanh dây vàng",
+    "name_en": "Passion-fruit juice, yellow, raw",
+    "group": "beverages",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169110",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173039",
+    "name_vi": "Nước ép bưởi chùm trắng",
+    "name_en": "Grapefruit juice, white, raw",
+    "group": "beverages",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173039",
+    "aliases": []
+  },
+  {
+    "fdc_id": "172446",
+    "name_vi": "Sữa đậu nành (nguyên bản hoặc vani)",
+    "name_en": "Soymilk, original and vanilla, unfortified",
+    "group": "beverages",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:172446",
+    "aliases": []
+  },
+  {
+    "fdc_id": "173768",
+    "name_vi": "Sữa đậu nành (ít béo, không đường, bổ sung vi chất)",
+    "name_en": "Soymilk, original and vanilla, light, unsweetened, with added calcium, vitamins A and D",
+    "group": "beverages",
+    "preparation_state": "processed",
+    "canonical_key": "usda-sr:173768",
+    "aliases": []
+  },
+  {
+    "fdc_id": "171077",
+    "name_vi": "Ức gà (sống, không da)",
+    "name_en": "Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:171077"
+  },
+  {
+    "fdc_id": "167853",
+    "name_vi": "Sườn heo (sống, cả nạc và mỡ)",
+    "name_en": "Pork, fresh, spareribs, separable lean and fat, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:167853"
+  },
+  {
+    "fdc_id": "169178",
+    "name_vi": "Sườn heo (chín, cả nạc và mỡ)",
+    "name_en": "Pork, fresh, spareribs, separable lean and fat, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169178"
+  },
+  {
+    "fdc_id": "167859",
+    "name_vi": "Móng giò heo (sống)",
+    "name_en": "Pork, fresh, variety meats and by-products, feet, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:167859"
+  },
+  {
+    "fdc_id": "168290",
+    "name_vi": "Móng giò heo (chín)",
+    "name_en": "Pork, fresh, variety meats and by-products, feet, cooked, simmered",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168290"
+  },
+  {
+    "fdc_id": "168267",
+    "name_vi": "Tim heo (sống)",
+    "name_en": "Pork, fresh, variety meats and by-products, heart, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168267"
+  },
+  {
+    "fdc_id": "168268",
+    "name_vi": "Tim heo (chín)",
+    "name_en": "Pork, fresh, variety meats and by-products, heart, cooked, braised",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168268"
+  },
+  {
+    "fdc_id": "167862",
+    "name_vi": "Gan heo (sống)",
+    "name_en": "Pork, fresh, variety meats and by-products, liver, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:167862"
+  },
+  {
+    "fdc_id": "167863",
+    "name_vi": "Gan heo (chín)",
+    "name_en": "Pork, fresh, variety meats and by-products, liver, cooked, braised",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:167863"
+  },
+  {
+    "fdc_id": "168270",
+    "name_vi": "Cật heo (sống)",
+    "name_en": "Pork, fresh, variety meats and by-products, kidneys, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168270"
+  },
+  {
+    "fdc_id": "167860",
+    "name_vi": "Cật heo (chín)",
+    "name_en": "Pork, fresh, variety meats and by-products, kidneys, cooked, braised",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:167860"
+  },
+  {
+    "fdc_id": "168275",
+    "name_vi": "Lưỡi heo (sống)",
+    "name_en": "Pork, fresh, variety meats and by-products, tongue, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:168275"
+  },
+  {
+    "fdc_id": "168276",
+    "name_vi": "Lưỡi heo (chín)",
+    "name_en": "Pork, fresh, variety meats and by-products, tongue, cooked, braised",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:168276"
+  },
+  {
+    "fdc_id": "175299",
+    "name_vi": "Thịt trâu (sống)",
+    "name_en": "Game meat, buffalo, water, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:175299"
+  },
+  {
+    "fdc_id": "175300",
+    "name_vi": "Thịt trâu (chín)",
+    "name_en": "Game meat, buffalo, water, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:175300"
+  },
+  {
+    "fdc_id": "175303",
+    "name_vi": "Thịt dê (sống)",
+    "name_en": "Game meat, goat, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:175303"
+  },
+  {
+    "fdc_id": "175304",
+    "name_vi": "Thịt dê (chín)",
+    "name_en": "Game meat, goat, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:175304"
+  },
+  {
+    "fdc_id": "172521",
+    "name_vi": "Thịt thỏ nuôi (sống)",
+    "name_en": "Game meat, rabbit, domesticated, composite of cuts, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:172521"
+  },
+  {
+    "fdc_id": "172522",
+    "name_vi": "Thịt thỏ nuôi (chín)",
+    "name_en": "Game meat, rabbit, domesticated, composite of cuts, cooked, roasted",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:172522"
+  },
+  {
+    "fdc_id": "173675",
+    "name_vi": "Cá măng (sống)",
+    "name_en": "Fish, milkfish, raw",
+    "group": "meat",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173675"
+  },
+  {
+    "fdc_id": "171995",
+    "name_vi": "Cá măng (chín)",
+    "name_en": "Fish, milkfish, cooked, dry heat",
+    "group": "meat",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:171995"
+  },
+  {
+    "fdc_id": "170069",
+    "name_vi": "Bí đao (sống)",
+    "name_en": "Waxgourd, (chinese preserving melon), raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170069"
+  },
+  {
+    "fdc_id": "170475",
+    "name_vi": "Bí đao (chín, không muối)",
+    "name_en": "Waxgourd, (chinese preserving melon), cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170475"
+  },
+  {
+    "fdc_id": "170402",
+    "name_vi": "Su su (sống)",
+    "name_en": "Chayote, fruit, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:170402"
+  },
+  {
+    "fdc_id": "170403",
+    "name_vi": "Su su (chín, không muối)",
+    "name_en": "Chayote, fruit, cooked, boiled, drained, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:170403"
+  },
+  {
+    "fdc_id": "169247",
+    "name_vi": "Xà lách romaine (sống)",
+    "name_en": "Lettuce, cos or romaine, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169247"
+  },
+  {
+    "fdc_id": "173475",
+    "name_vi": "Húng lủi (sống)",
+    "name_en": "Spearmint, fresh",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:173475"
+  },
+  {
+    "fdc_id": "169295",
+    "name_vi": "Bí hồ lô (sống)",
+    "name_en": "Squash, winter, butternut, raw",
+    "group": "vegetables",
+    "preparation_state": "raw",
+    "canonical_key": "usda-sr:169295"
+  },
+  {
+    "fdc_id": "169296",
+    "name_vi": "Bí hồ lô (chín, không muối)",
+    "name_en": "Squash, winter, butternut, cooked, baked, without salt",
+    "group": "vegetables",
+    "preparation_state": "cooked",
+    "canonical_key": "usda-sr:169296"
+  },
+  {
+    "fdc_id": "172420",
+    "name_vi": "Đậu lăng (khô)",
+    "name_en": "Lentils, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:172420"
+  },
+  {
+    "fdc_id": "173734",
+    "name_vi": "Đậu đen (khô)",
+    "name_en": "Beans, black, mature seeds, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:173734"
+  },
+  {
+    "fdc_id": "174256",
+    "name_vi": "Đậu xanh (khô)",
+    "name_en": "Mung beans, mature seeds, raw",
+    "group": "dairy_legumes",
+    "preparation_state": "dried",
+    "canonical_key": "usda-sr:174256"
   }
 ]

@@ -40,7 +40,7 @@ test('water screen shows an empty history, changes days with the calendar and ca
  const i18n=f.load('src/i18n/index').default;await i18n.changeLanguage('en');const Screen=f.load('app/health/water').default;
  const render=()=>f.render(()=>Screen().type());let tree=render();assert.ok(elements(tree).some(e=>e.props?.children==='No water intake recorded for this day.'));
  rows=[{id:'r',amount_ml:2500,recorded_at:stamp}];tree=render();assert.ok(elements(tree).some(e=>e.props?.children==='2,500 ml'));assert.equal(elements(tree).find(e=>e.props?.accessibilityRole==='progressbar').props.accessibilityValue.now,100);assert.ok(elements(tree).some(e=>typeof e.props?.children==='string'&&e.props.children.includes('125%')));
- elements(tree).find(e=>e.props?.accessibilityLabel===i18n.t('water.chooseDate')).props.onPress();tree=render();const calendar=elements(tree).find(e=>e.type?.name==='CalendarDatePicker');calendar.props.onSelect('2020-10-30');tree=render();assert.equal(captured.start,'2020-10-26');assert.ok(elements(tree).some(e=>e.props?.children==='No water intake recorded for this day.'));
+ elements(tree).find(e=>e.type==='AppHeader').props.onRightPress();tree=render();const calendar=elements(tree).find(e=>e.type?.name==='CalendarDatePicker');calendar.props.onSelect('2020-10-30');tree=render();assert.equal(captured.start,'2020-10-26');assert.ok(elements(tree).some(e=>e.props?.children==='No water intake recorded for this day.'));
  elements(tree).find(e=>e.type==='PrimaryButton'&&e.props.title===i18n.t('water.custom')).props.onPress();tree=render();assert.equal(elements(tree).find(e=>e.type==='WaterRecordForm').props.date,'2020-10-30');assert.ok(today>'2020-10-30');
 });
 
