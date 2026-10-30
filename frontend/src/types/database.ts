@@ -13,7 +13,8 @@ export type StepRecordRow = { id: string; user_id: string; record_date: string; 
 export type StepRecordInsert = Pick<StepRecordRow, 'record_date' | 'steps'> & Partial<Pick<StepRecordRow, 'distance_km' | 'active_minutes'>>;
 export type SleepRecordRow = { id: string; user_id: string; sleep_start: string; sleep_end: string; quality_rating: number | null; notes: string | null; created_at: string };
 export type SleepRecordInsert = Pick<SleepRecordRow, 'sleep_start' | 'sleep_end'> & Partial<Pick<SleepRecordRow, 'quality_rating' | 'notes'>>;
-export type FoodRow = { id: string; name: string; calories_per_100g: Numeric; protein_per_100g: Numeric; carbs_per_100g: Numeric; fat_per_100g: Numeric; created_at: string; category: string | null; serving_size: string | null; calories: Numeric | null; protein_g: Numeric | null; carbs_g: Numeric | null; fat_g: Numeric | null };
+export type FoodMetadata = { name_vi?: string; name_en?: string; aliases?: string[]; selectable?: boolean; selection_source_id?: string; edible_portion?: boolean; group?: string; source?: string; source_id?: string; source_url?: string; base_unit?: 'g'; unit_weight_g?: number; unit_description?: string; portion_source_id?: string; recipe_reference?: boolean };
+export type FoodRow = { catalog_metadata?: FoodMetadata | null; id: string; name: string; calories_per_100g: Numeric; protein_per_100g: Numeric; carbs_per_100g: Numeric; fat_per_100g: Numeric; created_at: string; category: string | null; serving_size: string | null; calories: Numeric | null; protein_g: Numeric | null; carbs_g: Numeric | null; fat_g: Numeric | null };
 export type MealRecordRow = { id: string; user_id: string; food_id: string; meal_type: MealType; quantity_g: Numeric; consumed_at: string; created_at: string };
 export type MealRecordInsert = Pick<MealRecordRow, 'food_id' | 'meal_type' | 'quantity_g'> & Partial<Pick<MealRecordRow, 'consumed_at'>>;
 export type WeightRecordRow = { id: string; user_id: string; weight_kg: Numeric; recorded_at: string; created_at: string };
@@ -31,7 +32,6 @@ export type SharingInviteRow = {
   share_steps: boolean;
   share_sleep: boolean;
   share_nutrition: boolean;
-  share_heart: boolean;
   share_cycle: boolean;
   notify_on_view: boolean;
   weekly_digest: boolean;
@@ -46,7 +46,6 @@ export type SharingInviteInsert = {
   share_steps?: boolean;
   share_sleep?: boolean;
   share_nutrition?: boolean;
-  share_heart?: boolean;
   share_cycle?: boolean;
   notify_on_view?: boolean;
   weekly_digest?: boolean;
@@ -63,7 +62,6 @@ export type SharingInviteUpdate = Partial<
     | 'share_steps'
     | 'share_sleep'
     | 'share_nutrition'
-    | 'share_heart'
     | 'share_cycle'
     | 'notify_on_view'
     | 'weekly_digest'

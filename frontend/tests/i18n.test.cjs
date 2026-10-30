@@ -101,7 +101,7 @@ test('all literal translation keys in screens and bundled content exist in both 
   const source=fs.readFileSync(name,'utf8'),ast=ts.createSourceFile(name,source,99,true,name.endsWith('.tsx')?ts.ScriptKind.TSX:ts.ScriptKind.TS);
   function visit(node) {if(ts.isStringLiteral(node)){
    const value=node.text;
-   if(/^(common|auth|navigation|health|period|overview|explore|articles|steps|sleep|nutrition|meals|calories|bmi|heart|cycle|profile|settings|schedule|sharing|units|category|weekday|errors|validation|fields)\.[A-Za-z]/.test(value))assert.ok(resources.has(value)||resources.has(value+'_other'),name+': '+value);
+   if(/^(common|auth|navigation|health|period|overview|explore|articles|steps|sleep|water|nutrition|meals|calories|bmi|heart|cycle|profile|settings|schedule|sharing|units|category|weekday|errors|validation|fields)\.[A-Za-z]/.test(value))assert.ok(resources.has(value)||resources.has(value+'_other'),name+': '+value);
   }ts.forEachChild(node,visit);}visit(ast);
  }}}
  scan(path.join(__dirname,'../app'));scan(path.join(__dirname,'../src/components'));scan(path.join(__dirname,'../src/data'));

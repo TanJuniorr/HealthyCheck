@@ -105,7 +105,6 @@ test('createSharingInvite injects owner_id, forces demo metrics to false, and de
         share_steps: req.body.share_steps,
         share_sleep: req.body.share_sleep,
         share_nutrition: req.body.share_nutrition,
-        share_heart: req.body.share_heart,
         share_cycle: req.body.share_cycle,
         notify_on_view: req.body.notify_on_view,
         weekly_digest: req.body.weekly_digest,
@@ -134,7 +133,7 @@ test('createSharingInvite injects owner_id, forces demo metrics to false, and de
   assert.equal(result.recipient_email, 'doctor@clinic.com');
   assert.equal(result.status, 'active');
   assert.equal(f.calls[0].body.owner_id, A);
-  assert.equal(f.calls[0].body.share_heart, false);
+  assert.equal(Object.hasOwn(f.calls[0].body, 'share_heart'), false);
   assert.equal(f.calls[0].body.share_cycle, false);
 });
 
@@ -154,7 +153,6 @@ test('updateSharingInvite, pause, resume, and revoke enforce owner_id and preven
             share_steps: true,
             share_sleep: true,
             share_nutrition: false,
-            share_heart: false,
             share_cycle: false,
             notify_on_view: true,
             weekly_digest: false,
@@ -178,7 +176,6 @@ test('updateSharingInvite, pause, resume, and revoke enforce owner_id and preven
             share_steps: req.body.share_steps ?? true,
             share_sleep: req.body.share_sleep ?? true,
             share_nutrition: req.body.share_nutrition ?? false,
-            share_heart: false,
             share_cycle: false,
             notify_on_view: req.body.notify_on_view ?? true,
             weekly_digest: req.body.weekly_digest ?? false,
@@ -197,6 +194,8 @@ test('updateSharingInvite, pause, resume, and revoke enforce owner_id and preven
   // Pause
   const paused = await service.pauseSharingInvite(INVITE_ID);
   assert.equal(paused.status, 'paused');
+  await service.updateSharingInvite(INVITE_ID, { share_sleep: true, share_heart: false });
+  assert.ok(f.calls.filter(req => req.method === 'PATCH').every(req => !Object.hasOwn(req.body, 'share_heart')));
 
   // Resume
   const resumed = await service.resumeSharingInvite(INVITE_ID);

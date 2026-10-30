@@ -10,12 +10,13 @@ import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 import { AppHeader, SectionHeader } from '../../src/components/common/AppHeader';
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
 import { PrimaryButton } from '../../src/components/common/Buttons';
-import { ProgressRing, ProgressBar } from '../../src/components/charts/ProgressRing';
+import { ProgressRing } from '../../src/components/charts/ProgressRing';
 import { useHealthQuery } from '../../src/hooks/useHealthQuery';
 import { getMealsByDate } from '../../src/services/mealsService';
 import { toLocalDateKey } from '../../src/lib/dateUtils';
 import { getCurrentGoals } from '../../src/services/healthGoalsService';
 import { aggregateNutrition, calculateFoodNutrition } from '../../src/lib/healthCalculations';
+import { foodName } from '../../src/lib/foodPortions';
 import { safeNumber } from '../../src/lib/dataValidation';
 import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { CalendarDatePicker } from '../../src/components/common/CalendarDatePicker';
@@ -23,15 +24,15 @@ import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 export default function NutritionScreen() {
   const styles = useThemedStyles(baseStyles);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const router = useRouter();
   const [selectedDate,setSelectedDate] = useState(toLocalDateKey());
   const [calendarVisible,setCalendarVisible] = useState(false);
   const query = useHealthQuery(async () => { const [rows,goals] = await Promise.all([getMealsByDate(selectedDate),getCurrentGoals(selectedDate)]); return { rows,summary:aggregateNutrition(rows,selectedDate,selectedDate,goals?.daily_calories ?? null) }; },'nutrition-screen:'+selectedDate);
   const summary = query.data?.summary;
-  const nutritionData = { caloriesGoal:summary?.calorieGoal ?? 0,caloriesConsumed:summary?.calories ?? 0,progress:(summary?.progressPercent ?? 0)/100,protein:{ current:summary?.protein ?? 0,goal:0,color:Colors.primary },carbs:{ current:summary?.carbs ?? 0,goal:0,color:Colors.blue },fat:{ current:summary?.fat ?? 0,goal:0,color:Colors.orange } };
-  const meals = (['breakfast','lunch','dinner','snack'] as const).map(type => { const rows = query.data?.rows.filter(row => row.meal_type === type) ?? []; return { id:type,type:t(`meals.${type}`),icon:'restaurant-outline',time:rows.length ? formatTime(new Date(rows[0].consumed_at),{ hour:'2-digit',minute:'2-digit' }) : '',totalCalories:formatNumber(summary?.byMealType[type].calories,0) ?? '—',items:rows.map(row => ({ name:row.food?.name ?? t("nutrition.unavailableFood"),quantity:formatNumber(safeNumber(row.quantity_g)),calories:row.food ? formatNumber(calculateFoodNutrition(row.food,safeNumber(row.quantity_g)).calories,0) : '—' })) }; });
+  const nutritionData = { caloriesGoal:summary?.calorieGoal ?? 0,caloriesConsumed:summary?.calories ?? 0,progress:(summary?.progressPercent ?? 0)/100,protein:{ current:summary?.protein ?? 0,color:Colors.primary },carbs:{ current:summary?.carbs ?? 0,color:Colors.blue },fat:{ current:summary?.fat ?? 0,color:Colors.orange } };
+  const meals = (['breakfast','lunch','dinner','snack'] as const).map(type => { const rows = query.data?.rows.filter(row => row.meal_type === type) ?? []; return { id:type,type:t(`meals.${type}`),icon:'restaurant-outline',time:rows.length ? formatTime(new Date(rows[0].consumed_at),{ hour:'2-digit',minute:'2-digit' }) : '',totalCalories:formatNumber(summary?.byMealType[type].calories,0) ?? '—',items:rows.map(row => ({ name:row.food ? foodName(row.food,i18n.resolvedLanguage ?? 'vi') : t("nutrition.unavailableFood"),quantity:formatNumber(safeNumber(row.quantity_g)),calories:row.food ? formatNumber(calculateFoodNutrition(row.food,safeNumber(row.quantity_g)).calories,0) : '—' })) }; });
   const caloriesRemaining = Math.max(0, nutritionData.caloriesGoal - nutritionData.caloriesConsumed);
 
   const handleAddMeal = (mealType = 'dinner') => {
@@ -73,7 +74,7 @@ export default function NutritionScreen() {
             <View style={styles.metricItem}>
               <Text style={styles.metricLabel}>{t("nutrition.consumed")}</Text>
               <Text style={[styles.metricValue, { color: Colors.orange }]}>
-                {nutritionData.caloriesConsumed} <Text style={styles.metricUnit}>kcal</Text>
+                {formatNumber(nutritionData.caloriesConsumed,0)} <Text style={styles.metricUnit}>kcal</Text>
               </Text>
             </View>
 
@@ -110,16 +111,8 @@ export default function NutritionScreen() {
               </View>
               <Text style={styles.macroValues}>
                 <Text style={styles.macroCurrent}>{summary ? formatNumber(nutritionData.protein.current,1) : '—'}g</Text>
-                <Text style={styles.macroGoal}> {' '}{t("nutrition.noMacroTarget")}</Text>
               </Text>
             </View>
-            <ProgressBar
-              progress={0}
-              color={nutritionData.protein.color}
-              trackColor={Colors.primaryLight}
-              height={8}
-              showLabel={false}
-            />
           </View>
 
           {/* Carbs */}
@@ -131,16 +124,8 @@ export default function NutritionScreen() {
               </View>
               <Text style={styles.macroValues}>
                 <Text style={styles.macroCurrent}>{summary ? formatNumber(nutritionData.carbs.current,1) : '—'}g</Text>
-                <Text style={styles.macroGoal}> {' '}{t("nutrition.noMacroTarget")}</Text>
               </Text>
             </View>
-            <ProgressBar
-              progress={0}
-              color={nutritionData.carbs.color}
-              trackColor={Colors.blueLight}
-              height={8}
-              showLabel={false}
-            />
           </View>
 
           {/* Fat */}
@@ -152,16 +137,8 @@ export default function NutritionScreen() {
               </View>
               <Text style={styles.macroValues}>
                 <Text style={styles.macroCurrent}>{summary ? formatNumber(nutritionData.fat.current,1) : '—'}g</Text>
-                <Text style={styles.macroGoal}> {' '}{t("nutrition.noMacroTarget")}</Text>
               </Text>
             </View>
-            <ProgressBar
-              progress={0}
-              color={nutritionData.fat.color}
-              trackColor={Colors.orangeLight}
-              height={8}
-              showLabel={false}
-            />
           </View>
         </View>
 

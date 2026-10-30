@@ -44,6 +44,17 @@ export const dailyHighlights = [
     route: '/health/nutrition',
   },
   {
+    id: 'water',
+    category: 'overview.waterIntake',
+    value: '—',
+    unit: 'ml',
+    target: '',
+    icon: 'water' as const,
+    color: '#5B8DEF',
+    bgColor: '#EDF3FF',
+    route: '/health/water',
+  },
+  {
     id: 'cycle',
     category: "health.cycle",
     value: '12 days',

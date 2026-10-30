@@ -118,7 +118,6 @@ export async function createSharingInvite(input: {
     share_steps: Boolean(input.share_steps),
     share_sleep: Boolean(input.share_sleep),
     share_nutrition: Boolean(input.share_nutrition),
-    share_heart: false,
     share_cycle: false,
     notify_on_view: Boolean(input.notify_on_view),
     weekly_digest: Boolean(input.weekly_digest),
@@ -157,14 +156,13 @@ export async function updateSharingInvite(
   const mergedSteps = input.share_steps !== undefined ? input.share_steps : current.share_steps;
   const mergedSleep = input.share_sleep !== undefined ? input.share_sleep : current.share_sleep;
   const mergedNutrition = input.share_nutrition !== undefined ? input.share_nutrition : current.share_nutrition;
-  const mergedHeart = input.share_heart !== undefined ? input.share_heart : current.share_heart;
   const mergedCycle = input.share_cycle !== undefined ? input.share_cycle : current.share_cycle;
 
   validateCategories({
     share_steps: mergedSteps,
     share_sleep: mergedSleep,
     share_nutrition: mergedNutrition,
-    share_heart: mergedHeart,
+    share_heart: input.share_heart,
     share_cycle: mergedCycle,
   });
 
@@ -188,7 +186,6 @@ export async function updateSharingInvite(
   if (input.share_steps !== undefined) patch.share_steps = Boolean(input.share_steps);
   if (input.share_sleep !== undefined) patch.share_sleep = Boolean(input.share_sleep);
   if (input.share_nutrition !== undefined) patch.share_nutrition = Boolean(input.share_nutrition);
-  patch.share_heart = false;
   patch.share_cycle = false;
   if (input.notify_on_view !== undefined) patch.notify_on_view = Boolean(input.notify_on_view);
   if (input.weekly_digest !== undefined) patch.weekly_digest = Boolean(input.weekly_digest);

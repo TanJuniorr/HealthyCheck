@@ -9,12 +9,13 @@ import { Radius, Spacing } from '../../constants/spacing';
 import { useThemedStyles } from '../../contexts/ThemeContext';
 
 interface AppTextInputProps {
+  editable?: boolean;
   label?: string;
   placeholder?: string;
   value: string;
   onChangeText: (text: string) => void;
   secureTextEntry?: boolean;
-  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
+  keyboardType?: 'default' | 'email-address' | 'numeric' | 'decimal-pad' | 'phone-pad';
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   error?: string;
   style?: ViewStyle;
@@ -22,6 +23,7 @@ interface AppTextInputProps {
 }
 
 export function AppTextInput({
+  editable = true,
   label,
   placeholder,
   value,
@@ -63,6 +65,7 @@ export function AppTextInput({
           style={styles.input}
           placeholder={placeholder}
           placeholderTextColor={Colors.textMuted}
+          editable={editable}
           value={value}
           onChangeText={onChangeText}
           accessibilityLabel={label || placeholder}

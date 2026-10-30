@@ -127,13 +127,36 @@ test('weekly dashboard makes range queries once per table and applies goal histo
  assert.equal(result.length,7); assert.equal(result[0].steps.goal,8000); assert.equal(result[3].steps.goal,9000);
  assert.equal(result[0].sleep.minutes,null); assert.equal(result[0].weight.bmi,null); assert.equal(f.calls.length,9);
 });
-test('food filters escape pattern characters and never write the shared catalogue',async () => {
+test('food search never sends user text as database patterns and reuses the shared read-only catalogue',async () => {
  const f=fixture(() => ({data:[],total:0}));
  const service=f.load('src/services/foodsService');
  await service.searchFoods('rice_%',{category:'Grains'}); await service.getFoodById(A); await service.getFoodCategories();
- assert.equal(f.calls[0].url.searchParams.get('category'),'eq.Grains');
- assert.equal(f.calls[0].url.searchParams.get('name'),'ilike.%rice\\_\\%%');
+ assert.equal(f.calls[0].url.searchParams.get('category'),null);
+ assert.equal(f.calls[0].url.searchParams.get('name'),null);
+ assert.equal(f.calls.length,2); // catalogue once, plus the explicit historical by-ID lookup
  assert.ok(f.calls.every(request=>request.method==='GET'));
+});
+
+test('service and screen use the same ranked search across catalogue pages, excluding retired choices only from selection',async()=>{
+ const base={calories_per_100g:155,protein_per_100g:12.58,carbs_per_100g:1.12,fat_per_100g:10.61,serving_size:'cá hồi',catalog_metadata:null};
+ const rows=[{...base,id:B,name:'Canh cá hồi',category:'prepared'},
+  {...base,id:'00000000-0000-4000-8000-000000000001',name:'Cá hồi',category:'meat'},
+  {...base,id:'00000000-0000-4000-8000-000000000002',name:'Cá thu',category:'meat'},
+  {...base,id:'00000000-0000-4000-8000-000000000003',name:'Bắp cải sống',category:'vegetables'},
+  {...base,id:A,name:'Trứng gà luộc',category:'Protein',protein_per_100g:12.6,catalog_metadata:{selectable:false}}];
+ const f=fixture(request=>{
+  const id=request.url.searchParams.get('id');if(id)return {data:rows.filter(row=>'eq.'+row.id===id)};
+  const offset=Number(request.url.searchParams.get('offset'));return {data:rows.slice(offset,offset+2),total:rows.length};
+ }),service=f.load('src/services/foodsService'),shared=f.load('src/lib/foodPortions');
+ const catalogue=await service.readFoodCatalogue();assert.equal(catalogue.length,4);assert.equal(f.calls.length,3);
+ for(const search of ['cá','ca hoi','cá hồi','CÁ HỒI']){
+  const result=await service.searchFoods(search,{pageSize:200});assert.deepEqual(result.data.map(row=>row.id),shared.filterFoods(catalogue,search,null).map(row=>row.id));
+ }
+ assert.equal(f.calls.length,3);
+ const page=await service.searchFoods('cá',{category:'meat',pageSize:1,page:2});assert.equal(page.data[0].name,'Cá thu');assert.equal(page.total,2);assert.equal(page.hasMore,false);
+ assert.equal((await service.searchFoods('cá',{category:'vegetables'})).data.length,0);
+ assert.equal((await service.getFoodById(A)).protein_per_100g,12.6);
+ assert.ok(f.calls.every(request=>request.method==='GET'&&!request.url.searchParams.has('name')));
 });
 
 test('profile updates allow only verified editable fields and retain unspecified values',async () => {
@@ -274,6 +297,61 @@ test('sleep rejects unconfirmed INSERT/UPDATE responses and expired or changed o
  assert.equal(f.calls.some(r=>r.method==='POST'),false);
 });
 const scheduleInput={bedtime:'23:00',wake_time:'07:00',active_days:[1,2,3,4,5],reminder_enabled:true,reminder_minutes_before:15};
+
+test('nutrition CRUD updates all four daily totals and Dashboard, preserves fractional grams and isolates accounts',async()=>{
+ const catalogue=require('../../supabase/seeds/nutrition_usda.json').foods;
+ const chicken={...catalogue.find(food=>food.catalog_metadata.source_id==='usda-sr:171477'),id:B},oil={...catalogue.find(food=>food.catalog_metadata.source_id==='usda-sr:171413'),id:A};
+ let records=[],sequence=0,notifications=0;
+ const matches=(row,params)=>[...params].every(([key,filter])=>{
+  if(!['id','user_id','consumed_at'].includes(key))return true;
+  const dot=filter.indexOf('.'),op=filter.slice(0,dot),value=filter.slice(dot+1),actual=row[key];
+  if(op==='eq')return actual===value;if(op==='gte')return actual>=value;if(op==='lt')return actual<value;return true;
+ });
+ const f=fixture(r=>{
+  if(r.url.pathname.endsWith('/foods'))return {data:[{id:A},{id:B}]};
+  if(!r.url.pathname.endsWith('/meal_records'))return {data:[]};
+  if(r.method==='POST'){const added=r.body.map(row=>({...row,id:`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`}));records.push(...added);return {data:added.map(row=>({...row,food:row.food_id===A?oil:chicken}))};}
+  const selected=records.filter(row=>matches(row,r.url.searchParams));
+  if(r.method==='PATCH'){selected.forEach(row=>Object.assign(row,r.body));return {data:selected};}
+  if(r.method==='DELETE'){records=records.filter(row=>!selected.includes(row));return {data:selected};}
+  return {data:selected.map(row=>({...row,food:row.food_id===A?oil:chicken})),total:selected.length};
+ });
+ const service=f.load('src/services/mealsService'),dashboard=f.load('src/services/dashboardService'),calc=f.load('src/lib/healthCalculations'),events=f.load('src/lib/healthQueryEvents');
+ events.subscribeNutritionChanges(owner=>{assert.equal(owner,A);notifications++;});
+ const stamp=new Date(2020,9,27,12).toISOString(),nextDay=new Date(2020,9,28,12).toISOString();
+ const rows=await service.addMealItems([{food_id:B,quantity_g:150,meal_type:'lunch',consumed_at:stamp},{food_id:A,quantity_g:2.5123456789,meal_type:'lunch',consumed_at:stamp}]);
+ assert.equal(records.length,2);assert.equal(records[1].quantity_g,2.5123456789);
+ const expected=calc.aggregateNutrition(rows,'2020-10-27','2020-10-27'),summary=await service.getDailyNutrition('2020-10-27'),home=(await dashboard.getDashboardSummary('2020-10-27')).nutrition;
+ for(const key of ['calories','protein','carbs','fat']){assert.equal(summary[key],expected[key]);assert.equal(home[key],summary[key]);}
+ await service.updateMealRecord(rows[0].id,{quantity_g:100});
+ assert.equal((await dashboard.getDashboardSummary('2020-10-27')).nutrition.protein,31.02);
+ assert.equal(records.length,2);assert.equal(records[0].consumed_at,stamp);
+ await service.updateMealRecord(rows[0].id,{consumed_at:nextDay});
+ assert.equal((await service.getDailyNutrition('2020-10-28')).protein,31.02);
+ await service.deleteMealRecord(rows[1].id);assert.equal((await dashboard.getDashboardSummary('2020-10-27')).nutrition.calories,0);
+ assert.equal((await dashboard.getWeeklyDashboardSummary('2020-10-27')).find(day=>day.date==='2020-10-28').nutrition.calories,165);
+ assert.equal(notifications,4);
+ f.setOwner(B);assert.equal((await service.getMealsByDate('2020-10-28')).length,0);
+ await assert.rejects(service.updateMealRecord(rows[0].id,{quantity_g:200}),e=>e.code==='NOT_FOUND');await assert.rejects(service.deleteMealRecord(rows[0].id),e=>e.code==='NOT_FOUND');assert.equal(notifications,4);
+});
+
+test('failed or unconfirmed meal writes do not notify; concurrent adds share an owner lock',async()=>{
+ for(const method of ['POST','PATCH','DELETE']){
+  const f=fixture(r=>r.method==='GET'?{data:[{id:B}]}:{status:403,data:{code:'42501'}}),service=f.load('src/services/mealsService');let notified=0;
+  f.load('src/lib/healthQueryEvents').subscribeNutritionChanges(()=>notified++);
+  const payload={food_id:B,quantity_g:150,meal_type:'lunch'};
+  await assert.rejects(method==='POST'?service.addMealRecord(payload):method==='PATCH'?service.updateMealRecord(B,{quantity_g:100}):service.deleteMealRecord(B));assert.equal(notified,0);
+ }
+ let release,started;const ready=new Promise(resolve=>{started=resolve;});
+ const f=fixture(async r=>{
+  if(r.method==='GET')return {data:[{id:B}]};started();await new Promise(resolve=>{release=resolve;});return {data:r.body.map(row=>({...row,id:A}))};
+ }),service=f.load('src/services/mealsService');
+ const payload={food_id:B,quantity_g:150,meal_type:'lunch'},first=service.addMealRecord(payload);await ready;
+ await assert.rejects(service.addMealRecord(payload),e=>e.message==='meals.busy');release();await first;
+ assert.equal(f.calls.filter(r=>r.method==='POST').length,1);
+ const empty=fixture(r=>({data:r.method==='GET'?[{id:B}]:[]}));let notified=0;empty.load('src/lib/healthQueryEvents').subscribeNutritionChanges(()=>notified++);
+ await assert.rejects(empty.load('src/services/mealsService').addMealRecord(payload));assert.equal(notified,0);
+});
 test('sleep schedules roundtrip with session ownership and unique-owner upsert',async()=>{
  const f=fixture(r=>({data:[{id:B,user_id:A,...scheduleInput,...r.body}]})),service=f.load('src/services/sleepScheduleService');
  await service.saveSleepSchedule(scheduleInput);assert.equal((await service.getMySleepSchedule()).bedtime,'23:00');await service.updateSleepSchedule({...scheduleInput,bedtime:'22:30'});await service.deleteSleepSchedule();
@@ -284,4 +362,55 @@ test('sleep schedules roundtrip with session ownership and unique-owner upsert',
 test('sleep schedule failures and PostgreSQL overlap violations remain localized errors',async()=>{
  const f=fixture(()=>({status:403,data:{code:'42501'}}));await assert.rejects(f.load('src/services/sleepScheduleService').saveSleepSchedule(scheduleInput),e=>e.code==='PERMISSION_DENIED');
  assert.equal(f.load('src/lib/dataErrors').dataError({code:'23P01'}).message,'sleep.overlap');
+});
+
+test('water CRUD keeps independent daily totals and Dashboard values, including moves between dates',async()=>{
+ let records=[],sequence=0;
+ const matches=(row,params)=>[...params].every(([key,filter])=>{
+  if(!['id','user_id','recorded_at'].includes(key))return true;
+  const dot=filter.indexOf('.'),op=filter.slice(0,dot),value=filter.slice(dot+1),actual=row[key];
+  if(op==='eq')return actual===value;if(op==='gte')return actual>=value;if(op==='lt')return actual<value;return true;
+ });
+ const f=fixture(r=>{
+  if(!r.url.pathname.endsWith('/water_records'))return {data:[]};
+  if(r.method==='POST'){const row={...r.body,id:`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`};records.push(row);return {data:[row]};}
+  const selected=records.filter(row=>matches(row,r.url.searchParams));
+  if(r.method==='PATCH'){selected.forEach(row=>Object.assign(row,r.body));return {data:selected};}
+  if(r.method==='DELETE'){records=records.filter(row=>!selected.includes(row));return {data:selected};}
+  return {data:selected,total:selected.length};
+ });
+ const service=f.load('src/services/waterService'),dashboard=f.load('src/services/dashboardService');
+ const stamp=(day,hour)=>new Date(2020,9,day,hour).toISOString();
+ let notifications=0;f.load('src/lib/healthQueryEvents').subscribeWaterChanges(owner=>{assert.equal(owner,A);notifications++;});
+ const first=await service.addWaterRecord({amount_ml:250,recorded_at:stamp(27,7)});
+ assert.equal((await service.getDailyWaterTotal('2020-10-27')).totalMl,250);
+ const second=await service.addWaterRecord({amount_ml:200,recorded_at:stamp(27,9)});
+ await service.addWaterRecord({amount_ml:500,recorded_at:stamp(27,12)});await service.addWaterRecord({amount_ml:250,recorded_at:stamp(27,15)});
+ await service.addWaterRecord({amount_ml:600,recorded_at:stamp(28,12)});
+ assert.equal((await service.getDailyWaterTotal('2020-10-27')).totalMl,1200);assert.equal((await service.getDailyWaterTotal('2020-10-28')).totalMl,600);
+ await service.updateWaterRecord(first.id,{amount_ml:300});assert.equal((await dashboard.getDashboardSummary('2020-10-27')).water.totalMl,1250);
+ await service.updateWaterRecord(first.id,{recorded_at:stamp(28,8)});
+ assert.equal((await service.getDailyWaterTotal('2020-10-27')).totalMl,950);assert.equal((await service.getDailyWaterTotal('2020-10-28')).totalMl,900);
+ await service.deleteWaterRecord(second.id);assert.equal((await dashboard.getDashboardSummary('2020-10-27')).water.totalMl,750);
+ const weekly=await dashboard.getWeeklyDashboardSummary('2020-10-27');assert.equal(weekly.find(d=>d.date==='2020-10-28').water.totalMl,900);
+ assert.equal(notifications,8);
+ assert.ok(f.calls.filter(r=>r.url.pathname.endsWith('/water_records')&&r.method!=='POST').every(r=>r.url.searchParams.get('user_id')==='eq.'+A));
+ f.setOwner(B);assert.equal((await service.getWaterRecordsByDate('2020-10-27')).length,0);await assert.rejects(service.updateWaterRecord(first.id,{amount_ml:100}),e=>e.code==='NOT_FOUND');await assert.rejects(service.deleteWaterRecord(first.id),e=>e.code==='NOT_FOUND');
+});
+
+test('water rejects invalid quantities, spoofed owners, future timestamps and failed writes without invalidation',async()=>{
+ const f=fixture(()=>({status:403,data:{code:'42501'}})),service=f.load('src/services/waterService');let changed=0;f.load('src/lib/healthQueryEvents').subscribeWaterChanges(()=>changed++);
+ for(const amount_ml of [0,-1,1.5,5001,NaN,Infinity])await assert.rejects(service.addWaterRecord({amount_ml}),e=>e.code==='INVALID_INPUT');
+ await assert.rejects(service.addWaterRecord({amount_ml:250,user_id:B}),e=>e.code==='INVALID_INPUT');
+ await assert.rejects(service.addWaterRecord({amount_ml:250,recorded_at:new Date(Date.now()+3600000).toISOString()}),e=>e.message==='water.futureTime');
+ assert.equal(f.calls.length,0);
+ await assert.rejects(service.addWaterRecord({amount_ml:250}),e=>e.code==='PERMISSION_DENIED');
+ await assert.rejects(service.updateWaterRecord(B,{amount_ml:200}),e=>e.code==='PERMISSION_DENIED');
+ await assert.rejects(service.deleteWaterRecord(B),e=>e.code==='PERMISSION_DENIED');assert.equal(changed,0);
+});
+
+test('concurrent water saves issue a single INSERT and release their lock after completion',async()=>{
+ let release,started;const ready=new Promise(resolve=>{started=resolve;});
+ const f=fixture(async r=>{started();await new Promise(resolve=>{release=resolve;});return {data:[{...r.body,id:B}]};});const service=f.load('src/services/waterService');
+ const first=service.addWaterRecord({amount_ml:250});await ready;await assert.rejects(service.addWaterRecord({amount_ml:250}),e=>e.message==='water.busy');release();await first;assert.equal(f.calls.length,1);
 });

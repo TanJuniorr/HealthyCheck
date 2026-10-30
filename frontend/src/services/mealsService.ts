@@ -1,3 +1,4 @@
+import { notifyNutritionChanged } from '../lib/healthQueryEvents';
 import { supabase } from '../lib/supabase';
 import type { MealRecordInsert } from '../types/database';
 import type { MealWithFood } from '../types/health';
@@ -35,17 +36,25 @@ async function verifyFoods(ids: string[]) {
  const known = new Set((data ?? []).map(row => row.id));
  if (ids.some(id => !known.has(id))) throw new DataAccessError('NOT_FOUND','Thực phẩm không tồn tại hoặc không khả dụng.');
 }
+const pendingAdds = new Set<string>();
 export async function addMealItems(items: MealRecordInsert[]): Promise<MealWithFood[]> {
  if (!Array.isArray(items) || items.length < 1 || items.length > 200) invalid('Mỗi lần lưu cần 1–200 món.');
  const inputs = items.map(item => validateInput('meal_records',item));
- const owner = await requireAuthenticatedUserId(); await verifyFoods(inputs.map(item => item.food_id)); await assertIdentity(owner);
+ const owner = await requireAuthenticatedUserId();
+ if (pendingAdds.has(owner)) throw new DataAccessError('INVALID_INPUT','meals.busy');
+ pendingAdds.add(owner);
+ try {
+ await verifyFoods(inputs.map(item => item.food_id)); await assertIdentity(owner);
  const result = await queryResult(supabase.from('meal_records').insert(inputs.map(input => ({ ...input,user_id:owner }))).select(mealColumns),owner);
  if (!result || result.length !== inputs.length) throw new DataAccessError('DATABASE','Máy chủ chưa xác nhận đầy đủ các món đã lưu.');
- return result.map(row => ({ ...normalizeRow('meal_records',row),food:row.food ? normalizeRow('foods',row.food) : null }));
+ const rows = result.map(row => ({ ...normalizeRow('meal_records',row),food:row.food ? normalizeRow('foods',row.food) : null }));
+ notifyNutritionChanged(owner);
+ return rows;
+ } finally { pendingAdds.delete(owner); }
 }
 export async function addMealRecord(payload: MealRecordInsert) { return (await addMealItems([payload]))[0]; }
-export async function updateMealRecord(id: string,payload: Partial<MealRecordInsert>) { const patch = validateInput('meal_records',payload,true); if (patch.food_id) await verifyFoods([patch.food_id]); return repo.update(id,patch); }
-export const deleteMealRecord = repo.remove;
+export async function updateMealRecord(id: string,payload: Partial<MealRecordInsert>) { const patch = validateInput('meal_records',payload,true); const owner = await requireAuthenticatedUserId(); if (patch.food_id) await verifyFoods([patch.food_id]); await assertIdentity(owner); const row = await repo.update(id,patch); await assertIdentity(owner); notifyNutritionChanged(owner); return row; }
+export async function deleteMealRecord(id: string) { const owner = await requireAuthenticatedUserId(); const result = await repo.remove(id); await assertIdentity(owner); notifyNutritionChanged(owner); return result; }
 export async function getNutritionSummary(start: string,end: string) { if (start !== end) return aggregateNutrition(await getMealsByDateRange(start,end),start,end); const [rows,goals] = await Promise.all([getMealsByDateRange(start,end),getCurrentGoals(end)]); return aggregateNutrition(rows,start,end,goals?.daily_calories ?? null); }
 export function getDailyNutrition(date: DateInput = new Date()) { const key = toLocalDateKey(date); return getNutritionSummary(key,key); }
 export function getWeeklyNutrition(date: DateInput = new Date()) { const range = getWeekRange(date); return getNutritionSummary(range.start,range.end); }

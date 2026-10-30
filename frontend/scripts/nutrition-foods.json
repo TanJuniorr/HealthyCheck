@@ -1,0 +1,638 @@
+[
+  {
+    "fdc_id": "168230",
+    "name_vi": "Thịt heo thăn nạc sống",
+    "name_en": "Pork, fresh, loin, whole, separable lean only, raw",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "167812",
+    "name_vi": "Thịt ba chỉ heo sống",
+    "name_en": "Pork, fresh, belly, raw",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "174030",
+    "name_vi": "Thịt bò xay 90% nạc sống",
+    "name_en": "Beef, ground, 90% lean meat / 10% fat, raw",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "171477",
+    "name_vi": "Ức gà bỏ da nướng",
+    "name_en": "Chicken, broilers or fryers, breast, meat only, cooked, roasted",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "172410",
+    "name_vi": "Thịt vịt bỏ da sống",
+    "name_en": "Duck, domesticated, meat only, raw",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "175167",
+    "name_vi": "Cá hồi Đại Tây Dương nuôi sống",
+    "name_en": "Fish, salmon, Atlantic, farmed, raw",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "175168",
+    "name_vi": "Cá hồi Đại Tây Dương nuôi chín nhiệt khô",
+    "name_en": "Fish, salmon, Atlantic, farmed, cooked, dry heat",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "175119",
+    "name_vi": "Cá thu Đại Tây Dương sống",
+    "name_en": "Fish, mackerel, Atlantic, raw",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "175176",
+    "name_vi": "Cá rô phi sống",
+    "name_en": "Fish, tilapia, raw",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "171955",
+    "name_vi": "Cá tuyết Đại Tây Dương sống",
+    "name_en": "Fish, cod, Atlantic, raw",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "174223",
+    "name_vi": "Mực nhiều loài sống",
+    "name_en": "Mollusks, squid, mixed species, raw",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "174204",
+    "name_vi": "Cua xanh sống",
+    "name_en": "Crustaceans, crab, blue, raw",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "174216",
+    "name_vi": "Vẹm xanh sống",
+    "name_en": "Mollusks, mussel, blue, raw",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "175139",
+    "name_vi": "Cá mòi hộp ngâm dầu đã ráo có xương",
+    "name_en": "Fish, sardine, Atlantic, canned in oil, drained solids with bone",
+    "group": "meat"
+  },
+  {
+    "fdc_id": "168878",
+    "name_vi": "Cơm gạo trắng hạt dài tăng cường vi chất",
+    "name_en": "Rice, white, long-grain, regular, enriched, cooked",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "168877",
+    "name_vi": "Gạo trắng hạt dài khô tăng cường vi chất",
+    "name_en": "Rice, white, long-grain, regular, raw, enriched",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "168914",
+    "name_vi": "Bún gạo chín",
+    "name_en": "Rice noodles, cooked",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "169742",
+    "name_vi": "Bún gạo khô",
+    "name_en": "Rice noodles, dry",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "168919",
+    "name_vi": "Mì trứng chín có muối",
+    "name_en": "Noodles, egg, cooked, enriched, with added salt",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "172818",
+    "name_vi": "Bánh mì trắng công nghiệp",
+    "name_en": "Bread, white, commercially prepared, low sodium, no salt",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "172688",
+    "name_vi": "Bánh mì nguyên cám công nghiệp",
+    "name_en": "Bread, whole-wheat, commercially prepared",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "168484",
+    "name_vi": "Khoai lang luộc bỏ vỏ",
+    "name_en": "Sweet potato, cooked, boiled, without skin",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "170440",
+    "name_vi": "Khoai tây luộc bỏ vỏ không muối",
+    "name_en": "Potatoes, boiled, cooked without skin, flesh, without salt",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "169999",
+    "name_vi": "Bắp ngọt vàng luộc không muối",
+    "name_en": "Corn, sweet, yellow, cooked, boiled, drained, without salt",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "168917",
+    "name_vi": "Hạt diêm mạch chín",
+    "name_en": "Quinoa, cooked",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "170285",
+    "name_vi": "Lúa mạch ngọc trai chín",
+    "name_en": "Barley, pearled, cooked",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "168871",
+    "name_vi": "Hạt kê chín",
+    "name_en": "Millet, cooked",
+    "group": "grains"
+  },
+  {
+    "fdc_id": "170379",
+    "name_vi": "Bông cải xanh sống",
+    "name_en": "Broccoli, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "169967",
+    "name_vi": "Bông cải xanh luộc không muối",
+    "name_en": "Broccoli, cooked, boiled, drained, without salt",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "170390",
+    "name_vi": "Cải thìa sống",
+    "name_en": "Cabbage, chinese (pak-choi), raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "169256",
+    "name_vi": "Cải bẹ xanh sống",
+    "name_en": "Mustard greens, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "170393",
+    "name_vi": "Cà rốt sống",
+    "name_en": "Carrots, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "170457",
+    "name_vi": "Cà chua đỏ chín tươi",
+    "name_en": "Tomatoes, red, ripe, raw, year round average",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "168409",
+    "name_vi": "Dưa leo còn vỏ sống",
+    "name_en": "Cucumber, with peel, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "168448",
+    "name_vi": "Bí đỏ sống",
+    "name_en": "Pumpkin, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "169249",
+    "name_vi": "Xà lách lá xanh sống",
+    "name_en": "Lettuce, green leaf, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "168462",
+    "name_vi": "Rau bina sống",
+    "name_en": "Spinach, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "169986",
+    "name_vi": "Bông cải trắng sống",
+    "name_en": "Cauliflower, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "169975",
+    "name_vi": "Bắp cải sống",
+    "name_en": "Cabbage, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "169228",
+    "name_vi": "Cà tím sống",
+    "name_en": "Eggplant, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "169251",
+    "name_vi": "Nấm mỡ trắng sống",
+    "name_en": "Mushrooms, white, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "170108",
+    "name_vi": "Ớt chuông đỏ sống",
+    "name_en": "Peppers, sweet, red, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "169961",
+    "name_vi": "Đậu cô ve xanh sống",
+    "name_en": "Beans, snap, green, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "170419",
+    "name_vi": "Đậu Hà Lan sống",
+    "name_en": "Peas, green, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "168389",
+    "name_vi": "Măng tây sống",
+    "name_en": "Asparagus, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "169988",
+    "name_vi": "Cần tây sống",
+    "name_en": "Celery, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "169291",
+    "name_vi": "Bí ngòi cả vỏ sống",
+    "name_en": "Squash, summer, zucchini, includes skin, raw",
+    "group": "vegetables"
+  },
+  {
+    "fdc_id": "173944",
+    "name_vi": "Chuối tươi (phần ăn được)",
+    "name_en": "Bananas, raw",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "171688",
+    "name_vi": "Táo tươi còn vỏ (phần ăn được)",
+    "name_en": "Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "169097",
+    "name_vi": "Cam tươi (phần ăn được)",
+    "name_en": "Oranges, raw, all commercial varieties",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "169105",
+    "name_vi": "Quýt tươi (phần ăn được)",
+    "name_en": "Tangerines, (mandarin oranges), raw",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "169910",
+    "name_vi": "Xoài tươi (phần ăn được)",
+    "name_en": "Mangos, raw",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "167776",
+    "name_vi": "Lê tươi (phần ăn được)",
+    "name_en": "Pears, raw, bartlett (Includes foods for USDA's Food Distribution Program)",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "167765",
+    "name_vi": "Dưa hấu tươi (phần ăn được)",
+    "name_en": "Watermelon, raw",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "169124",
+    "name_vi": "Dứa tươi (phần ăn được)",
+    "name_en": "Pineapple, raw, all varieties",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "171705",
+    "name_vi": "Bơ quả tươi (phần ăn được)",
+    "name_en": "Avocados, raw, all commercial varieties",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "174683",
+    "name_vi": "Nho đỏ hoặc xanh tươi",
+    "name_en": "Grapes, red or green (European type, such as Thompson seedless), raw",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "169926",
+    "name_vi": "Đu đủ tươi (phần ăn được)",
+    "name_en": "Papayas, raw",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "167762",
+    "name_vi": "Dâu tây tươi",
+    "name_en": "Strawberries, raw",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "173044",
+    "name_vi": "Ổi tươi",
+    "name_en": "Guavas, common, raw",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "168153",
+    "name_vi": "Kiwi xanh tươi (phần ăn được)",
+    "name_en": "Kiwifruit, green, raw",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "169928",
+    "name_vi": "Đào vàng tươi",
+    "name_en": "Peaches, yellow, raw",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "169949",
+    "name_vi": "Mận tươi",
+    "name_en": "Plums, raw",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "169086",
+    "name_vi": "Vải tươi (phần ăn được)",
+    "name_en": "Litchis, raw",
+    "group": "fruits"
+  },
+  {
+    "fdc_id": "171287",
+    "name_vi": "Trứng gà sống",
+    "aliases": ["Trứng gà tươi sống (phần ăn được)"],
+    "edible_portion": true,
+    "name_en": "Egg, whole, raw, fresh",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "173424",
+    "name_vi": "Trứng gà luộc",
+    "aliases": ["Trứng gà luộc chín (phần ăn được)", "Trứng gà luộc (phần ăn được)"],
+    "edible_portion": true,
+    "name_en": "Egg, whole, cooked, hard-boiled",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "172189",
+    "name_vi": "Trứng vịt sống",
+    "aliases": ["Trứng vịt tươi sống"],
+    "edible_portion": true,
+    "name_en": "Egg, duck, whole, fresh, raw",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "172183",
+    "name_vi": "Lòng trắng trứng gà sống",
+    "name_en": "Egg, white, raw, fresh",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "171265",
+    "name_vi": "Sữa bò nguyên kem 3,25% béo",
+    "name_en": "Milk, whole, 3.25% milkfat, with added vitamin D",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "171269",
+    "name_vi": "Sữa bò tách béo tăng cường vitamin",
+    "name_en": "Milk, nonfat, fluid, with added vitamin A and vitamin D (fat free or skim)",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "171284",
+    "name_vi": "Sữa chua nguyên kem không thêm đường",
+    "name_en": "Yogurt, plain, whole milk",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "170845",
+    "name_vi": "Phô mai mozzarella nguyên kem",
+    "name_en": "Cheese, mozzarella, whole milk",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "172476",
+    "name_vi": "Đậu hũ thường kết tủa canxi sulfat",
+    "name_en": "Tofu, raw, regular, prepared with calcium sulfate",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "173735",
+    "name_vi": "Đậu đen luộc không muối",
+    "name_en": "Beans, black, mature seeds, cooked, boiled, without salt",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "174257",
+    "name_vi": "Đậu xanh luộc không muối",
+    "name_en": "Mung beans, mature seeds, cooked, boiled, without salt",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "172421",
+    "name_vi": "Đậu lăng luộc không muối",
+    "name_en": "Lentils, mature seeds, cooked, boiled, without salt",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "173757",
+    "name_vi": "Đậu gà luộc không muối",
+    "name_en": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
+    "group": "dairy_legumes"
+  },
+  {
+    "fdc_id": "173468",
+    "name_vi": "Muối ăn",
+    "name_en": "Salt, table",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "169655",
+    "name_vi": "Đường cát",
+    "name_en": "Sugars, granulated",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "174531",
+    "name_vi": "Nước mắm dùng ngay",
+    "name_en": "Sauce, fish, ready-to-serve",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "174277",
+    "name_vi": "Nước tương shoyu",
+    "name_en": "Soy sauce made from soy and wheat (shoyu)",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "171411",
+    "name_vi": "Dầu đậu nành",
+    "name_en": "Oil, soybean, salad or cooking",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "171413",
+    "name_vi": "Dầu ô liu",
+    "name_en": "Oil, olive, salad or cooking",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "173410",
+    "name_vi": "Bơ sữa có muối",
+    "name_en": "Butter, salted",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "171401",
+    "name_vi": "Mỡ heo",
+    "name_en": "Lard",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "168556",
+    "name_vi": "Tương cà",
+    "name_en": "Catsup",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "174527",
+    "name_vi": "Sốt ớt dùng ngay",
+    "name_en": "Sauce, ready-to-serve, pepper or hot",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "169640",
+    "name_vi": "Mật ong",
+    "name_en": "Honey",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "170931",
+    "name_vi": "Tiêu đen",
+    "name_en": "Spices, pepper, black",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "169230",
+    "name_vi": "Tỏi sống",
+    "name_en": "Garlic, raw",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "170000",
+    "name_vi": "Hành tây sống",
+    "name_en": "Onions, raw",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "169231",
+    "name_vi": "Gừng tươi",
+    "name_en": "Ginger root, raw",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "172237",
+    "name_vi": "Giấm chưng cất",
+    "name_en": "Vinegar, distilled",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "171016",
+    "name_vi": "Dầu mè",
+    "name_en": "Oil, sesame, salad or cooking",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "171412",
+    "name_vi": "Dầu dừa",
+    "name_en": "Oil, coconut",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "172470",
+    "name_vi": "Bơ đậu phộng mịn không muối",
+    "name_en": "Peanut butter, smooth style, without salt",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "172231",
+    "name_vi": "Bột nghệ",
+    "name_en": "Spices, turmeric, ground",
+    "group": "seasonings"
+  },
+  {
+    "fdc_id": "173933",
+    "name_vi": "Nước táo không đường (theo 100 g)",
+    "name_en": "Apple juice, canned or bottled, unsweetened, without added ascorbic acid",
+    "group": "beverages"
+  },
+  {
+    "fdc_id": "171890",
+    "name_vi": "Cà phê pha nước (theo 100 g)",
+    "name_en": "Beverages, coffee, brewed, prepared with tap water",
+    "group": "beverages"
+  },
+  {
+    "fdc_id": "173227",
+    "name_vi": "Trà đen pha nước (theo 100 g)",
+    "name_en": "Beverages, tea, black, brewed, prepared with tap water",
+    "group": "beverages"
+  },
+  {
+    "fdc_id": "174831",
+    "name_vi": "Nước dừa đóng hộp không đường (theo 100 g)",
+    "name_en": "Beverages, Coconut water, ready-to-drink, unsweetened",
+    "group": "beverages"
+  },
+  {
+    "fdc_id": "170693",
+    "name_vi": "Hamburger đơn không sốt (tham khảo USDA)",
+    "name_en": "Fast foods, hamburger; single, regular patty; plain",
+    "group": "prepared"
+  },
+  {
+    "fdc_id": "171543",
+    "name_vi": "Súp mì gà hộp cô đặc (tham khảo USDA)",
+    "name_en": "Soup, chicken noodle, canned, condensed",
+    "group": "prepared"
+  },
+  {
+    "fdc_id": "172105",
+    "name_vi": "Chả giò rau đông lạnh chế biến (tham khảo USDA)",
+    "name_en": "Egg rolls, vegetable, frozen, prepared",
+    "group": "prepared"
+  },
+  {
+    "fdc_id": "172455",
+    "name_vi": "Chả đậu falafel công thức gia đình USDA",
+    "name_en": "Falafel, home-prepared",
+    "group": "prepared"
+  }
+]

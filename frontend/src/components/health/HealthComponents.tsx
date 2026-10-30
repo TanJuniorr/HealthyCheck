@@ -8,6 +8,8 @@ import { Spacing, Radius } from '../../constants/spacing';
 import { getThemedColor, useTheme, useThemedStyles } from '../../contexts/ThemeContext';
 
 interface HealthMetricCardProps {
+  detail?: string;
+  progressPercent?: number;
   category: string;
   value: string;
   unit?: string;
@@ -25,6 +27,8 @@ export function HealthMetricCard({
   color,
   bgColor,
   route,
+  detail,
+  progressPercent,
 }: HealthMetricCardProps) {
   const styles = useThemedStyles(baseStyles);
   const { isDark } = useTheme();
@@ -34,6 +38,8 @@ export function HealthMetricCard({
 
   return (
     <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={[category,value,unit,detail].filter(Boolean).join(' · ')}
       style={[styles.card, { backgroundColor: themedBgColor }]}
       onPress={() => router.push(route as any)}
       activeOpacity={0.7}
@@ -46,6 +52,8 @@ export function HealthMetricCard({
         <Text style={[styles.value, { color: themedColor }]}>{value}</Text>
         {unit ? <Text style={styles.unit}> {unit}</Text> : null}
       </View>
+      {detail && <Text style={styles.unit}>{detail}</Text>}
+      {progressPercent !== undefined && <View accessibilityRole="progressbar" accessibilityValue={{min:0,max:100,now:Math.min(100,Math.max(0,progressPercent))}} style={{height:6,borderRadius:3,backgroundColor:Colors.border,marginTop:10,overflow:'hidden'}}><View style={{height:6,width:`${Math.min(100,Math.max(0,progressPercent))}%`,backgroundColor:themedColor}}/></View>}
     </TouchableOpacity>
   );
 }

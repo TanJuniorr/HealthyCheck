@@ -45,7 +45,7 @@ export default function OverviewScreen() {
   const today = toLocalDateKey();
   const week = useWeeklyOverview(today); const query = week; const summary = week.data?.find(day => day.date === today) ?? null;
   const healthScore = { score:'—',maxScore:100,status:t("common.notAvailable"),description:t("overview.scoreUnavailable") };
-  const dailyHighlights = highlightDefinitions.map(item => ({ ...item,value:item.id === 'steps' ? summary ? formatNumber(summary.steps.total) : '—' : item.id === 'sleep' ? summary?.sleep.minutes != null ? formatDuration(summary.sleep.minutes) : '—' : item.id === 'nutrition' ? summary ? formatNumber(summary.nutrition.calories,0) : '—' : t("common.comingSoon"),unit:item.id === 'cycle' ? '' : item.unit }));
+  const dailyHighlights = highlightDefinitions.map(item => ({ ...item,detail:item.id === 'water' ? t('water.goal',{value:formatNumber(summary?.water.goalMl)}) : undefined,progressPercent:item.id === 'water' && summary?.water.goalMl && summary.water.goalMl>0 ? summary.water.totalMl/summary.water.goalMl*100 : undefined,value:item.id === 'water' ? summary ? formatNumber(summary.water.totalMl) : '—' : item.id === 'steps' ? summary ? formatNumber(summary.steps.total) : '—' : item.id === 'sleep' ? summary?.sleep.minutes != null ? formatDuration(summary.sleep.minutes) : '—' : item.id === 'nutrition' ? summary ? formatNumber(summary.nutrition.calories,0) : '—' : t("common.comingSoon"),unit:item.id === 'cycle' ? '' : item.unit }));
   const weeklyStats = [
     { label:t("overview.totalSteps"),value:week.data ? formatNumber(week.data.reduce((sum,day) => sum + day.steps.total,0)) : '—',icon:'footsteps-outline' },
     { label:t("overview.caloriesEaten"),value:week.data ? formatNumber(week.data.reduce((sum,day) => sum + day.nutrition.calories,0),0)+' kcal' : '—',icon:'restaurant-outline' },
@@ -117,6 +117,8 @@ export default function OverviewScreen() {
           {dailyHighlights.map((item) => (
             <View key={item.id} style={styles.gridCol}>
               <HealthMetricCard
+                detail={item.detail}
+                progressPercent={item.progressPercent}
                 category={item.category}
                 value={item.value}
                 unit={item.unit}

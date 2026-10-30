@@ -3,7 +3,7 @@ import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { assertIdentity } from '../services/queryCore';
 import { dataError } from '../lib/dataErrors';
-import { dependsOnSleep, subscribeSleepChanges } from '../lib/healthQueryEvents';
+import { dependsOnNutrition, subscribeNutritionChanges, dependsOnSleep, subscribeSleepChanges, dependsOnWater, subscribeWaterChanges } from '../lib/healthQueryEvents';
 export type QueryState<T> = { data: T | null; isLoading: boolean; error: string | null; refresh: () => Promise<void> };
 // No global cache or auth listener; state is bound to the existing AuthProvider user.
 export function useHealthQuery<T>(loader: () => Promise<T>, key: string): QueryState<T> {
@@ -24,8 +24,10 @@ export function useHealthQuery<T>(loader: () => Promise<T>, key: string): QueryS
   const unsubscribe = dependsOnSleep(key) ? subscribeSleepChanges(changedOwner => {
    if (changedOwner === owner) void refresh();
   }) : () => {};
+  const unsubscribeWater = dependsOnWater(key) ? subscribeWaterChanges(changedOwner => { if(changedOwner===owner) void refresh(); }) : () => {};
+  const unsubscribeNutrition = dependsOnNutrition(key) ? subscribeNutritionChanges(changedOwner => { if(changedOwner===owner) void refresh(); }) : () => {};
   void refresh();
-  return () => { unsubscribe(); generation.current++; };
+  return () => { unsubscribeNutrition(); unsubscribeWater(); unsubscribe(); generation.current++; };
   // loader is intentionally keyed by its serialized query parameters, not function identity.
   // eslint-disable-next-line react-hooks/exhaustive-deps
  },[refresh,key]));

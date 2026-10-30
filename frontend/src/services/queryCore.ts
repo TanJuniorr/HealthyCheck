@@ -11,7 +11,7 @@ export const columns = {
  health_goals: 'id,user_id,daily_steps,daily_calories,daily_water_ml,target_sleep_minutes,effective_from,created_at',
  step_records: 'id,user_id,record_date,steps,distance_km,active_minutes,created_at,updated_at',
  sleep_records: 'id,user_id,sleep_start,sleep_end,quality_rating,notes,created_at',
- foods: 'id,name,calories_per_100g,protein_per_100g,carbs_per_100g,fat_per_100g,category,serving_size,calories,protein_g,carbs_g,fat_g,created_at',
+ foods: 'catalog_metadata,id,name,calories_per_100g,protein_per_100g,carbs_per_100g,fat_per_100g,category,serving_size,calories,protein_g,carbs_g,fat_g,created_at',
  meal_records: 'id,user_id,food_id,meal_type,quantity_g,consumed_at,created_at',
  weight_records: 'id,user_id,weight_kg,recorded_at,created_at', water_records: 'id,user_id,amount_ml,recorded_at,created_at',
 } as const;
