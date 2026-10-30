@@ -60,7 +60,8 @@
     "explore": "Khám phá",
     "sharing": "Chia sẻ",
     "settings": "Cài đặt",
-    "profile": "Hồ sơ"
+    "profile": "Hồ sơ",
+    "healthyAI": "Healthy AI"
   },
   "health": {
     "steps": "Bước chân",
@@ -1064,5 +1065,41 @@
     "invalidFields": "Dữ liệu không hợp lệ. Kiểm tra slug, danh mục, nội dung và nguồn tham khảo.",
     "hiddenCategory": "Danh mục đang ẩn. Hãy hiện danh mục hoặc chọn danh mục khác trước khi xuất bản.",
     "imageInUse": "Ảnh đang được một bài viết tham chiếu và được giữ lại trên Storage."
+  },
+  "ai": {
+    "title": "Healthy AI",
+    "subtitle": "Hỏi đáp dựa trên dữ liệu sức khỏe 7 ngày",
+    "history": "Lịch sử",
+    "historyTitle": "Cuộc trò chuyện gần đây",
+    "historyEmpty": "Chưa có cuộc trò chuyện nào.",
+    "newChat": "Cuộc trò chuyện mới",
+    "welcomeTitle": "Xin chào! Tôi có thể giúp gì?",
+    "welcomeBody": "Mỗi câu hỏi sẽ tự động kèm bản tổng hợp sức khỏe 7 ngày gần đây và ngữ cảnh chat gần nhất gửi tới Google Gemini. Không gửi email, tên hoặc mã tài khoản.",
+    "suggestionsTitle": "Bạn có thể hỏi",
+    "suggestSteps": "Làm sao duy trì thói quen đi bộ?",
+    "suggestSleep": "Gợi ý cải thiện giấc ngủ",
+    "suggestNutrition": "Gợi ý bữa ăn cân bằng",
+    "disclaimer": "Healthy AI chỉ cung cấp thông tin tham khảo, không chẩn đoán hoặc thay thế chuyên gia y tế.",
+    "placeholder": "Nhập câu hỏi của bạn...",
+    "send": "Gửi câu hỏi",
+    "deleteConversation": "Xóa cuộc trò chuyện",
+    "deleteTitle": "Xóa lịch sử chat?",
+    "deleteConfirm": "Cuộc trò chuyện này sẽ bị xóa khỏi tài khoản của bạn.",
+    "cancel": "Giữ lại",
+    "delete": "Xóa",
+    "busy": "Đang chờ Healthy AI trả lời...",
+    "loadFailed": "Không tải được lịch sử trò chuyện. Hãy thử lại.",
+    "errors": {
+      "unauthenticated": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+      "quota_exceeded": "AI đã hết lượt miễn phí hiện tại. Hãy thử lại sau; ứng dụng không chuyển sang dịch vụ trả phí.",
+      "not_configured": "Healthy AI chưa được cấu hình. Hãy thêm GEMINI_API_KEY trong Supabase Edge Function Secrets và triển khai hàm ai-chat.",
+      "health_data_unavailable": "Chưa đọc được dữ liệu sức khỏe. Kiểm tra migration và quyền truy cập rồi thử lại.",
+      "conversation_missing": "Không tìm thấy cuộc trò chuyện này. Hãy tải lại lịch sử.",
+      "history_unavailable": "Không lưu được lịch sử chat. Kiểm tra migration ai_chat_conversations.",
+      "timeout": "Healthy AI phản hồi quá lâu. Hãy thử lại sau ít phút.",
+      "network": "Không kết nối được với AI. Kiểm tra mạng rồi thử lại.",
+      "failed": "Chưa gửi được câu hỏi. Vui lòng thử lại."
+    },
+    "close": "Đóng"
   }
 }

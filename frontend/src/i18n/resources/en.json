@@ -60,7 +60,8 @@
     "explore": "Explore",
     "sharing": "Sharing",
     "settings": "Settings",
-    "profile": "Profile"
+    "profile": "Profile",
+    "healthyAI": "Healthy AI"
   },
   "health": {
     "steps": "Steps",
@@ -1064,5 +1065,41 @@
     "invalidFields": "Invalid data. Check the slug, category, content and references.",
     "hiddenCategory": "This category is hidden. Show it or choose another before publishing.",
     "imageInUse": "An article still references this image. The file has been retained in Storage."
+  },
+  "ai": {
+    "title": "Healthy AI",
+    "subtitle": "Q&A based on your 7-day health data",
+    "history": "History",
+    "historyTitle": "Recent conversations",
+    "historyEmpty": "No conversations yet.",
+    "newChat": "New conversation",
+    "welcomeTitle": "Hello! How can I help?",
+    "welcomeBody": "Every question automatically includes your recent 7-day health summary and recent chat context sent to Google Gemini. Email, name, and account ID are not sent.",
+    "suggestionsTitle": "Try asking",
+    "suggestSteps": "How can I build a walking habit?",
+    "suggestSleep": "Ideas for better sleep",
+    "suggestNutrition": "Suggest a balanced meal",
+    "disclaimer": "Healthy AI provides general information only. It does not diagnose or replace a health professional.",
+    "placeholder": "Type your question...",
+    "send": "Send question",
+    "deleteConversation": "Delete conversation",
+    "deleteTitle": "Delete this conversation?",
+    "deleteConfirm": "This conversation will be removed from your account.",
+    "cancel": "Keep",
+    "delete": "Delete",
+    "busy": "Waiting for Healthy AI...",
+    "loadFailed": "Unable to load chat history. Please try again.",
+    "errors": {
+      "unauthenticated": "Your sign-in session expired. Please sign in again.",
+      "quota_exceeded": "AI has reached its current free quota. Try again later; the app will not switch to a paid service.",
+      "not_configured": "Healthy AI is not configured yet. Add GEMINI_API_KEY to Supabase Edge Function Secrets and deploy ai-chat.",
+      "health_data_unavailable": "Health data could not be read. Check the migration and access policies, then try again.",
+      "conversation_missing": "This conversation was not found. Refresh the history and try again.",
+      "history_unavailable": "Chat history could not be saved. Check the ai_chat_conversations migration.",
+      "timeout": "Healthy AI took too long to respond. Please try again in a few minutes.",
+      "network": "Could not connect to AI. Check your network and try again.",
+      "failed": "Your question could not be sent. Please try again."
+    },
+    "close": "Close"
   }
 }

@@ -71,6 +71,9 @@ export type SharingInviteUpdate = Partial<
   >
 >;
 export type AppNotificationRow = { id: string; recipient_user_id: string; kind: string; payload: Record<string, unknown>; reference_id: string | null; created_at: string; read_at: string | null };
+export type AIChatMessage = { id: string; role: 'user' | 'assistant'; content: string; created_at: string };
+export type AIChatConversationRow = { id: string; user_id: string; title: string; messages: AIChatMessage[]; created_at: string; updated_at: string };
+export type AIChatConversationSummaryRow = Omit<AIChatConversationRow, 'messages'>;
 export type MenstrualCycleSettingsRow = { user_id: string; last_period_start: string | null; cycle_length: number; period_length: number; reminder_enabled: boolean; reminder_days_before: number; updated_at: string };
 export type CycleFlowStatus = 'none' | 'spotting' | 'light' | 'medium' | 'heavy';
 export type CycleMood = 'happy' | 'okay' | 'low' | 'tired' | 'stressed';
@@ -98,6 +101,7 @@ export type Database = { public: { Tables: {
   water_records: Table<WaterRecordRow, WaterRecordInsert & { user_id: string }>;
   sharing_invites: Table<SharingInviteRow, SharingInviteInsert & { owner_id: string }, SharingInviteUpdate>;
   app_notifications: Table<AppNotificationRow, Omit<AppNotificationRow, 'id' | 'created_at' | 'read_at'> & Partial<Pick<AppNotificationRow, 'id' | 'created_at' | 'read_at'>>, Partial<Pick<AppNotificationRow, 'read_at'>>>;
+  ai_chat_conversations: Table<AIChatConversationRow, Pick<AIChatConversationRow, 'user_id'> & Partial<Pick<AIChatConversationRow, 'title' | 'messages'>>, Partial<Pick<AIChatConversationRow, 'title' | 'messages' | 'updated_at'>>>;
   menstrual_cycle_settings: Table<MenstrualCycleSettingsRow, Omit<MenstrualCycleSettingsRow, 'updated_at'> & Partial<Pick<MenstrualCycleSettingsRow, 'updated_at'>>, Partial<Omit<MenstrualCycleSettingsRow, 'user_id'>>>;
   menstrual_cycle_logs: Table<MenstrualCycleLogRow, Omit<MenstrualCycleLogRow, 'id' | 'created_at' | 'updated_at'> & Partial<Pick<MenstrualCycleLogRow, 'id' | 'created_at' | 'updated_at'>>, Partial<Omit<MenstrualCycleLogRow, 'id' | 'user_id' | 'log_date' | 'created_at'>>>;
 }; Views: { [_ in never]: never }; Functions: {

@@ -6,6 +6,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "web-build"
+    "web-build",
+    "supabase/functions"
   ]
 }
