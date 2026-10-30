@@ -18,7 +18,7 @@ module.exports = function createLoader(overrides = {}) {
    if (name in overrides) return overrides[name];
    if (name.startsWith('.')) return load(path.relative(path.join(__dirname,'..'),path.resolve(path.dirname(absolute),name)));
    return require(name);
-  },Date,Promise,Error,URL,Set,Map,Number,Object,Array,String,Math,console,setTimeout:overrides.__timers?.setTimeout??setTimeout,clearTimeout:overrides.__timers?.clearTimeout??clearTimeout },{ filename:absolute });
+  },Date,Promise,Error,URL,Set,Map,Number,Object,Array,String,Math,Uint8Array,ArrayBuffer,fetch:overrides.__fetch??globalThis.fetch,console,setTimeout:overrides.__timers?.setTimeout??setTimeout,clearTimeout:overrides.__timers?.clearTimeout??clearTimeout },{ filename:absolute });
   return module.exports;
  }
  return load;

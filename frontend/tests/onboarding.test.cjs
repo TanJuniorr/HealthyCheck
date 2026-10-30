@@ -33,7 +33,7 @@ test('routing fails closed until the current owner profile is checked; recovery 
 test('actual navigator blocks every app/deep-link route for onboarding, loading and errors, and redirects completion to Dashboard',()=>{
  let auth={isLoading:false,isAuthenticated:true,isRecovery:false,user:{id:A},profile:null,profileChecked:true,profileError:null};
  const Stack=Object.assign(()=>null,{Protected:'Protected',Screen:'Screen'});
- const f=uiFixture({'expo-router':{Stack},'expo-status-bar':{StatusBar:'StatusBar'},
+ const f=uiFixture({[boundary('src/contexts/ArticleRoleContext.tsx')]:{ArticleRoleProvider:'ArticleRoleProvider'},'expo-router':{Stack},'expo-status-bar':{StatusBar:'StatusBar'},
   [boundary('src/contexts/AuthContext.tsx')]:{useAuth:()=>auth},
   [boundary('src/contexts/NotificationInboxContext.tsx')]:{NotificationInboxProvider:'NotificationInboxProvider'},
   [boundary('src/contexts/SleepReminderContext.tsx')]:{SleepReminderProvider:'SleepReminderProvider'},

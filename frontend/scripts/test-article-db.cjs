@@ -16,7 +16,8 @@ async function setup(withAdmin=true){
  ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;GRANT SELECT,INSERT,UPDATE,DELETE ON storage.objects TO authenticated,anon;
  INSERT INTO auth.users VALUES('${user}','user@example.test',now(),'{}'),('${other}','other@example.test',now(),'{}');`);
  if(withAdmin)await db.query('INSERT INTO auth.users VALUES($1,$2,now(),$3)',[admin,'phapsutan@gmail.com',{}]);
- await db.exec(migration());await db.exec(fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(p=>p.endsWith('_restrict_article_table_privileges.sql'))),'utf8'));return db;
+ await db.exec(migration());await db.exec(fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(p=>p.endsWith('_restrict_article_table_privileges.sql'))),'utf8'));
+ await db.exec(fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(p=>p.endsWith('_protect_referenced_article_images.sql'))),'utf8'));return db;
 }
 async function as(db,id,role='authenticated'){await db.exec('RESET ROLE');await db.query("SELECT set_config('request.jwt.claim.sub',$1,false)",[id||'']);await db.exec('SET ROLE '+role);}
 const tr={language:'vi',title:'Giấc ngủ đều đặn',summary:'Những bước nhỏ giúp duy trì giờ ngủ.',content:'## Bắt đầu từ lịch sinh hoạt\n\n'+('Duy trì giờ ngủ phù hợp và trao đổi với chuyên viên y tế khi khó ngủ kéo dài. ').repeat(3),reading_time_minutes:2,source_name:'CDC',source_url:'https://www.cdc.gov/sleep/about/index.html',reference_links:[]};
@@ -96,5 +97,29 @@ test('verified editorial seed publishes twenty sourced articles and never overwr
   assert.equal((await db.query("SELECT title FROM article_translations WHERE article_id=(SELECT id FROM articles WHERE slug='bua-an-da-dang')")).rows[0].title,'Tiêu đề Admin đã biên tập');
   await as(db,user);const page=(await db.query("SELECT article_feed('en','',null,'latest',0,12,null) result")).rows[0].result;
   assert.equal(page.data.length,12);assert.equal(page.total,20);assert.ok(page.data.every(a=>a.language==='vi'));
+ }finally{await db.close();}
+});
+
+test('referenced cover and inline files survive direct deletion/overwrite in every article status',async()=>{
+ const db=await setup();try{
+  await as(db,admin);
+  const cat=(await db.query("INSERT INTO article_categories(slug,name_vi,name_en) VALUES('image-test','Ảnh','Images') RETURNING id")).rows[0].id;
+  const save=async(slug)=>(await db.query('SELECT save_article(null,null,$1::jsonb,$2::jsonb) result',[{slug,category_id:cat,status:'draft',is_featured:false},[tr]])).rows[0].result;
+  const first=await save('image-owner'),second=await save('other-reference');
+  const image=`${admin}/${first.id}/44444444-4444-4444-8444-444444444444.jpg`;
+  await db.query("INSERT INTO storage.objects(bucket_id,name) VALUES('article-images',$1)",[image]);
+  await db.query('UPDATE articles SET cover_image_path=$1 WHERE id=$2',[image,first.id]);
+  assert.equal((await db.query('DELETE FROM storage.objects WHERE name=$1 RETURNING name',[image])).rows.length,0);
+  assert.equal((await db.query('UPDATE storage.objects SET name=name WHERE name=$1 RETURNING name',[image])).rows.length,0);
+  await db.query('UPDATE article_translations SET content=content||$1 WHERE article_id=$2',['\n\n![shared](article-image:'+image+')',second.id]);
+  await db.query('UPDATE articles SET cover_image_path=null WHERE id=$1',[first.id]);
+  for(const status of ['draft','published','archived']){
+   await db.query("UPDATE articles SET status=$1,published_at=now() WHERE id=$2",[status,second.id]);
+   assert.equal((await db.query('DELETE FROM storage.objects WHERE name=$1 RETURNING name',[image])).rows.length,0);
+  }
+  await db.query('UPDATE article_translations SET content=$1 WHERE article_id=$2',[tr.content,second.id]);
+  assert.equal((await db.query('DELETE FROM storage.objects WHERE name=$1 RETURNING name',[image])).rows.length,1);
+  await db.exec('RESET ROLE');await db.query("UPDATE user_roles SET role='user' WHERE user_id=$1",[admin]);await as(db,admin);
+  await assert.rejects(save('revoked-admin'),e=>e.code==='42501');
  }finally{await db.close();}
 });

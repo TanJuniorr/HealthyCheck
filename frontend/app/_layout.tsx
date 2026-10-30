@@ -6,6 +6,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
+import { ArticleRoleProvider } from '../src/contexts/ArticleRoleContext';
 import { SleepReminderProvider } from '../src/contexts/SleepReminderContext';
 import { StepSensorProvider } from '../src/contexts/StepSensorContext';
 import { NotificationInboxProvider } from '../src/contexts/NotificationInboxContext';
@@ -26,7 +27,6 @@ export function AuthNavigator() {
   if (gate==='restoring') return <View style={{ flex: 1, backgroundColor: isDark ? Colors.background : Colors.white, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={Colors.primary} accessibilityLabel={t("auth.restoring")} /></View>;
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="admin" />
       <Stack.Protected guard={gate==='guest'} redirectTo={destination}>
         <Stack.Screen name="index" />
         <Stack.Screen name="login" />
@@ -42,6 +42,7 @@ export function AuthNavigator() {
         <Stack.Screen name="health-onboarding" />
       </Stack.Protected>
       <Stack.Protected guard={gate==='ready'} redirectTo={destination}>
+        <Stack.Screen name="admin" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="health" />
         <Stack.Screen name="article" />
@@ -57,5 +58,5 @@ export function AuthNavigator() {
   );
 }
 export default function RootLayout() {
-  return <SafeAreaProvider><ThemeProvider><LanguageProvider><ThemedStatusBar /><AuthProvider><NotificationInboxProvider><SleepReminderProvider><StepSensorProvider><AuthNavigator /></StepSensorProvider></SleepReminderProvider></NotificationInboxProvider></AuthProvider></LanguageProvider></ThemeProvider></SafeAreaProvider>;
+  return <SafeAreaProvider><ThemeProvider><LanguageProvider><ThemedStatusBar /><AuthProvider><ArticleRoleProvider><NotificationInboxProvider><SleepReminderProvider><StepSensorProvider><AuthNavigator /></StepSensorProvider></SleepReminderProvider></NotificationInboxProvider></ArticleRoleProvider></AuthProvider></LanguageProvider></ThemeProvider></SafeAreaProvider>;
 }

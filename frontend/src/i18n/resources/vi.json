@@ -943,11 +943,8 @@
   },
   "cms": {
     "admin": "Quản trị HealthyCheck",
-    "adminLogin": "Đăng nhập quản trị",
     "denied": "Bạn không có quyền truy cập",
-    "webOnly": "Vui lòng mở khu vực quản trị trên trình duyệt web.",
     "dashboard": "Tổng quan quản trị",
-    "darkMode": "Giao diện tối",
     "categories": "Quản lý danh mục",
     "newArticle": "Tạo bài viết",
     "editArticle": "Chỉnh sửa bài viết",
@@ -975,7 +972,7 @@
     "duplicate": "Slug hoặc bản ghi đã tồn tại. Vui lòng kiểm tra lại.",
     "categoryInUse": "Danh mục đang có bài viết. Hãy ẩn danh mục hoặc chuyển bài sang danh mục khác trước.",
     "invalidQuery": "Thông tin tìm kiếm hoặc phân trang không hợp lệ.",
-    "invalidImage": "Chỉ nhận ảnh JPEG, PNG, WebP tối đa 5 MB sau tối ưu.",
+    "invalidImage": "Chỉ nhận ảnh JPEG, PNG, WebP tối đa 5 MB.",
     "imageOwner": "Chỉ người tải ảnh lên mới có thể xóa tệp đó.",
     "requiredArticle": "Vui lòng chọn danh mục và nhập slug hoặc tiêu đề.",
     "saveBeforeImage": "Lưu bản nháp trước khi tải ảnh lên.",
@@ -1047,6 +1044,25 @@
       "description_vi": "Mô tả tiếng Việt",
       "description_en": "Mô tả tiếng Anh",
       "icon": "Tên biểu tượng Ionicons"
-    }
+    },
+    "manageArticles": "Quản lý bài viết",
+    "readingTime": "Thời gian đọc (phút)",
+    "estimateReadingTime": "Ước tính theo nội dung",
+    "previewImage": "Xem trước ảnh",
+    "uploadImage": "Tải ảnh lên",
+    "unsavedChanges": "Bạn có thay đổi chưa lưu. Bỏ thay đổi và rời màn hình?",
+    "discardChanges": "Bỏ thay đổi",
+    "keepEditing": "Tiếp tục soạn",
+    "actions": "Thao tác",
+    "unpublish": "Gỡ xuất bản",
+    "confirmActionHint": "Thao tác sẽ áp dụng cho bài viết đã chọn.",
+    "invalidSlug": "Slug chỉ gồm chữ thường không dấu, số và dấu gạch ngang.",
+    "invalidReadingTime": "Thời gian đọc phải là số nguyên từ 1 đến 120 phút.",
+    "invalidReferences": "Nguồn phải có tên và URL HTTPS hợp lệ; tối đa 20 nguồn bổ sung.",
+    "requiredCategory": "Vui lòng nhập tên danh mục bằng tiếng Việt và tiếng Anh.",
+    "invalidSortOrder": "Thứ tự danh mục phải là số nguyên hợp lệ.",
+    "invalidFields": "Dữ liệu không hợp lệ. Kiểm tra slug, danh mục, nội dung và nguồn tham khảo.",
+    "hiddenCategory": "Danh mục đang ẩn. Hãy hiện danh mục hoặc chọn danh mục khác trước khi xuất bản.",
+    "imageInUse": "Ảnh đang được một bài viết tham chiếu và được giữ lại trên Storage."
   }
 }

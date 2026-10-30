@@ -1,6 +1,7 @@
 import {supabase} from '../lib/supabase';
 import {DataAccessError,dataError} from '../lib/dataErrors';
 import {validId} from '../lib/dataValidation';
+import {validateCategoryInput,validateArticleInput} from '../lib/articleContent';
 import {assertIdentity,requireAuthenticatedUserId,type QueryResponse} from './queryCore';
 import type {ArticleCategory,ArticleDetail,ArticleInput,ArticleLanguage,ArticleMode,ArticlePage,ArticleRow,ArticleStatus,ArticleTranslation,CategoryInput} from '../types/articles';
 async function result<T>(request:PromiseLike<QueryResponse<T>>,owner:string):Promise<T|null>{
@@ -10,6 +11,8 @@ async function result<T>(request:PromiseLike<QueryResponse<T>>,owner:string):Pro
   if(code==='23514')throw new DataAccessError('CONSTRAINT','cms.invalidPublication');
   if(code==='23505')throw new DataAccessError('CONSTRAINT','cms.duplicate');
   if(code==='23503'||code==='23001')throw new DataAccessError('CONSTRAINT','cms.categoryInUse');
+  if(code==='22023')throw new DataAccessError('INVALID_INPUT','cms.invalidFields');
+  if(code==='P0002')throw new DataAccessError('NOT_FOUND','cms.unavailable');
   throw dataError(response.error);
  }
  await assertIdentity(owner);return response.data;
@@ -35,8 +38,16 @@ export async function getArticleTranslations(id:string){validId(id);const owner=
 export async function getArticleStats(){const owner=await requireAuthenticatedUserId();return result(supabase.rpc('article_admin_stats'),owner);}
 export async function saveArticle(id:string|null,expected:string|null,article:ArticleInput,translations:ArticleTranslation[]):Promise<ArticleRow>{
  if(id)validId(id);validId(article.category_id);
+ validateArticleInput(article,translations);
  const owner=await requireAuthenticatedUserId();const saved=await result(supabase.rpc('save_article',{p_id:id,p_expected_updated_at:expected,p_article:article,p_translations:translations}),owner);
  if(!saved)throw new DataAccessError('DATABASE','errors.database');return saved;
+}
+export async function changeArticleStatus(id:string,expected:string,status:ArticleStatus){
+ const [article,translations]=await Promise.all([getArticle(id,'vi'),getArticleTranslations(id)]);
+ if(!article)throw new DataAccessError('NOT_FOUND','cms.unavailable');
+ if(article.updated_at!==expected)throw new DataAccessError('CONSTRAINT','cms.conflict');
+ if(status==='published'&&!article.category.is_active)throw new DataAccessError('INVALID_INPUT','cms.hiddenCategory');
+ return saveArticle(id,expected,{slug:article.slug,category_id:article.category_id,cover_image_path:article.cover_image_path,is_featured:article.is_featured,status},translations.map(tr=>({language:tr.language,title:tr.title,summary:tr.summary,content:tr.content,reading_time_minutes:tr.reading_time_minutes,source_name:tr.source_name,source_url:tr.source_url,reference_links:tr.reference_links})));
 }
 export async function deleteArticle(id:string,expected:string){validId(id);const owner=await requireAuthenticatedUserId();const deleted=await result(supabase.from('articles').delete().eq('id',id).eq('updated_at',expected).select('id').maybeSingle(),owner);if(!deleted)throw new DataAccessError('CONSTRAINT','cms.conflict');}
 export async function recordArticleRead(id:string){validId(id);const owner=await requireAuthenticatedUserId();await result(supabase.rpc('record_article_read',{p_article_id:id}),owner);}
@@ -54,7 +65,7 @@ export async function setArticleInterest(id:string,selected:boolean){
  else await result(supabase.from('article_category_preferences').delete().eq('user_id',owner).eq('category_id',id),owner);
 }
 export async function saveArticleCategory(id:string|null,input:CategoryInput){
- if(id)validId(id);if(!Number.isSafeInteger(input.sort_order))throw new DataAccessError('INVALID_INPUT','cms.invalidQuery');
+ if(id)validId(id);validateCategoryInput(input);
  const owner=await requireAuthenticatedUserId();const row=await result(id?supabase.from('article_categories').update(input).eq('id',id).select('*').single():supabase.from('article_categories').insert(input).select('*').single(),owner);
  if(!row)throw new DataAccessError('DATABASE','errors.database');return row;
 }

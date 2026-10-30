@@ -943,11 +943,8 @@
   },
   "cms": {
     "admin": "HealthyCheck Admin",
-    "adminLogin": "Admin sign in",
     "denied": "You do not have access",
-    "webOnly": "Please open the admin area in a web browser.",
     "dashboard": "Admin dashboard",
-    "darkMode": "Dark mode",
     "categories": "Manage categories",
     "newArticle": "New article",
     "editArticle": "Edit article",
@@ -975,7 +972,7 @@
     "duplicate": "The slug or record already exists. Please check it.",
     "categoryInUse": "This category contains articles. Hide it or move its articles first.",
     "invalidQuery": "The search or pagination parameters are invalid.",
-    "invalidImage": "Only JPEG, PNG and WebP images up to 5 MB after optimization are accepted.",
+    "invalidImage": "Only JPEG, PNG and WebP images up to 5 MB are accepted.",
     "imageOwner": "Only the uploader can delete this image file.",
     "requiredArticle": "Choose a category and enter a slug or title.",
     "saveBeforeImage": "Save a draft before uploading images.",
@@ -1047,6 +1044,25 @@
       "description_vi": "Vietnamese description",
       "description_en": "English description",
       "icon": "Ionicons icon name"
-    }
+    },
+    "manageArticles": "Manage articles",
+    "readingTime": "Reading time (minutes)",
+    "estimateReadingTime": "Estimate from content",
+    "previewImage": "Preview image",
+    "uploadImage": "Upload image",
+    "unsavedChanges": "You have unsaved changes. Discard them and leave?",
+    "discardChanges": "Discard changes",
+    "keepEditing": "Keep editing",
+    "actions": "Actions",
+    "unpublish": "Unpublish",
+    "confirmActionHint": "This action applies to the selected article.",
+    "invalidSlug": "Use lowercase letters, numbers and hyphens for the slug.",
+    "invalidReadingTime": "Reading time must be a whole number from 1 to 120 minutes.",
+    "invalidReferences": "Sources require a name and valid HTTPS URL; up to 20 additional references.",
+    "requiredCategory": "Enter both Vietnamese and English category names.",
+    "invalidSortOrder": "Category order must be a valid whole number.",
+    "invalidFields": "Invalid data. Check the slug, category, content and references.",
+    "hiddenCategory": "This category is hidden. Show it or choose another before publishing.",
+    "imageInUse": "An article still references this image. The file has been retained in Storage."
   }
 }

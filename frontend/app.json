@@ -37,7 +37,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Healthy Check cần truy cập ảnh để bạn chọn ảnh đại diện.",
+          "photosPermission": "Healthy Check cần truy cập ảnh để bạn chọn ảnh đại diện và ảnh bài viết.",
           "cameraPermission": false,
           "microphonePermission": false
         }
