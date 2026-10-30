@@ -1,35 +1,12 @@
-/**
- * Mock cycle tracking data
- */
-
-export const cycleData = {
-  cycleDay: 16,
-  cycleLength: 28,
-  periodLength: 5,
-  nextPeriodIn: 12,
-  lastPeriodStart: '2026-10-10',
-  lastPeriodEnd: '2026-10-14',
-  nextPeriodStart: '2026-11-07',
-  phase: 'cycle.luteal' as const,
-};
-
-export const cycleWeekDates = [
-  { day: "weekday.mon", date: 20, isToday: false, isPeriod: false },
-  { day: "weekday.tue", date: 21, isToday: false, isPeriod: false },
-  { day: "weekday.wed", date: 22, isToday: false, isPeriod: false },
-  { day: "weekday.thu", date: 23, isToday: false, isPeriod: false },
-  { day: "weekday.fri", date: 24, isToday: false, isPeriod: false },
-  { day: "weekday.sat", date: 25, isToday: false, isPeriod: false },
-  { day: "weekday.sun", date: 26, isToday: true, isPeriod: false },
-];
+// Static labels and icons; user cycle settings and logs are loaded from Supabase.
 
 export const symptoms = [
-  { id: '1', name: "cycle.cramps", icon: 'flash-outline', selected: false },
-  { id: '2', name: "cycle.headache", icon: 'medical-outline', selected: false },
-  { id: '3', name: "cycle.bloating", icon: 'water-outline', selected: true },
-  { id: '4', name: "cycle.fatigue", icon: 'battery-half-outline', selected: false },
-  { id: '5', name: "cycle.moodSwings", icon: 'happy-outline', selected: false },
-  { id: '6', name: "cycle.backPain", icon: 'body-outline', selected: true },
+  { id: '1', name: "cycle.cramps", icon: 'flash-outline' },
+  { id: '2', name: "cycle.headache", icon: 'medical-outline' },
+  { id: '3', name: "cycle.bloating", icon: 'water-outline' },
+  { id: '4', name: "cycle.fatigue", icon: 'battery-half-outline' },
+  { id: '5', name: "cycle.moodSwings", icon: 'happy-outline' },
+  { id: '6', name: "cycle.backPain", icon: 'body-outline' },
 ];
 
 export const feelings = [

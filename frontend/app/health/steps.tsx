@@ -22,6 +22,7 @@ import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 import { CalendarDatePicker } from '../../src/components/common/CalendarDatePicker';
 import { useThemedStyles } from '../../src/contexts/ThemeContext';
+import { useNotificationInbox } from '../../src/contexts/NotificationInboxContext';
 
 type Period = 'Today' | 'Week' | 'Month';
 export default function StepsScreen() {
@@ -39,6 +40,7 @@ export default function StepsScreen() {
   const [saving,setSaving] = useState(false);
   const [saveError,setSaveError] = useState('');
   const sensor = useStepSensor();
+  const { sendStepGoalReached } = useNotificationInbox();
   const [manualAddedSteps,setManualAddedSteps] = useState(0);
   const [manualAddedDate,setManualAddedDate] = useState(today);
   const pending = useRef(false);
@@ -68,7 +70,11 @@ export default function StepsScreen() {
         setSaveError(t('steps.invalidManual'));
         return;
       }
+      const previousSteps = liveSelectedSteps;
       await addOrIncrementStepRecord(selectedDate,steps);
+      if (selectedDate === today && goal != null && previousSteps < goal && previousSteps + steps >= goal) {
+        void sendStepGoalReached(previousSteps + steps, goal).catch(() => {});
+      }
       if (selectedDate === today && sensor.recordDate === today) {
         setManualAddedDate(today);
         setManualAddedSteps((previous) => (manualAddedDate === today ? previous : 0) + steps);

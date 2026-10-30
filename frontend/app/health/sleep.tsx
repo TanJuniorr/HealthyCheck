@@ -73,17 +73,23 @@ function SleepContent() {
   };
   const openForm = (record: SleepRecordRow | null) => { setNotice(null); setEditing(record); };
   return <View style={styles.container}>
-    <AppHeader title={t('health.sleep')} showBack />
+    <AppHeader
+      title={t('health.sleep')}
+      showBack
+      rightIcon="calendar-outline"
+      onRightPress={() => setCalendarOpen(true)}
+      rightAccessibilityLabel="sleep.openCalendar"
+    />
     <ScreenContainer contentContainerStyle={{ paddingBottom:Spacing.md }}>
       <View style={styles.controls}>
         <View style={styles.dateControls}>
           <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('calendar.previousDay')} onPress={() => move(-1)} style={styles.dateArrow}><Ionicons name="chevron-back" size={24} color={Colors.textPrimary}/></TouchableOpacity>
-          <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('sleep.openCalendar')} onPress={()=>setCalendarOpen(true)} style={styles.dateLabel}><Ionicons name="calendar-outline" size={20} color={Colors.primary}/><Text style={styles.selectedDate}>{formatDate(date)}</Text></TouchableOpacity>
+          <View style={styles.dateLabel}><Text style={styles.selectedDate}>{formatDate(date)}</Text></View>
           <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('calendar.nextDay')} disabled={date>=toLocalDateKey()} accessibilityState={{disabled:date>=toLocalDateKey()}} onPress={() => move(1)} style={styles.dateArrow}><Ionicons name="chevron-forward" size={24} color={date>=toLocalDateKey()?Colors.textMuted:Colors.textPrimary}/></TouchableOpacity>
         </View>
         <TextButton title={t('period.today')} onPress={()=>selectDate(toLocalDateKey())}/>
       </View>
-      {notice && <Text accessibilityRole="alert" style={styles.success}>{t(notice)}</Text>}
+      {notice ? <Text accessibilityRole="alert" style={styles.success}>{t(notice)}</Text> : null}
       <DataFeedback {...query} empty={!selectedDay.latestSession} />
       <View style={styles.summaryCard}>
         <View style={styles.summaryHeader}>
@@ -109,7 +115,7 @@ function SleepContent() {
           <View style={styles.endpoint}><Ionicons name="moon" size={18} color={Colors.blue}/><Text style={styles.endpointText}>{t('sleep.timeEndpoint',{field:t('sleep.bedtime'),date:formatDate(record.sleep_start),time:formatTime(record.sleep_start)})}</Text></View>
           <View style={styles.endpoint}><Ionicons name="sunny" size={18} color={Colors.orange}/><Text style={styles.endpointText}>{t('sleep.timeEndpoint',{field:t('sleep.wakeUp'),date:formatDate(record.sleep_end),time:formatTime(record.sleep_end)})}</Text></View>
           {record.quality_rating !== null && <Text style={styles.cardSubtitle}>{t('sleep.ratingValue', { value: formatNumber(record.quality_rating) })}</Text>}
-          {record.notes && <Text style={styles.cardSubtitle}>{record.notes}</Text>}
+          {record.notes ? <Text style={styles.cardSubtitle}>{record.notes}</Text> : null}
           <View style={styles.controlsRow}>
             <TextButton title={t('common.edit')} onPress={() => openForm(record)} disabled={busy} />
             <TextButton title={t('sleep.deleteRecord')} color={Colors.error} disabled={busy} onPress={() => { setDeleteError(null); setDeleting(record); }} />
@@ -131,7 +137,7 @@ function SleepContent() {
       <View style={styles.backdrop}><View accessibilityViewIsModal style={styles.dialog}>
         <Text accessibilityRole="header" style={styles.cardTitle}>{t('sleep.deleteRecord')}</Text>
         <Text style={styles.cardSubtitle}>{t('sleep.deleteConfirmation', { date: deleting ? formatDate(deleting.sleep_end) : '' })}</Text>
-        {deleteError && <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(deleteError)}</Text>}
+        {deleteError ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(deleteError)}</Text> : null}
         <PrimaryButton title={t(busy ? 'sleep.deleting' : 'sleep.deleteRecord')} loading={busy} onPress={remove} />
         <TextButton title={t('common.cancel')} disabled={busy} onPress={() => setDeleting(null)} />
       </View></View>

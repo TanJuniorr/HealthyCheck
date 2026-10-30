@@ -45,9 +45,9 @@ export function FoodPortionForm({ food, grams: initial, onSave, onClose }: Props
    <Text style={styles.title}>{nutrition ? formatNumber(nutrition.calories,1) : '—'} kcal</Text>
    {(['protein','carbs','fat'] as const).map(key=><Text key={key} style={styles.text}>{t(`nutrition.${key}`)}: {nutrition ? formatNumber(nutrition[key],2) : '—'} g</Text>)}
   </View>
-  {food.catalog_metadata?.source && <Text selectable style={styles.text}>{t('meals.dataSource')}: {food.catalog_metadata.source} · {food.catalog_metadata.source_id}{'\n'}{food.catalog_metadata.source_url}</Text>}
-  {food.catalog_metadata?.recipe_reference && <Text style={styles.text}>{t('meals.recipeReference')}</Text>}
-  {error && <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text>}
+  {food.catalog_metadata?.source ? <Text selectable style={styles.text}>{t('meals.dataSource')}: {food.catalog_metadata.source} · {food.catalog_metadata.source_id}{'\n'}{food.catalog_metadata.source_url}</Text> : null}
+  {food.catalog_metadata?.recipe_reference ? <Text style={styles.text}>{t('meals.recipeReference')}</Text> : null}
+  {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
   <PrimaryButton title={t('common.save')} onPress={save} disabled={grams===null} loading={busy}/><TextButton title={t('common.cancel')} onPress={close} disabled={busy}/>
  </ScrollView></KeyboardAvoidingView></Modal>;
 }

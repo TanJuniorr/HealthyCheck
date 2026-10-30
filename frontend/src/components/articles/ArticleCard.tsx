@@ -49,11 +49,11 @@ export function ArticleCard({
           <Text style={styles.featuredTitle} numberOfLines={2}>
             {title}
           </Text>
-          {description && (
+          {description ? (
             <Text style={styles.featuredDescription} numberOfLines={2}>
               {description}
             </Text>
-          )}
+          ) : null}
         </View>
       </TouchableOpacity>
     );

@@ -58,11 +58,6 @@ export function CalendarDatePicker({ visible, date, title, onClose, onSelect, ma
               <Ionicons name="chevron-forward" size={22} color={Colors.textPrimary} />
             </TouchableOpacity>
           </View>
-          <View style={styles.monthRow}>
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('calendar.previousYear')} onPress={() => moveMonth(-12)} style={styles.arrow}><Ionicons name="play-back" size={18} color={Colors.primary}/></TouchableOpacity>
-            <Text style={styles.monthLabel}>{new Intl.NumberFormat(appLocale(), {useGrouping:false}).format(year)}</Text>
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('calendar.nextYear')} onPress={() => moveMonth(12)} style={styles.arrow}><Ionicons name="play-forward" size={18} color={Colors.primary}/></TouchableOpacity>
-          </View>
           <View style={styles.grid}>
             {weekdays.map((weekday, index) => <Text key={`weekday-${index}`} style={styles.weekday}>{weekday}</Text>)}
             {cells.map((cell, index) => {

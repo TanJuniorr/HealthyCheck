@@ -159,7 +159,7 @@ export default function ProfileScreen() {
         {profileError ? <Text accessibilityRole="alert" style={{ color: Colors.error }}>{localizeMessage(profileError)}</Text> : null}
         {!profileLoading && !profileError && !profile ? <Text style={{ color: Colors.textSecondary }}>{t("profile.missing")}</Text> : null}
         {feedback ? <Text accessibilityRole={feedback === t('profile.avatarSaved') ? undefined : 'alert'} style={{ color:feedback === t('profile.avatarSaved') ? Colors.success : Colors.error }}>{localizeMessage(feedback)}</Text> : null}
-        {avatarQuery.error && avatar ? <Text accessibilityRole="alert" style={{ color:Colors.error }}>{localizeMessage(avatarQuery.error)}</Text> : null}
+        {(avatarQuery.error && avatar) ? <Text accessibilityRole="alert" style={{ color:Colors.error }}>{localizeMessage(avatarQuery.error)}</Text> : null}
         {/* Profile Header Card */}
         <View style={styles.headerCard}>
           <View style={styles.avatarWrapper}>

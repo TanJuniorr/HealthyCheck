@@ -13,11 +13,13 @@ import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 import { useThemedStyles } from '../../src/contexts/ThemeContext';
+import { useAuth } from '../../src/contexts/AuthContext';
 
 export default function HealthDataScreen() {
   const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
-  const metricDefinitions = localizeStaticData(rawMetricDefinitions);
+  const { profile } = useAuth();
+  const metricDefinitions = localizeStaticData(rawMetricDefinitions).filter(metric => metric.id !== 'cycle' || profile?.gender === 'female');
 
   const query = useHealthOverview(); const summary = query.data;
   const values: Record<string,string> = { steps:summary ? formatNumber(summary.steps.total) : '—',sleep:summary?.sleep.minutes != null ? t('units.hourValue',{value:formatNumber(summary.sleep.minutes/60,1)}) : '—',bmi:(summary?.weight.bmi == null ? undefined : formatNumber(summary?.weight.bmi,1)) ?? '—',nutrition:summary ? formatNumber(summary.nutrition.calories,0) : '—',calories:t("common.unavailable"),heart:t("common.comingSoon"),cycle:t("common.comingSoon"),'double-support':t("common.unavailable") };

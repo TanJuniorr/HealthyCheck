@@ -88,12 +88,12 @@ export function ProgressBar({
 
   return (
     <View style={styles.barContainer}>
-      {showLabel && (label || value) && (
+      {showLabel && (label || value) ? (
         <View style={styles.barLabelRow}>
-          {label && <Text style={styles.barLabel}>{label}</Text>}
-          {value && <Text style={styles.barValue}>{value}</Text>}
+          {label ? <Text style={styles.barLabel}>{label}</Text> : null}
+          {value ? <Text style={styles.barValue}>{value}</Text> : null}
         </View>
-      )}
+      ) : null}
       <View style={[styles.barTrack, { height, backgroundColor: themedTrackColor, borderRadius: height / 2 }]}>
         <View
           style={[

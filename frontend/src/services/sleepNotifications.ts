@@ -3,6 +3,7 @@ import * as Notifications from 'expo-notifications';
 import { AndroidImportance } from 'expo-notifications';
 import { reminderTriggers } from '../lib/sleepSchedule';
 import type { SleepScheduleRow } from '../types/database';
+import { getNotificationPreferences } from './notificationPreferencesService';
 export type ReminderStatus = 'ready' | 'off' | 'unsupported' | 'denied';
 
 const tag='healthycheck-sleep';
@@ -25,7 +26,7 @@ export function reconcileSleepReminders(account: string | null,schedule: SleepSc
   const cancel=async()=>{for(const n of existing) await Notifications.cancelScheduledNotificationAsync(n.identifier);};
   if(account!==owner) return 'off';
   if(schedule===undefined) {for(const n of existing) if(n.content.data?.owner!==account) await Notifications.cancelScheduledNotificationAsync(n.identifier);return 'off';}
-  if(!account || !schedule?.reminder_enabled) {await cancel();return 'off';}
+  if(!account || !schedule?.reminder_enabled || !(await getNotificationPreferences(account)).notificationsEnabled) {await cancel();return 'off';}
   const permission=await Notifications.getPermissionsAsync();
   if(!permission.granted) {await cancel();return 'denied';}
   const triggers=reminderTriggers(schedule);

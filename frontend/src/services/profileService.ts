@@ -26,6 +26,7 @@ export async function updateMyProfile(payload: ProfileUpdate): Promise<ProfileRo
  if (!row) throw new DataAccessError('NOT_FOUND', 'Chưa có hồ sơ. Hãy tạo hồ sơ trước khi cập nhật.');
  return normalizeRow('profiles',row);
 }
+
 export async function ensureMyProfile(): Promise<ProfileRow> {
  const user = await requireAuthenticatedUser();
  const existing = await queryResult(supabase.from('profiles').select(columns.profiles).eq('id', user.id).maybeSingle(), user.id);

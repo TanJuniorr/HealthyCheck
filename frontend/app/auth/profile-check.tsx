@@ -14,7 +14,7 @@ export default function ProfileCheckScreen() {
  return <View style={styles.screen}><View style={styles.content}>
   <Text accessibilityRole="header" style={styles.title}>{t('onboarding.checkingProfile')}</Text>
   {profileError?<><Text accessibilityRole="alert" style={styles.error}>{localizeMessage(profileError)}</Text><PrimaryButton title={t('common.retry')} disabled={busy} onPress={refreshProfile}/></>:<ActivityIndicator accessibilityLabel={t('onboarding.checkingProfile')} color={Colors.primary}/>}
-  {error&&<Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text>}
+  {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
   <TextButton title={t('auth.signOut')} loading={busy} onPress={logout}/>
  </View></View>;
 }

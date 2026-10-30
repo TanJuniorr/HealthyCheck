@@ -45,7 +45,7 @@ export function AppTextInput({
 
   return (
     <View style={[styles.container, style]}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label ? <Text style={styles.label}>{label}</Text> : null}
       <View
         style={[
           styles.inputContainer,
@@ -53,14 +53,14 @@ export function AppTextInput({
           error ? styles.inputError : undefined,
         ]}
       >
-        {leftIcon && (
+        {leftIcon ? (
           <Ionicons
             name={leftIcon as any}
             size={20}
             color={isFocused ? Colors.primary : Colors.textMuted}
             style={styles.leftIcon}
           />
-        )}
+        ) : null}
         <TextInput
           style={styles.input}
           placeholder={placeholder}
@@ -75,7 +75,7 @@ export function AppTextInput({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
         />
-        {secureTextEntry && (
+        {secureTextEntry ? (
           <TouchableOpacity
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
             accessibilityRole="button"
@@ -89,9 +89,9 @@ export function AppTextInput({
               color={Colors.textMuted}
             />
           </TouchableOpacity>
-        )}
+        ) : null}
       </View>
-      {error && <Text style={styles.errorText}>{localizeMessage(error)}</Text>}
+      {error ? <Text style={styles.errorText}>{localizeMessage(error)}</Text> : null}
     </View>
   );
 }

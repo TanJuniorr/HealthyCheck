@@ -50,8 +50,8 @@ function ScheduleForm({initial}:{initial:SleepScheduleRow|null}) {
   {input.reminder_enabled&&<View style={styles.row}>{[5,10,15,30,60].map(minutes=><TextButton key={minutes} title={(input.reminder_minutes_before===minutes?'✓ ':'')+t('schedule.before',{minutes:formatNumber(minutes)})} disabled={busy} onPress={()=>setInput({...input,reminder_minutes_before:minutes})}/>)}</View>}
   <Text accessibilityRole="alert" style={styles.text}>{t(`schedule.status_${status}`)}</Text>
   {(status==='denied'||error==='schedule.denied')&&Platform.OS!=='web'&&<TextButton title={t('schedule.openSettings')} onPress={()=>Linking.openSettings()}/>}
-  {error&&<Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text>}
-  {notice&&<Text accessibilityRole="alert" style={styles.text}>{t(notice)}</Text>}
+  {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
+  {notice ? <Text accessibilityRole="alert" style={styles.text}>{t(notice)}</Text> : null}
   <PrimaryButton title={t(busy?'sleep.saving':'schedule.save')} loading={busy} onPress={()=>run()}/>
   {initial&&<TextButton title={t('schedule.delete')} disabled={busy} onPress={()=>setConfirm(true)}/>}
   {confirm&&<View style={styles.card}><Text style={styles.text}>{t('schedule.confirmDelete')}</Text><TextButton title={t('schedule.delete')} disabled={busy} onPress={()=>run(true)}/><TextButton title={t('common.cancel')} disabled={busy} onPress={()=>setConfirm(false)}/></View>}

@@ -7,10 +7,12 @@ import { getMySleepSchedule } from '../services/sleepScheduleService';
 import { reconcileSleepReminders, setReminderOwner } from '../services/sleepNotifications';
 import { subscribeSleepChanges } from '../lib/healthQueryEvents';
 import { Colors } from '../constants/colors';
+import { useNotificationInbox } from './NotificationInboxContext';
 const ReminderContext=createContext('off');
 export const useSleepReminderStatus=()=>useContext(ReminderContext);
 export function SleepReminderProvider({children}:{children:React.ReactNode}) {
  const {user,isLoading,isRecovery,profile,profileChecked}=useAuth();const {t,i18n}=useTranslation();const [status,setStatus]=useState('off');
+ const {notificationsEnabled}=useNotificationInbox();
  const owner=profileChecked && onboardingComplete(profile) && !isRecovery ? user?.id??null : null;
  useEffect(()=>{
   if(isLoading) return;
@@ -31,6 +33,6 @@ export function SleepReminderProvider({children}:{children:React.ReactNode}) {
   const unsubscribe=subscribeSleepChanges((changed,kind)=>{if(changed===owner&&kind==='schedule')void refresh();});
   const subscription=AppState.addEventListener('change',state=>{if(state==='active')void refresh();});
   return ()=>{alive=false;generation++;setReminderOwner(null);unsubscribe();subscription.remove();void reconcileSleepReminders(null,null,'','').catch(()=>{});};
- },[owner,isLoading,i18n.resolvedLanguage,t]);
+ },[owner,isLoading,notificationsEnabled,i18n.resolvedLanguage,t]);
  return <ReminderContext.Provider value={status}>{children}{status==='error'&&<View style={{padding:8,backgroundColor:Colors.background}}><Text accessibilityRole="alert" style={{color:Colors.error}}>{t('schedule.notificationError')}</Text></View>}</ReminderContext.Provider>;
 }

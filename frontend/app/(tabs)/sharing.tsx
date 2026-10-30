@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/colors';
 import { Typography } from '../../src/constants/typography';
-import { Spacing, Radius, Layout, Shadows } from '../../src/constants/spacing';
+import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 import { PrimaryButton, TextButton } from '../../src/components/common/Buttons';
 import { useThemedStyles } from '../../src/contexts/ThemeContext';
 import {
@@ -24,6 +24,7 @@ import {
   pauseSharingInvite,
   resumeSharingInvite,
   revokeSharingInvite,
+  deleteSharingInvite,
   subscribeSharingChanges,
 } from '../../src/services/sharingService';
 import type { SharingInviteRow } from '../../src/types/database';
@@ -53,6 +54,16 @@ const rawSHARING_FEATURES: SharingFeature[] = [
   },
 ];
 
+function recipientDisplayText(item: SharingInviteRow, fallback: string) {
+  return item.recipient_email?.trim() || item.recipient_label.trim() || fallback;
+}
+
+function recipientInitials(name: string) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length > 1) return `${words[0][0]}${words[1][0]}`.toUpperCase();
+  return (words[0] || '?').slice(0, 2).toUpperCase();
+}
+
 export default function SharingScreen() {
   const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
@@ -68,6 +79,8 @@ export default function SharingScreen() {
   const [actionError, setActionError] = useState('');
   const [revokingItem, setRevokingItem] = useState<SharingInviteRow | null>(null);
   const [isRevoking, setIsRevoking] = useState(false);
+  const [deletingItem, setDeletingItem] = useState<SharingInviteRow | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchInvites = useCallback(async () => {
     setIsLoading(true);
@@ -142,6 +155,24 @@ export default function SharingScreen() {
     }
   };
 
+  const handleConfirmDelete = async () => {
+    if (!deletingItem || isDeleting || busyId) return;
+    setBusyId(deletingItem.id);
+    setIsDeleting(true);
+    setActionError('');
+    try {
+      await deleteSharingInvite(deletingItem.id);
+      setDeletingItem(null);
+      await fetchInvites();
+    } catch (err: any) {
+      const msg = err?.message || '';
+      setActionError(msg.startsWith('sharing.') ? t(msg) : dataError(err).message);
+    } finally {
+      setBusyId(null);
+      setIsDeleting(false);
+    }
+  };
+
   // 1. Loading State
   if (isLoading && invites.length === 0 && !loadError) {
     return (
@@ -172,9 +203,10 @@ export default function SharingScreen() {
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <ScrollView
+        style={styles.mainScroll}
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: insets.bottom + Layout.tabBarHeight + Spacing.xl },
+          { paddingBottom: Spacing.xl },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -186,16 +218,6 @@ export default function SharingScreen() {
                 <Text style={styles.managementTitle}>{t('sharing.activeShares')}</Text>
                 <Text style={styles.managementSubtitle}>{t('sharing.journeyHint')}</Text>
               </View>
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => router.push('/sharing-setup' as any)}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel={t('sharing.addNewShare')}
-              >
-                <Ionicons name="add" size={20} color={Colors.white} />
-                <Text style={styles.addButtonText}>{t('sharing.addNewShare')}</Text>
-              </TouchableOpacity>
             </View>
 
             {/* Action error banner */}
@@ -238,21 +260,18 @@ export default function SharingScreen() {
                     : item.privacy_level === 'family'
                     ? t('sharing.family')
                     : t('sharing.community');
+                const displayText = recipientDisplayText(item, t('sharing.contact'));
 
                 return (
                   <View key={item.id} style={styles.shareCard}>
-                    {/* Card Top Row: Recipient & Status */}
+                    {/* Keep recipient details and status on separate rows on narrow screens. */}
                     <View style={styles.cardTopRow}>
                       <View style={styles.recipientInfo}>
                         <View style={styles.recipientAvatar}>
-                          <Ionicons name="person" size={18} color={Colors.primary} />
+                          <Text style={styles.recipientAvatarText}>{recipientInitials(displayText)}</Text>
                         </View>
                         <View style={styles.recipientTextWrapper}>
-                          <Text style={styles.recipientLabel}>{item.recipient_label}</Text>
-                          {item.recipient_email &&
-                          item.recipient_email !== item.recipient_label ? (
-                            <Text style={styles.recipientEmail}>{item.recipient_email}</Text>
-                          ) : null}
+                          <Text style={styles.recipientLabel} numberOfLines={1}>{displayText}</Text>
                         </View>
                       </View>
 
@@ -285,7 +304,7 @@ export default function SharingScreen() {
                       <View style={styles.metaItem}>
                         <Ionicons name="calendar-outline" size={13} color={Colors.textMuted} />
                         <Text style={styles.metaText}>
-                          {t('sharing.createdOn', { date: formatDate(item.created_at) })}
+                          {formatDate(item.created_at)}
                         </Text>
                       </View>
                     </View>
@@ -313,11 +332,23 @@ export default function SharingScreen() {
                     </View>
 
                     {/* Action Buttons Row */}
-                    <View style={styles.cardActionsRow}>
+                    <View style={[styles.cardActionsRow, isRevoked && styles.revokedActionsRow]}>
                       {isRevoked ? (
-                        <Text style={styles.revokedNoticeText}>
-                          {t('sharing.statusRevoked')}
-                        </Text>
+                        <>
+                          <Text style={styles.revokedNoticeText}>{t('sharing.statusRevoked')}</Text>
+                          <TouchableOpacity
+                            style={styles.actionBtnDanger}
+                            onPress={() => setDeletingItem(item)}
+                            disabled={isItemBusy || Boolean(busyId)}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('sharing.deleteAction')}
+                          >
+                            {isItemBusy ? <ActivityIndicator size="small" color={Colors.coral} /> : <>
+                              <Ionicons name="trash-outline" size={15} color={Colors.coral} />
+                              <Text style={styles.actionBtnDangerText}>{t('sharing.deleteAction')}</Text>
+                            </>}
+                          </TouchableOpacity>
+                        </>
                       ) : (
                         <>
                           <TouchableOpacity
@@ -435,12 +466,6 @@ export default function SharingScreen() {
 
             {/* Primary Action & Privacy Note */}
             <View style={styles.footerSection}>
-              <PrimaryButton
-                title={t('sharing.start')}
-                onPress={() => router.push('/sharing-setup' as any)}
-                style={styles.primaryButton}
-              />
-
               <View style={styles.privacyNoteContainer}>
                 <Ionicons
                   name="lock-closed-outline"
@@ -456,6 +481,14 @@ export default function SharingScreen() {
           </>
         )}
       </ScrollView>
+
+      <View style={styles.stickyFooter}>
+        <PrimaryButton
+          title={hasInvites ? t('sharing.addNewShare') : t('sharing.start')}
+          onPress={() => router.push('/sharing-setup' as any)}
+          style={styles.stickyAddButton}
+        />
+      </View>
 
       {/* Revoke Confirmation Modal */}
       <Modal
@@ -491,6 +524,43 @@ export default function SharingScreen() {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={Boolean(deletingItem)}
+        transparent
+        animationType="fade"
+        onRequestClose={() => { if (!isDeleting) setDeletingItem(null); }}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard} accessibilityRole="alertdialog">
+            <View style={styles.modalIconBg}>
+              <Ionicons name="trash-outline" size={26} color={Colors.coral} />
+            </View>
+            <Text style={styles.modalTitle}>{t('sharing.confirmDeleteTitle')}</Text>
+            <Text style={styles.modalMessage}>
+              {deletingItem ? t('sharing.confirmDeleteMessage', { recipient: recipientDisplayText(deletingItem, t('sharing.contact')) }) : ''}
+            </Text>
+            <View style={styles.modalActionsRow}>
+              <TextButton
+                title={t('sharing.cancelAction')}
+                onPress={() => setDeletingItem(null)}
+                disabled={isDeleting}
+                style={styles.modalCancelBtn}
+              />
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={t('sharing.deleteAction')}
+                accessibilityState={{ disabled: isDeleting, busy: isDeleting }}
+                disabled={isDeleting}
+                onPress={handleConfirmDelete}
+                style={styles.modalDeleteBtn}
+              >
+                {isDeleting ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.modalDeleteText}>{t('sharing.deleteAction')}</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -519,11 +589,25 @@ const baseStyles = StyleSheet.create({
     paddingHorizontal: Spacing.screenPadding,
     paddingTop: Spacing.lg,
   },
+  mainScroll: {
+    flex: 1,
+  },
+  stickyFooter: {
+    paddingHorizontal: Spacing.screenPadding,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+    backgroundColor: Colors.background,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.border,
+  },
+  stickyAddButton: {
+    marginBottom: 0,
+  },
   // Management View
   managementHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: Spacing.md,
     marginBottom: Spacing.lg,
     marginTop: Spacing.xs,
   },
@@ -535,21 +619,6 @@ const baseStyles = StyleSheet.create({
     ...Typography.supporting,
     color: Colors.textSecondary,
     marginTop: 2,
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.full,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    gap: 4,
-    ...Shadows.sm,
-  },
-  addButtonText: {
-    ...Typography.button,
-    fontSize: 13,
-    color: Colors.white,
   },
   actionErrorBanner: {
     flexDirection: 'row',
@@ -579,9 +648,9 @@ const baseStyles = StyleSheet.create({
     ...Shadows.sm,
   },
   cardTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
     marginBottom: Spacing.sm,
   },
   recipientInfo: {
@@ -589,6 +658,7 @@ const baseStyles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.sm,
     flex: 1,
+    width: '100%',
   },
   recipientAvatar: {
     width: 36,
@@ -597,22 +667,26 @@ const baseStyles = StyleSheet.create({
     backgroundColor: Colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   recipientTextWrapper: {
     flex: 1,
+    minWidth: 0,
   },
   recipientLabel: {
     ...Typography.cardTitle,
     fontSize: 16,
     color: Colors.textPrimary,
   },
-  recipientEmail: {
-    ...Typography.supporting,
-    color: Colors.textMuted,
+  recipientAvatarText: {
+    ...Typography.label,
+    color: Colors.primaryDark,
+    fontWeight: '700',
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'flex-start',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: Radius.full,
@@ -693,6 +767,9 @@ const baseStyles = StyleSheet.create({
     paddingTop: Spacing.sm,
     gap: Spacing.sm,
   },
+  revokedActionsRow: {
+    justifyContent: 'space-between',
+  },
   actionBtnOutline: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -726,6 +803,7 @@ const baseStyles = StyleSheet.create({
     ...Typography.supporting,
     color: Colors.textMuted,
     fontStyle: 'italic',
+    flex: 1,
   },
   // Modal Backdrop
   modalBackdrop: {
@@ -778,6 +856,19 @@ const baseStyles = StyleSheet.create({
   modalConfirmBtn: {
     flex: 1,
     backgroundColor: Colors.coral,
+  },
+  modalDeleteBtn: {
+    flex: 1,
+    minHeight: 44,
+    paddingHorizontal: Spacing.md,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.coral,
+  },
+  modalDeleteText: {
+    ...Typography.button,
+    color: Colors.white,
   },
   // Empty Intro Screen
   heroGraphicWrapper: {

@@ -47,7 +47,7 @@ export function HealthOnboardingForm() {
     <AppTextInput editable={!busy} label={t('onboarding.weight')} keyboardType="decimal-pad" value={draft.weightKg} onChangeText={value=>change('weightKg',value)} error={touched.weightKg?errors.weightKg:undefined}/>
     <Text style={styles.text}>{t('onboarding.weightHint')}</Text>
    </>}
-   {error&&<Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text>}
+   {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
    {step===1?<PrimaryButton title={t('common.continue')} disabled={busy} onPress={next}/>:<><PrimaryButton title={t('onboarding.finish')} loading={busy} disabled={!complete} onPress={save}/><TextButton title={t('common.back')} disabled={busy} onPress={()=>setStep(1)}/></>}
   </View>
   <LanguageSelector compact/><TextButton title={t('auth.signOut')} disabled={busy} onPress={logout}/>

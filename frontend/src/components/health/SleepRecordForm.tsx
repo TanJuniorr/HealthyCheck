@@ -106,7 +106,7 @@ export function SleepRecordForm({ record, initialDate, onClose, onSaved }: Props
         <Text style={styles.label}>{t('sleep.notes')}</Text>
         <TextInput accessibilityLabel={t('sleep.notes')} value={notes} onChangeText={setNotes} editable={!saving} multiline
           maxLength={2000} style={styles.notes} textAlignVertical="top" />
-        {error && <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text>}
+        {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
         <PrimaryButton title={t(saving ? 'sleep.saving' : 'sleep.saveRecord')} loading={saving} onPress={save} />
         <TextButton title={t('common.cancel')} onPress={close} disabled={saving} />
       </ScrollView>

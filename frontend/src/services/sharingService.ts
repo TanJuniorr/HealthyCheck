@@ -269,3 +269,21 @@ export async function revokeSharingInvite(id: string): Promise<SharingInviteRow>
   notifySharingChanged(owner);
   return result;
 }
+
+export async function deleteSharingInvite(id: string): Promise<void> {
+  validId(id);
+  const owner = await requireAuthenticatedUserId();
+  const result = await queryResult(
+    supabase
+      .from('sharing_invites')
+      .delete()
+      .eq('id', id)
+      .eq('owner_id', owner)
+      .eq('status', 'revoked')
+      .select('id')
+      .maybeSingle(),
+    owner
+  );
+  if (!result) throw new DataAccessError('NOT_FOUND', 'Không tìm thấy bản ghi chia sẻ.');
+  notifySharingChanged(owner);
+}

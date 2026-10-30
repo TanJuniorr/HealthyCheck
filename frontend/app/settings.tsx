@@ -7,7 +7,9 @@ import {
   StyleSheet,
   Switch,
   Alert,
+  Platform,
 } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
@@ -17,6 +19,8 @@ import { AppHeader, SectionHeader } from '../src/components/common/AppHeader';
 import { ScreenContainer } from '../src/components/common/ScreenContainer';
 import { SettingsRow } from '../src/components/health/HealthComponents';
 import { useTheme, useThemedStyles } from '../src/contexts/ThemeContext';
+import { useNotificationInbox } from '../src/contexts/NotificationInboxContext';
+import { notificationChannelId } from '../src/services/healthNotifications';
 
 interface SettingsSwitchRowProps {
   title: string;
@@ -46,7 +50,7 @@ function SettingsSwitchRow({
         </View>
         <View style={styles.titleWrapper}>
           <Text style={styles.rowTitle}>{title}</Text>
-          {description && <Text style={styles.rowDescription}>{description}</Text>}
+          {description ? <Text style={styles.rowDescription}>{description}</Text> : null}
         </View>
       </View>
       <Switch
@@ -63,12 +67,42 @@ export default function SettingsScreen() {
   const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const { isDark: darkMode, setDarkMode } = useTheme();
+  const { notificationsEnabled, dailyRemindersEnabled, setNotificationsEnabled, setDailyRemindersEnabled } = useNotificationInbox();
 
   const router = useRouter();
 
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [dailyReminders, setDailyReminders] = useState(true);
   const [analytics, setAnalytics] = useState(false);
+
+  const toggleNotifications = async (value: boolean) => {
+    const enabled = await setNotificationsEnabled(value);
+    if (value && !enabled) {
+      Alert.alert(t('settings.permissionTitle'), t('settings.permissionDenied'));
+    }
+  };
+
+  const sendTestNotification = async () => {
+    if (Platform.OS === 'web') {
+      Alert.alert(t('notifications.testUnavailableTitle'), t('notifications.testUnavailableBody'));
+      return;
+    }
+    if (!(await setNotificationsEnabled(true))) {
+      Alert.alert(t('settings.permissionTitle'), t('settings.permissionDenied'));
+      return;
+    }
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: t('notifications.testTitle'),
+          body: t('notifications.testBody'),
+          data: { kind: 'notification_test' },
+          ...(Platform.OS === 'android' ? { channelId: notificationChannelId } : {}),
+        },
+        trigger: null,
+      });
+    } catch {
+      Alert.alert(t('notifications.testUnavailableTitle'), t('notifications.testFailed'));
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -77,7 +111,6 @@ export default function SettingsScreen() {
       <ScreenContainer>
         <SectionHeader title={t("settings.language")} />
         <LanguageSelector />
-        <Text style={{ ...Typography.supporting,color:Colors.textSecondary }}>{t("settings.previewNotice")}</Text>
         {/* Appearance Section */}
         <SectionHeader title={t("settings.appearance")} />
         <View style={styles.card}>
@@ -96,17 +129,21 @@ export default function SettingsScreen() {
           <SettingsSwitchRow
             title={t("settings.push")}
             icon="notifications-outline"
-            value={pushNotifications}
-            onValueChange={setPushNotifications}
+            value={notificationsEnabled}
+            onValueChange={value => { void toggleNotifications(value); }}
             description={t("settings.pushHint")}
           />
           <SettingsSwitchRow
             title={t("settings.reminders")}
             icon="time-outline"
-            value={dailyReminders}
-            onValueChange={setDailyReminders}
+            value={dailyRemindersEnabled}
+            onValueChange={value => { void setDailyRemindersEnabled(value); }}
             description={t("settings.remindersHint")}
-            isLast
+          />
+          <SettingsRow
+            title={t('notifications.testButton')}
+            icon="paper-plane-outline"
+            onPress={() => { void sendTestNotification(); }}
           />
         </View>
 

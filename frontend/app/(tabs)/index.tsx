@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { formatNumber,formatDate,formatDuration } from '../../src/i18n/formatting';
 import { localizeStaticData } from '../../src/i18n/localize';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,6 +24,11 @@ import { displayName, initials, profileText } from '../../src/lib/profileReposit
 import { useHealthQuery } from '../../src/hooks/useHealthQuery';
 import { createAvatarSignedUrl } from '../../src/services/avatarService';
 import { useThemedStyles } from '../../src/contexts/ThemeContext';
+import { useNotificationInbox } from '../../src/contexts/NotificationInboxContext';
+import { calculateHealthScore, HEALTH_SCORE_LOW_NOTIFICATION_MINIMUM_METRICS, HEALTH_SCORE_LOW_THRESHOLD, HEALTH_SCORE_MINIMUM_METRICS } from '../../src/lib/healthScore';
+import { notifyLowHealthScore } from '../../src/services/healthNotifications';
+import { getCyclePrediction } from '../../src/lib/menstrualCycleCalculations';
+import { getMyMenstrualCycleSettings } from '../../src/services/menstrualCycleService';
 
 export default function OverviewScreen() {
   const styles = useThemedStyles(baseStyles);
@@ -33,6 +38,8 @@ export default function OverviewScreen() {
 
   const router = useRouter();
   const { user, profile } = useAuth();
+  const { unreadCount, notificationsEnabled } = useNotificationInbox();
+  const [clockTime, setClockTime] = useState(() => new Date());
   const avatarPath = profileText(profile,'avatar_url');
   const avatarQuery = useHealthQuery(async () => {
     if (!avatarPath) return null;
@@ -41,11 +48,74 @@ export default function OverviewScreen() {
   const [failedAvatarUrl,setFailedAvatarUrl] = useState<string | null>(null);
   const hasName = Boolean(profile?.full_name?.trim() || (typeof user?.user_metadata.full_name === 'string' && user.user_metadata.full_name.trim()));
   const name = hasName ? displayName(user,profile) : t('profile.member');
+  const greetingNameParts = name.trim().split(/\s+/).filter(Boolean);
+  const greetingName = greetingNameParts[greetingNameParts.length - 1] || t('profile.member');
+  useEffect(() => {
+    const timer = setInterval(() => setClockTime(new Date()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+  const hour = clockTime.getHours();
+  const greetingKey = hour >= 5 && hour < 12
+    ? 'overview.greetingMorning'
+    : hour >= 12 && hour < 18
+      ? 'overview.greetingAfternoon'
+      : 'overview.greetingEvening';
   const insets = useSafeAreaInsets();
   const today = toLocalDateKey();
+  const cycleSettingsQuery = useHealthQuery(
+    () => profile?.gender === 'female' ? getMyMenstrualCycleSettings() : Promise.resolve(null),
+    `overview-cycle:${profile?.gender ?? 'unknown'}`,
+  );
+  const cyclePrediction = profile?.gender === 'female' ? getCyclePrediction(today, cycleSettingsQuery.data) : null;
   const week = useWeeklyOverview(today); const query = week; const summary = week.data?.find(day => day.date === today) ?? null;
-  const healthScore = { score:'—',maxScore:100,status:t("common.notAvailable"),description:t("overview.scoreUnavailable") };
-  const dailyHighlights = highlightDefinitions.map(item => ({ ...item,detail:item.id === 'water' ? t('water.goal',{value:formatNumber(summary?.water.goalMl)}) : undefined,progressPercent:item.id === 'water' && summary?.water.goalMl && summary.water.goalMl>0 ? summary.water.totalMl/summary.water.goalMl*100 : undefined,value:item.id === 'water' ? summary ? formatNumber(summary.water.totalMl) : '—' : item.id === 'steps' ? summary ? formatNumber(summary.steps.total) : '—' : item.id === 'sleep' ? summary?.sleep.minutes != null ? formatDuration(summary.sleep.minutes) : '—' : item.id === 'nutrition' ? summary ? formatNumber(summary.nutrition.calories,0) : '—' : t("common.comingSoon"),unit:item.id === 'cycle' ? '' : item.unit }));
+  const healthScoreResult = calculateHealthScore(summary);
+  const scoreBand = healthScoreResult.score === null ? null
+    : healthScoreResult.score < HEALTH_SCORE_LOW_THRESHOLD ? 'low'
+      : healthScoreResult.score < 60 ? 'building'
+        : healthScoreResult.score < 80 ? 'good' : 'excellent';
+  const healthScore = {
+    score: healthScoreResult.score === null ? '—' : String(healthScoreResult.score),
+    progress: healthScoreResult.score === null ? 0 : healthScoreResult.score / 100,
+    status: scoreBand ? t(`overview.scoreStatus.${scoreBand}`) : t('common.notAvailable'),
+    description: healthScoreResult.score === null
+      ? t('overview.scoreInsufficientData', { minimum: HEALTH_SCORE_MINIMUM_METRICS, total: healthScoreResult.totalMetricCount })
+      : t('overview.scoreCoverage', { count: healthScoreResult.availableMetricCount, total: healthScoreResult.totalMetricCount }),
+  };
+  useEffect(() => {
+    const score = healthScoreResult.score;
+    if (!user?.id || score === null || score >= HEALTH_SCORE_LOW_THRESHOLD || healthScoreResult.availableMetricCount < HEALTH_SCORE_LOW_NOTIFICATION_MINIMUM_METRICS) return;
+    void notifyLowHealthScore(
+      user.id,
+      score,
+      t('notifications.lowHealthScoreTitle'),
+      t('notifications.lowHealthScoreBody', { score }),
+    );
+  }, [user?.id, notificationsEnabled, healthScoreResult.score, healthScoreResult.availableMetricCount, t]);
+  const dailyHighlights = highlightDefinitions
+    .filter(item => item.id !== 'cycle' || profile?.gender === 'female')
+    .map(item => {
+      const stepsGoal = summary?.steps.goal;
+      const caloriesGoal = summary?.nutrition.calorieGoal;
+      const waterGoal = summary?.water.goalMl;
+      const ratio = (current: number | null | undefined, goal: number | null | undefined, digits = 0) => `${formatNumber(current, digits)}/${formatNumber(goal, digits)}`;
+      const progress = (current: number | null | undefined, goal: number | null | undefined) => goal != null && goal > 0 && current != null ? current / goal * 100 : undefined;
+      const cycleValue = cycleSettingsQuery.error
+        ? t('common.unavailable')
+        : cyclePrediction ? t('cycle.daysUntil', { count: cyclePrediction.daysUntilNextPeriod }) : t('cycle.notSet');
+      return {
+        ...item,
+        detail:undefined,
+        progressPercent:item.id === 'steps' ? progress(summary?.steps.total, stepsGoal)
+          : item.id === 'nutrition' ? progress(summary?.nutrition.calories, caloriesGoal)
+            : item.id === 'water' ? progress(summary?.water.totalMl, waterGoal) : undefined,
+        value:item.id === 'steps' ? summary ? ratio(summary.steps.total, stepsGoal) : '—'
+          : item.id === 'water' ? summary ? ratio(summary.water.totalMl, waterGoal) : '—'
+            : item.id === 'nutrition' ? summary ? ratio(summary.nutrition.calories, caloriesGoal) : '—'
+              : item.id === 'sleep' ? summary?.sleep.minutes != null ? formatDuration(summary.sleep.minutes) : '—'
+                : item.id === 'cycle' ? cycleValue : t('common.comingSoon'),
+        unit:item.id === 'cycle' ? '' : item.unit,
+      };
+    });
   const weeklyStats = [
     { label:t("overview.totalSteps"),value:week.data ? formatNumber(week.data.reduce((sum,day) => sum + day.steps.total,0)) : '—',icon:'footsteps-outline' },
     { label:t("overview.caloriesEaten"),value:week.data ? formatNumber(week.data.reduce((sum,day) => sum + day.nutrition.calories,0),0)+' kcal' : '—',icon:'restaurant-outline' },
@@ -70,18 +140,34 @@ export default function OverviewScreen() {
         <View style={styles.header}>
           <View>
             <Text style={styles.dateLabel}>{formatDate(new Date())}</Text>
-            <Text style={styles.greetingTitle}>{t('overview.greeting',{name})}</Text>
+            <Text style={styles.greetingTitle}>{t(greetingKey,{name:greetingName})}</Text>
           </View>
-          <TouchableOpacity
-            style={styles.avatarButton}
-            onPress={() => router.push('/profile' as any)}
-            activeOpacity={0.8}
-            accessibilityLabel={t("overview.viewProfile")}
-          >
-            {avatarQuery.data && failedAvatarUrl !== avatarQuery.data ? (
-              <Image source={{ uri:avatarQuery.data }} style={{ width:44,height:44,borderRadius:22 }} onError={() => setFailedAvatarUrl(avatarQuery.data)} accessibilityLabel={t('profile.avatar')} />
-            ) : <MockAvatar initials={initials(name)} size={44} />}
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.notificationsButton}
+              onPress={() => router.push('/notifications' as any)}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={unreadCount ? t('notifications.openWithUnread',{count:unreadCount}) : t('notifications.open')}
+            >
+              <Ionicons name="notifications-outline" size={24} color={Colors.textPrimary} />
+              {unreadCount > 0 ? (
+                <View style={styles.notificationCountBadge}>
+                  <Text style={styles.notificationCountText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+                </View>
+              ) : null}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.avatarButton}
+              onPress={() => router.push('/profile' as any)}
+              activeOpacity={0.8}
+              accessibilityLabel={t("overview.viewProfile")}
+            >
+              {avatarQuery.data && failedAvatarUrl !== avatarQuery.data ? (
+                <Image source={{ uri:avatarQuery.data }} style={{ width:44,height:44,borderRadius:22 }} onError={() => setFailedAvatarUrl(avatarQuery.data)} accessibilityLabel={t('profile.avatar')} />
+              ) : <MockAvatar initials={initials(name)} size={44} />}
+            </TouchableOpacity>
+          </View>
         </View>
 
         <DataFeedback {...query} />
@@ -90,7 +176,7 @@ export default function OverviewScreen() {
           <View style={styles.scoreCardContent}>
             <View style={styles.ringWrapper}>
               <ProgressRing
-                progress={0}
+                progress={healthScore.progress}
                 size={118}
                 strokeWidth={10}
                 color={Colors.primary}
@@ -223,6 +309,39 @@ const baseStyles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  notificationsButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notificationCountBadge: {
+    position: 'absolute',
+    top: 1,
+    right: 0,
+    minWidth: 17,
+    height: 17,
+    borderRadius: 9,
+    paddingHorizontal: 3,
+    backgroundColor: Colors.coral,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.background,
+  },
+  notificationCountText: {
+    ...Typography.labelSmall,
+    color: Colors.white,
+    fontSize: 9,
+    lineHeight: 11,
+    fontWeight: '700',
   },
   // Health Score Card
   scoreCard: {

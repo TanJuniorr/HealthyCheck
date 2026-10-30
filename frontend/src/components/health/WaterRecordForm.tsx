@@ -41,7 +41,7 @@ export function WaterRecordForm({record,date,amount,onClose,onSaved}:Props) {
   <SleepDateTimeField label={t('water.drinkingTime')} date={day} time={time} disabled={busy} activeMode={mode} onActiveModeChange={setMode} onChange={(nextDate,nextTime)=>{if(!lock.current){setDay(nextDate);setTime(nextTime??'');}}}/>
   <Text style={styles.text}>{t('water.saveDate',{date:formatDate(day)})}</Text>
   <Text style={styles.text}>{t('water.amountHint')}</Text>
-  {error&&<Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text>}
+  {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
   <PrimaryButton title={t(busy?'water.saving':'water.save')} loading={busy} onPress={save}/><TextButton title={t('common.cancel')} disabled={busy} onPress={close}/>
  </ScrollView></KeyboardAvoidingView></Modal>;
 }

@@ -40,14 +40,14 @@ function WaterContent(){
   try{await deleteWaterRecord(deleting.id);if(mounted.current){setDeleting(null);setNotice('water.deleted');}}
   catch(e){if(mounted.current)setError(dataError(e).message);}finally{lock.current=false;if(mounted.current)setBusy(false);}
  };
- return <View style={styles.screen}><AppHeader title={t('water.title')} showBack/><ScreenContainer>
+ return <View style={styles.screen}><AppHeader title={t('water.title')} showBack rightIcon="calendar-outline" onRightPress={()=>setCalendar(true)} rightAccessibilityLabel="water.chooseDate"/><ScreenContainer>
   <View style={styles.dateRow}>
    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('calendar.previousDay')} style={styles.arrow} onPress={()=>select(shiftDay(date,-1))}><Ionicons name="chevron-back" size={24} color={Colors.primary}/></TouchableOpacity>
-   <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('water.chooseDate')} style={styles.dateLabel} onPress={()=>setCalendar(true)}><Ionicons name="calendar-outline" size={20} color={Colors.primary}/><Text style={styles.text}>{formatDate(date)}</Text></TouchableOpacity>
+   <View style={styles.dateLabel}><Text style={styles.text}>{formatDate(date)}</Text></View>
    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('calendar.nextDay')} disabled={date>=toLocalDateKey()} accessibilityState={{disabled:date>=toLocalDateKey()}} style={styles.arrow} onPress={()=>select(shiftDay(date,1))}><Ionicons name="chevron-forward" size={24} color={Colors.primary}/></TouchableOpacity>
   </View>
   <TextButton title={t('period.today')} onPress={()=>select(toLocalDateKey())}/><DataFeedback {...query}/>
-  {notice&&<Text accessibilityRole="alert" style={styles.success}>{t(notice)}</Text>}
+  {notice ? <Text accessibilityRole="alert" style={styles.success}>{t(notice)}</Text> : null}
   <View style={styles.card}>
    <Text style={styles.title}>{t('water.title')}</Text><Text style={styles.total}>{t('water.ml',{value:query.data?formatNumber(day.totalMl):'—'})}</Text>
    <Text style={styles.text}>{t('water.goal',{value:formatNumber(goal)})}</Text>
@@ -65,7 +65,7 @@ function WaterContent(){
  </ScreenContainer>
  {form&&<WaterRecordForm record={form.record} amount={form.amount} date={date} onClose={()=>setForm(null)} onSaved={savedDate=>{setDate(savedDate);setForm(null);setNotice('water.saved');}}/>}
  {calendar&&<CalendarDatePicker visible date={date} title={t('water.chooseDate')} maxDate={toLocalDateKey()} markedDates={week.daily.filter(d=>d.hasRecords).map(d=>d.date)} onSelect={select} onClose={()=>setCalendar(false)}/>}
- <Modal visible={deleting!==null} transparent animationType="fade" onRequestClose={()=>{if(!lock.current)setDeleting(null);}}><View style={styles.backdrop}><View accessibilityViewIsModal style={styles.dialog}><Text style={styles.title}>{t('water.delete')}</Text><Text style={styles.text}>{t('water.confirmDelete',{value:deleting?formatNumber(deleting.amount_ml):'',time:deleting?formatTime(deleting.recorded_at):''})}</Text>{error&&<Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text>}<PrimaryButton title={t(busy?'water.deleting':'water.delete')} loading={busy} onPress={remove}/><TextButton title={t('common.cancel')} disabled={busy} onPress={()=>setDeleting(null)}/></View></View></Modal>
+ <Modal visible={deleting!==null} transparent animationType="fade" onRequestClose={()=>{if(!lock.current)setDeleting(null);}}><View style={styles.backdrop}><View accessibilityViewIsModal style={styles.dialog}><Text style={styles.title}>{t('water.delete')}</Text><Text style={styles.text}>{t('water.confirmDelete',{value:deleting?formatNumber(deleting.amount_ml):'',time:deleting?formatTime(deleting.recorded_at):''})}</Text>{error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}<PrimaryButton title={t(busy?'water.deleting':'water.delete')} loading={busy} onPress={remove}/><TextButton title={t('common.cancel')} disabled={busy} onPress={()=>setDeleting(null)}/></View></View></Modal>
  </View>;
 }
 const baseStyles=StyleSheet.create({screen:{flex:1,backgroundColor:Colors.background},card:{backgroundColor:Colors.white,padding:18,borderRadius:20,gap:12,marginBottom:16},dateRow:{flexDirection:'row',alignItems:'center',marginTop:12},dateLabel:{flex:1,flexDirection:'row',alignItems:'center',justifyContent:'center',gap:8},arrow:{width:44,height:44,alignItems:'center',justifyContent:'center'},title:{color:Colors.textPrimary,fontSize:17,fontWeight:'600'},total:{color:Colors.blue,fontSize:32,fontWeight:'700'},text:{color:Colors.textSecondary,flexShrink:1},success:{color:Colors.success,paddingVertical:12},error:{color:Colors.error},track:{height:10,backgroundColor:Colors.border,borderRadius:5,overflow:'hidden'},fill:{height:10,backgroundColor:Colors.blue},quick:{flexDirection:'row',flexWrap:'wrap',gap:4},entry:{paddingVertical:10,borderBottomWidth:1,borderBottomColor:Colors.border},backdrop:{flex:1,justifyContent:'center',alignItems:'center',padding:20,backgroundColor:'rgba(0,0,0,0.45)'},dialog:{backgroundColor:Colors.white,borderRadius:20,padding:20,gap:16,width:'100%',maxWidth:480}});

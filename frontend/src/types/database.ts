@@ -69,6 +69,11 @@ export type SharingInviteUpdate = Partial<
     | 'updated_at'
   >
 >;
+export type AppNotificationRow = { id: string; recipient_user_id: string; kind: string; payload: Record<string, unknown>; reference_id: string | null; created_at: string; read_at: string | null };
+export type MenstrualCycleSettingsRow = { user_id: string; last_period_start: string | null; cycle_length: number; period_length: number; reminder_enabled: boolean; reminder_days_before: number; updated_at: string };
+export type CycleFlowStatus = 'none' | 'spotting' | 'light' | 'medium' | 'heavy';
+export type CycleMood = 'happy' | 'okay' | 'low' | 'tired' | 'stressed';
+export type MenstrualCycleLogRow = { id: string; user_id: string; log_date: string; flow_status: CycleFlowStatus; mood: CycleMood | null; symptoms: string[]; created_at: string; updated_at: string };
 export type Rows = { profiles: ProfileRow; health_goals: HealthGoalRow; step_records: StepRecordRow; sleep_records: SleepRecordRow; foods: FoodRow; meal_records: MealRecordRow; weight_records: WeightRecordRow; water_records: WaterRecordRow };
 export type PersonalTable = Exclude<keyof Rows, 'profiles' | 'foods'>;
 export type Inputs = { health_goals: HealthGoalInsert; step_records: StepRecordInsert; sleep_records: SleepRecordInsert; meal_records: MealRecordInsert; weight_records: WeightRecordInsert; water_records: WaterRecordInsert };
@@ -84,4 +89,7 @@ export type Database = { public: { Tables: {
   weight_records: Table<WeightRecordRow, WeightRecordInsert & { user_id: string }>;
   water_records: Table<WaterRecordRow, WaterRecordInsert & { user_id: string }>;
   sharing_invites: Table<SharingInviteRow, SharingInviteInsert & { owner_id: string }, SharingInviteUpdate>;
+  app_notifications: Table<AppNotificationRow, Omit<AppNotificationRow, 'id' | 'created_at' | 'read_at'> & Partial<Pick<AppNotificationRow, 'id' | 'created_at' | 'read_at'>>, Partial<Pick<AppNotificationRow, 'read_at'>>>;
+  menstrual_cycle_settings: Table<MenstrualCycleSettingsRow, Omit<MenstrualCycleSettingsRow, 'updated_at'> & Partial<Pick<MenstrualCycleSettingsRow, 'updated_at'>>, Partial<Omit<MenstrualCycleSettingsRow, 'user_id'>>>;
+  menstrual_cycle_logs: Table<MenstrualCycleLogRow, Omit<MenstrualCycleLogRow, 'id' | 'created_at' | 'updated_at'> & Partial<Pick<MenstrualCycleLogRow, 'id' | 'created_at' | 'updated_at'>>, Partial<Omit<MenstrualCycleLogRow, 'id' | 'user_id' | 'log_date' | 'created_at'>>>;
 }; Views: { [_ in never]: never }; Functions: { complete_health_onboarding: { Args: { p_date_of_birth:string; p_gender:string; p_height_cm:number; p_weight_kg:number }; Returns:ProfileRow[] } }; Enums: { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };

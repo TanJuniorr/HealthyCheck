@@ -52,7 +52,7 @@ export function HealthMetricCard({
         <Text style={[styles.value, { color: themedColor }]}>{value}</Text>
         {unit ? <Text style={styles.unit}> {unit}</Text> : null}
       </View>
-      {detail && <Text style={styles.unit}>{detail}</Text>}
+      {detail ? <Text style={styles.unit}>{detail}</Text> : null}
       {progressPercent !== undefined && <View accessibilityRole="progressbar" accessibilityValue={{min:0,max:100,now:Math.min(100,Math.max(0,progressPercent))}} style={{height:6,borderRadius:3,backgroundColor:Colors.border,marginTop:10,overflow:'hidden'}}><View style={{height:6,width:`${Math.min(100,Math.max(0,progressPercent))}%`,backgroundColor:themedColor}}/></View>}
     </TouchableOpacity>
   );
@@ -180,7 +180,7 @@ export function SettingsRow({ title, value, icon, onPress, showChevron = true }:
         <Text style={styles.settingsTitle}>{title}</Text>
       </View>
       <View style={styles.settingsRight}>
-        {value && <Text style={styles.settingsValue}>{value}</Text>}
+        {value ? <Text style={styles.settingsValue}>{value}</Text> : null}
         {showChevron && <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />}
       </View>
     </TouchableOpacity>

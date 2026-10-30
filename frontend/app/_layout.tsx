@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 import { SleepReminderProvider } from '../src/contexts/SleepReminderContext';
 import { StepSensorProvider } from '../src/contexts/StepSensorContext';
+import { NotificationInboxProvider } from '../src/contexts/NotificationInboxContext';
 import { Colors } from '../src/constants/colors';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
 import { authGate, gateDestination } from '../src/lib/authGate';
@@ -48,10 +49,12 @@ export function AuthNavigator() {
         <Stack.Screen name="meals" />
         <Stack.Screen name="sharing-setup" />
         <Stack.Screen name="sleep-schedule" />
+        <Stack.Screen name="notifications" />
+        <Stack.Screen name="notifications/[id]" />
       </Stack.Protected>
     </Stack>
   );
 }
 export default function RootLayout() {
-  return <SafeAreaProvider><ThemeProvider><LanguageProvider><ThemedStatusBar /><AuthProvider><SleepReminderProvider><StepSensorProvider><AuthNavigator /></StepSensorProvider></SleepReminderProvider></AuthProvider></LanguageProvider></ThemeProvider></SafeAreaProvider>;
+  return <SafeAreaProvider><ThemeProvider><LanguageProvider><ThemedStatusBar /><AuthProvider><NotificationInboxProvider><SleepReminderProvider><StepSensorProvider><AuthNavigator /></StepSensorProvider></SleepReminderProvider></NotificationInboxProvider></AuthProvider></LanguageProvider></ThemeProvider></SafeAreaProvider>;
 }

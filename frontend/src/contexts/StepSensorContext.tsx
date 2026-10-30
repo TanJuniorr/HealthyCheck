@@ -6,6 +6,8 @@ import { useAuth } from './AuthContext';
 import { dataError } from '../lib/dataErrors';
 import { toLocalDateKey } from '../lib/dateUtils';
 import { addStepRecord, getStepsByDate, updateStepRecord } from '../services/stepsService';
+import { getCurrentGoals } from '../services/healthGoalsService';
+import { useNotificationInbox } from './NotificationInboxContext';
 
 export type StepSensorStatus = 'idle' | 'checking' | 'active' | 'unavailable' | 'denied' | 'error';
 
@@ -37,10 +39,14 @@ const StepSensorContext = createContext<StepSensorContextValue | null>(null);
 
 export function StepSensorProvider({ children }: React.PropsWithChildren) {
   const { user, isRecovery, profile, profileChecked } = useAuth();
+  const { sendStepGoalReached } = useNotificationInbox();
+  const sendStepGoalReachedRef = useRef(sendStepGoalReached);
   const userId = profileChecked && onboardingComplete(profile) ? user?.id : undefined;
   const [state, setState] = useState<StepSensorState>(initialState);
   const [retrying, setRetrying] = useState(false);
   const retryStart = useRef<(() => Promise<void>) | null>(null);
+
+  useEffect(() => { sendStepGoalReachedRef.current = sendStepGoalReached; }, [sendStepGoalReached]);
 
   const requestPermission = useCallback(async () => {
     const start = retryStart.current;
@@ -64,6 +70,7 @@ export function StepSensorProvider({ children }: React.PropsWithChildren) {
     let lastSensorValue: number | null = null;
     let baseSteps = 0;
     let sessionSteps = 0;
+    let dailyStepGoal: number | null = null;
     let starting = false;
     let writeQueue: Promise<void> = Promise.resolve();
     const recordIds = new Map<string, string>();
@@ -97,6 +104,11 @@ export function StepSensorProvider({ children }: React.PropsWithChildren) {
         }
 
         baseSteps = await readDaySteps(recordDate);
+        try {
+          dailyStepGoal = (await getCurrentGoals(recordDate))?.daily_steps ?? null;
+        } catch {
+          dailyStepGoal = null;
+        }
         if (!alive) return;
 
         setState({ ownerId: userId, status: 'active', error: '', recordDate, baseSteps, sessionSteps: 0 });
@@ -115,10 +127,14 @@ export function StepSensorProvider({ children }: React.PropsWithChildren) {
               baseSteps = total;
               setState({ ownerId: userId, status: 'active', error: '', recordDate, baseSteps, sessionSteps });
             }).catch((error: unknown) => setSensorError(dataError(error).message));
+            void getCurrentGoals(eventDate).then(goals => {
+              if (alive && recordDate === eventDate) dailyStepGoal = goals?.daily_steps ?? null;
+            }).catch(() => { dailyStepGoal = null; });
             return;
           }
 
           const previousValue = lastSensorValue;
+          const previousTotal = baseSteps + sessionSteps;
           lastSensorValue = result.steps;
           const delta = previousValue == null
             ? Math.floor(result.steps)
@@ -126,6 +142,10 @@ export function StepSensorProvider({ children }: React.PropsWithChildren) {
           if (delta <= 0) return;
 
           sessionSteps += delta;
+          const nextTotal = baseSteps + sessionSteps;
+          if (dailyStepGoal != null && previousTotal < dailyStepGoal && nextTotal >= dailyStepGoal) {
+            void sendStepGoalReachedRef.current(nextTotal, dailyStepGoal).catch(() => {});
+          }
           const nextSessionSteps = sessionSteps;
           setState({ ownerId: userId, status: 'active', error: '', recordDate: eventDate, baseSteps, sessionSteps: nextSessionSteps });
 

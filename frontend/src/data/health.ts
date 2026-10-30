@@ -1,13 +1,4 @@
-/**
- * Mock health overview data — used on Dashboard and Health Data screens.
- */
-
-export const healthScore = {
-  score: 78,
-  maxScore: 100,
-  status: 'Looking good',
-  description: 'Your overall wellness indicators are positive today. Keep up the great work!',
-};
+/** Static labels and icons for health overview cards; live values come from dashboard queries. */
 
 export const dailyHighlights = [
   {

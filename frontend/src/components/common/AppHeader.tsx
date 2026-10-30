@@ -85,11 +85,11 @@ export function SectionHeader({ title, actionText, onAction }: SectionHeaderProp
   return (
     <View style={styles.sectionContainer}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      {actionText && onAction && (
+      {actionText && onAction ? (
         <TouchableOpacity onPress={onAction}>
           <Text style={styles.sectionAction}>{actionText}</Text>
         </TouchableOpacity>
-      )}
+      ) : null}
     </View>
   );
 }
