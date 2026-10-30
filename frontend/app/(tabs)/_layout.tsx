@@ -76,6 +76,19 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="ai"
+        options={{
+          title: t("navigation.healthyAI"),
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'sparkles' : 'sparkles-outline'}
+              size={22}
+              color={color as string}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
