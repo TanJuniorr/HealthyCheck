@@ -223,34 +223,7 @@
     "back": "Back",
     "bookmark": "Save article",
     "removeBookmark": "Remove bookmark",
-    "shareLabel": "Share article",
-    "items": {
-      "article1": {
-        "title": "Simple ways to improve your sleep quality",
-        "description": "Discover practical tips for better rest that you can start implementing tonight.",
-        "content": "Getting quality sleep is one of the most important things you can do for your health. Here are some practical strategies that can help you sleep better starting tonight.\n\n## Create a consistent schedule\n\nGoing to bed and waking up at the same time every day helps regulate your body's internal clock. Try to stick to your schedule even on weekends.\n\n## Optimize your environment\n\nKeep your bedroom cool (around 18-20°C), dark, and quiet. Consider using blackout curtains and a white noise machine if needed.\n\n## Wind down before bed\n\nCreate a relaxing pre-sleep routine. This might include reading, gentle stretching, or meditation. Avoid screens for at least 30 minutes before bed.\n\n## Watch what you eat and drink\n\nAvoid large meals, caffeine, and alcohol close to bedtime. If you're hungry, opt for a light snack like a small banana or a handful of almonds.\n\n## Stay active during the day\n\nRegular physical activity can help you fall asleep faster and enjoy deeper sleep. Just avoid vigorous exercise close to bedtime.\n\n## Manage stress\n\nPractice relaxation techniques like deep breathing or progressive muscle relaxation. Journaling before bed can also help clear your mind.\n\n*This article is for informational purposes only and does not constitute medical advice.*"
-      },
-      "article2": {
-        "title": "Healthy meal planning for busy days",
-        "description": "Learn how to prepare nutritious meals even when your schedule is packed.",
-        "content": "Eating well doesn't have to be complicated or time-consuming. With a little planning, you can enjoy nutritious meals throughout even the busiest days.\n\n## Start with a weekly plan\n\nSpend 15 minutes on Sunday planning your meals for the week. Focus on simple recipes that share ingredients to minimize waste and shopping time.\n\n## Prep in batches\n\nCook grains, proteins, and vegetables in bulk. Store them in portion-sized containers so you can mix and match throughout the week.\n\n## Keep it simple\n\nA balanced meal doesn't need to be elaborate. Aim for a protein source, a complex carbohydrate, and plenty of vegetables at each meal.\n\n## Smart snacking\n\nKeep healthy snacks readily available: nuts, fruits, yogurt, and cut vegetables. Having good options on hand prevents reaching for processed alternatives.\n\n## Stay hydrated\n\nSometimes hunger is actually thirst. Keep a water bottle with you and aim for at least 8 glasses throughout the day.\n\n*This article is for informational purposes only and does not constitute medical advice.*"
-      },
-      "article3": {
-        "title": "Benefits of regular walking",
-        "description": "Walking is one of the easiest and most effective forms of exercise. Here's why.",
-        "content": "Walking is often overlooked as exercise, but it offers remarkable health benefits that are backed by research.\n\n## Cardiovascular health\n\nRegular walking helps strengthen your heart, lower blood pressure, and improve circulation. Even 30 minutes a day can make a significant difference.\n\n## Mental wellness\n\nWalking outdoors has been shown to reduce stress, anxiety, and symptoms of depression. The combination of gentle movement and fresh air is a powerful mood booster.\n\n## Weight management\n\nA brisk 30-minute walk burns approximately 150-200 calories. Combined with a balanced diet, regular walking can help maintain a healthy weight.\n\n## Joint health\n\nUnlike high-impact exercises, walking is gentle on your joints while still strengthening the muscles that support them.\n\n## Getting started\n\nStart with short walks and gradually increase your distance and pace. Aim for at least 10,000 steps per day, but remember that any amount of walking is better than none.\n\n*This article is for informational purposes only and does not constitute medical advice.*"
-      },
-      "article4": {
-        "title": "Staying hydrated throughout the day",
-        "description": "Practical strategies to ensure you're drinking enough water every day.",
-        "content": "Proper hydration is essential for nearly every function in your body. Here's how to make sure you're getting enough water.\n\n## Know your needs\n\nA general guideline is to drink about 2-2.5 liters of water per day, but individual needs vary based on activity level, climate, and body size.\n\n## Set reminders\n\nUse your phone or a smart water bottle to remind you to drink regularly. Small, frequent sips throughout the day are more effective than drinking large amounts at once.\n\n## Eat your water\n\nMany fruits and vegetables have high water content. Watermelon, cucumber, oranges, and strawberries are excellent choices.\n\n## Make it enjoyable\n\nIf plain water feels boring, try adding slices of lemon, cucumber, or fresh mint. Herbal teas also count toward your daily intake.\n\n*This article is for informational purposes only and does not constitute medical advice.*"
-      },
-      "article5": {
-        "title": "5-minute morning stretches for energy",
-        "description": "Start your day right with these simple stretches that boost energy and flexibility.",
-        "content": "A short morning stretch routine can set a positive tone for your entire day. These gentle movements help wake up your muscles and improve flexibility.\n\n## Cat-Cow stretch\n\nStart on all fours, alternating between arching and rounding your back. Repeat 8-10 times, moving slowly with your breath.\n\n## Standing forward fold\n\nStand with feet hip-width apart, slowly fold forward from the hips. Let your arms hang or hold opposite elbows. Hold for 30 seconds.\n\n## Chest opener\n\nClasp your hands behind your back, straighten your arms, and gently lift them while opening your chest. Hold for 20 seconds.\n\n## Gentle spinal twist\n\nSit cross-legged, place one hand on the opposite knee and twist gently. Hold for 20 seconds on each side.\n\n## Side stretch\n\nStand tall, raise one arm overhead and lean to the opposite side. Feel the stretch along your side body. Hold for 20 seconds on each side.\n\n*Always listen to your body and avoid pushing through pain.*"
-      }
-    }
+    "shareLabel": "Share article"
   },
   "steps": {
     "dailyTotal": "Daily Total",
@@ -394,7 +367,16 @@
     "sourcePortion": "source reference portion",
     "cookedReference": "Values are per 100 g cooked food; source method: {{method}}. Your preparation may differ. Add any extra oil, butter or seasonings as separate ingredients.",
     "unverifiedSource": "This food does not have a verified reference source. Historical values are preserved.",
-    "methods": {"boiled":"boiled","steamed":"steamed","simmered":"simmered","braised":"braised","roasted":"roasted / dry-roasted","dry_heat":"dry heat","moist_heat":"moist heat","cooked":"cooked"},
+    "methods": {
+      "boiled": "boiled",
+      "steamed": "steamed",
+      "simmered": "simmered",
+      "braised": "braised",
+      "roasted": "roasted / dry-roasted",
+      "dry_heat": "dry heat",
+      "moist_heat": "moist heat",
+      "cooked": "cooked"
+    },
     "addMeal": "Log meal",
     "busy": "Saving your meal. Please wait.",
     "allGroups": "All",
@@ -958,5 +940,113 @@
     "invalidTime": "Choose a valid local date and time.",
     "futureTime": "Water intake cannot be recorded in the future.",
     "busy": "Another water entry is being saved. Please wait."
+  },
+  "cms": {
+    "admin": "HealthyCheck Admin",
+    "adminLogin": "Admin sign in",
+    "denied": "You do not have access",
+    "webOnly": "Please open the admin area in a web browser.",
+    "dashboard": "Admin dashboard",
+    "darkMode": "Dark mode",
+    "categories": "Manage categories",
+    "newArticle": "New article",
+    "editArticle": "Edit article",
+    "recentlyEdited": "Recently edited articles",
+    "untitled": "Untitled draft",
+    "savedArticles": "Saved articles",
+    "readHistory": "Reading history",
+    "chooseInterests": "Your interests",
+    "forYou": "For you",
+    "recommendationInfo": "Suggestions use your selected interests, saved articles and reading history. New accounts see recent articles. Health data is not used.",
+    "searchResults": "Search results",
+    "loadMore": "Load more articles",
+    "libraryEmpty": "No available articles yet. Unpublished articles do not appear here.",
+    "unavailable": "This article is unavailable or has been unpublished.",
+    "references": "References",
+    "related": "Related articles",
+    "languageFallback": "A translation in your chosen language is not available. Showing {{language}}.",
+    "follow": "Follow",
+    "following": "Following",
+    "imageUnavailable": "The article image could not be loaded.",
+    "historyFailed": "Reading history could not be saved.",
+    "linkFailed": "The link could not be opened. Please try again.",
+    "conflict": "This article changed elsewhere. Copy your current edits before reloading.",
+    "invalidPublication": "To publish, every entered translation needs a title, summary, complete content and a named source with a valid HTTPS URL.",
+    "duplicate": "The slug or record already exists. Please check it.",
+    "categoryInUse": "This category contains articles. Hide it or move its articles first.",
+    "invalidQuery": "The search or pagination parameters are invalid.",
+    "invalidImage": "Only JPEG, PNG and WebP images up to 5 MB after optimization are accepted.",
+    "imageOwner": "Only the uploader can delete this image file.",
+    "requiredArticle": "Choose a category and enter a slug or title.",
+    "saveBeforeImage": "Save a draft before uploading images.",
+    "editorHint": "Write in Markdown. Drafts may have missing translations; all entered languages must be complete when published. Verify content before publishing.",
+    "slug": "Article URL slug",
+    "category": "Category",
+    "hidden": "Hidden",
+    "visible": "Visible",
+    "coverImage": "Article cover image",
+    "uploadCover": "Upload or replace cover",
+    "removeCover": "Remove cover",
+    "imageRules": "JPEG, PNG, WebP · maximum 5 MB. Draft images stay private. Random filenames prevent overwriting existing images.",
+    "imageAlt": "Article illustration",
+    "imageStaged": "The image changed in this draft. Save to apply it.",
+    "savedImageRetained": "Article saved. The previous image file could not be removed from Storage.",
+    "saved": "Article saved.",
+    "articleTitle": "Article title",
+    "summary": "Summary",
+    "content": "Markdown content",
+    "sourceName": "Primary source name",
+    "sourceUrl": "Primary source URL (HTTPS)",
+    "extraReferences": "Additional references: one Name | https://... per line",
+    "formatText": "Text",
+    "insertImage": "Insert content image",
+    "saveDraft": "Save draft / Unpublish",
+    "preview": "Preview",
+    "publish": "Publish",
+    "archive": "Archive",
+    "reload": "Reload from server",
+    "confirmDelete": "Delete this article? Its bookmarks and reading history will also be removed.",
+    "confirmReload": "Reload and discard unsaved edits?",
+    "confirmPublish": "Publish this verified content?",
+    "confirmStatus": "Change the article status?",
+    "confirm": "Confirm",
+    "missingTranslationHint": "If only one complete language exists, other readers see that version with a missing-translation notice.",
+    "previewLanguage": "Preview in {{language}}",
+    "newCategory": "Add category",
+    "editCategory": "Edit category",
+    "sortOrder": "Display order",
+    "confirmDeleteCategory": "Delete this category? Categories containing articles are protected.",
+    "languages": {
+      "vi": "Vietnamese",
+      "en": "English"
+    },
+    "status": {
+      "total": "All articles",
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "reasons": {
+      "interest": "Based on your interests",
+      "saved": "Related to your saved articles",
+      "reading": "Related to your reading history",
+      "new": "Recent articles to explore"
+    },
+    "format": {
+      "h2": "Heading H2",
+      "h3": "Heading H3",
+      "bold": "Bold",
+      "italic": "Italic",
+      "list": "List",
+      "link": "Link"
+    },
+    "categoryFields": {
+      "slug": "Category slug",
+      "name_vi": "Vietnamese name",
+      "name_en": "English name",
+      "description_vi": "Vietnamese description",
+      "description_en": "English description",
+      "icon": "Ionicons icon name"
+    }
   }
 }

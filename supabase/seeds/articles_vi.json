@@ -1,0 +1,254 @@
+{
+  "verified_on": "2026-10-30",
+  "editorial_note": "Original Vietnamese educational summaries of the linked sources. No copied articles, individual diagnoses or treatment plans. English translations intentionally absent until reviewed.",
+  "categories": [
+    {
+      "slug": "nutrition",
+      "name_vi": "Dinh dưỡng",
+      "name_en": "Nutrition",
+      "description_vi": "Ăn uống đa dạng và an toàn.",
+      "description_en": "Varied, balanced and safe eating.",
+      "icon": "nutrition-outline",
+      "sort_order": 10
+    },
+    {
+      "slug": "sleep",
+      "name_vi": "Giấc ngủ",
+      "name_en": "Sleep",
+      "description_vi": "Hiểu và chăm sóc giấc ngủ.",
+      "description_en": "Understanding and caring for sleep.",
+      "icon": "moon-outline",
+      "sort_order": 20
+    },
+    {
+      "slug": "movement",
+      "name_vi": "Vận động",
+      "name_en": "Movement",
+      "description_vi": "Hoạt động thể chất phù hợp mỗi ngày.",
+      "description_en": "Making physical activity part of everyday life.",
+      "icon": "walk-outline",
+      "sort_order": 30
+    },
+    {
+      "slug": "weight",
+      "name_vi": "Kiểm soát cân nặng",
+      "name_en": "Weight management",
+      "description_vi": "Thói quen bền vững và cách nhìn toàn diện.",
+      "description_en": "Sustainable habits and a balanced perspective.",
+      "icon": "scale-outline",
+      "sort_order": 40
+    },
+    {
+      "slug": "mental",
+      "name_vi": "Sức khỏe tinh thần",
+      "name_en": "Mental well-being",
+      "description_vi": "Chăm sóc cảm xúc và tìm hỗ trợ.",
+      "description_en": "Caring for emotions and finding support.",
+      "icon": "leaf-outline",
+      "sort_order": 50
+    },
+    {
+      "slug": "general",
+      "name_vi": "Sức khỏe tổng quát",
+      "name_en": "General health",
+      "description_vi": "Kiến thức phòng bệnh và chăm sóc bản thân.",
+      "description_en": "Prevention and everyday self-care.",
+      "icon": "medical-outline",
+      "sort_order": 60
+    },
+    {
+      "slug": "women",
+      "name_vi": "Sức khỏe phụ nữ",
+      "name_en": "Women's health",
+      "description_vi": "Kiến thức về kinh nguyệt và các giai đoạn cuộc sống.",
+      "description_en": "Menstrual health and life stages.",
+      "icon": "flower-outline",
+      "sort_order": 70
+    }
+  ],
+  "articles": [
+    {
+      "slug": "bua-an-da-dang",
+      "category": "nutrition",
+      "title": "Bữa ăn đa dạng bắt đầu từ những lựa chọn nhỏ",
+      "summary": "Kết hợp nhiều nhóm thực phẩm để bữa ăn đủ chất và phù hợp hoàn cảnh của bạn.",
+      "is_featured": true,
+      "source_name": "WHO — Healthy diet",
+      "source_url": "https://www.who.int/news-room/fact-sheets/detail/healthy-diet",
+      "content": "## Đa dạng thay vì tìm một món hoàn hảo\n\nMột chế độ ăn lành mạnh cần đủ chất, cân đối, vừa phải và đa dạng. Không có một thực phẩm duy nhất đáp ứng mọi nhu cầu. Khẩu phần còn phụ thuộc tuổi, mức vận động và hoàn cảnh sống.\n\n## Áp dụng vào bữa cơm\n\n- Thay đổi các loại rau, trái cây và nguồn đạm trong tuần.\n- Ưu tiên ngũ cốc nguyên hạt và các loại đậu khi phù hợp.\n- Giảm thực phẩm nhiều muối, đường tự do và chất béo không có lợi.\n\nKhông cần đổi toàn bộ thực đơn ngay. Bạn có thể bắt đầu bằng việc thêm một loại rau vào bữa trưa, rồi quan sát thói quen trong vài ngày.\n\n## Nhìn cả chế độ ăn\n\nMột bữa ăn riêng lẻ không quyết định toàn bộ sức khỏe. Hãy xem sự cân đối của nhiều bữa và giữ thực phẩm an toàn."
+    },
+    {
+      "slug": "giam-muoi-tu-gia-vi",
+      "category": "nutrition",
+      "title": "Giảm muối từ nước chấm và thực phẩm đóng gói",
+      "summary": "Natri không chỉ đến từ lượng muối bạn thêm khi nấu.",
+      "source_name": "WHO — Sodium reduction",
+      "source_url": "https://www.who.int/news-room/fact-sheets/detail/sodium-reduction",
+      "content": "## Nhận diện nguồn natri\n\nMuối ăn chứa natri, nhưng natri cũng có trong nhiều gia vị và thực phẩm chế biến sẵn. Ăn quá nhiều natri có thể làm tăng huyết áp và nguy cơ bệnh tim mạch.\n\n## Bắt đầu khi mua và nấu\n\n- Đọc lượng natri trên nhãn, chú ý số khẩu phần thực tế.\n- So sánh các sản phẩm cùng loại.\n- Bớt lượng nước chấm và gia vị mặn; tận dụng rau thơm để tạo hương vị.\n\nĐừng chỉ giảm muối trong nồi rồi bù bằng nhiều nước mắm hoặc nước tương ở bàn ăn. Hãy nhìn tổng lượng gia vị sử dụng.\n\n## Thay đổi từng bước\n\nGiảm dần giúp bạn làm quen với vị ít mặn hơn. Thực phẩm tươi, ít chế biến thường giúp kiểm soát gia vị dễ hơn. Nếu có bệnh thận hoặc được dặn hạn chế natri, cần hỏi chuyên viên y tế trước khi dùng muối thay thế chứa kali. Khuyến nghị chung không thay thế chỉ dẫn riêng của bạn."
+    },
+    {
+      "slug": "an-toan-thuc-pham-tai-nha",
+      "category": "nutrition",
+      "title": "Giữ thực phẩm an toàn trong bếp gia đình",
+      "summary": "Những nguyên tắc giúp giảm nguy cơ thực phẩm bị nhiễm bẩn.",
+      "source_name": "WHO — Food safety",
+      "source_url": "https://www.who.int/news-room/fact-sheets/detail/food-safety",
+      "content": "## Thực phẩm bổ dưỡng cũng cần an toàn\n\nVi khuẩn, virus, ký sinh trùng và hóa chất có thể làm thực phẩm gây bệnh. Mùi và vẻ ngoài bình thường không luôn bảo đảm thực phẩm an toàn.\n\n## Chú ý các khâu dễ nhiễm chéo\n\n- Giữ tay, dụng cụ và bề mặt chế biến sạch.\n- Tách thực phẩm sống khỏi đồ đã nấu.\n- Nấu chín kỹ và bảo quản ở nhiệt độ phù hợp.\n- Chọn nước và nguyên liệu an toàn.\n\nVí dụ, không dùng lại thớt vừa cắt thịt sống để thái rau ăn ngay khi chưa vệ sinh đúng cách. Thói quen nhỏ này giúp hạn chế mang mầm bệnh sang món khác.\n\n## Quan tâm người dễ bị ảnh hưởng\n\nTrẻ nhỏ, người lớn tuổi, người mang thai và người có sức đề kháng yếu có thể chịu hậu quả nặng hơn khi mắc bệnh từ thực phẩm. Khi nghi ngờ thực phẩm không an toàn, đừng cố nếm để kiểm tra."
+    },
+    {
+      "slug": "giu-gio-ngu-deu-dan",
+      "category": "sleep",
+      "title": "Giữ giờ ngủ đều đặn trong một tuần bận rộn",
+      "summary": "Chất lượng giấc ngủ và lịch sinh hoạt đều quan trọng bên cạnh số giờ ngủ.",
+      "is_featured": true,
+      "source_name": "CDC — About Sleep",
+      "source_url": "https://www.cdc.gov/sleep/about/index.html",
+      "content": "## Giấc ngủ không chỉ là thời lượng\n\nNgủ đủ và ngủ có chất lượng đều cần thiết cho sức khỏe. Nhu cầu thay đổi theo tuổi; vì vậy không nên áp cùng một mục tiêu cho mọi người. Thường xuyên thức dậy mệt mỏi là điều đáng chú ý.\n\n## Tạo một lịch có thể duy trì\n\n- Cố gắng đi ngủ và thức dậy vào giờ tương đối ổn định.\n- Giữ phòng ngủ yên tĩnh, thư giãn và thoáng mát.\n- Hạn chế thiết bị điện tử trước giờ ngủ.\n- Tránh bữa quá lớn, rượu và caffeine gần giờ ngủ.\n\n\n\n## Ghi nhận để trao đổi\n\nNhật ký có thể ghi giờ lên giường, giờ thức dậy và cảm nhận ban ngày. Đây là thông tin tham khảo, không tự chẩn đoán rối loạn giấc ngủ. Nếu thường xuyên khó ngủ hoặc vẫn buồn ngủ dù đã dành đủ thời gian nghỉ, hãy trao đổi với chuyên viên y tế."
+    },
+    {
+      "slug": "khi-kho-ngu-keo-dai",
+      "category": "sleep",
+      "title": "Khó ngủ kéo dài: nên ghi lại những gì?",
+      "summary": "Chuẩn bị thông tin rõ ràng khi giấc ngủ bắt đầu ảnh hưởng sinh hoạt.",
+      "source_name": "MedlinePlus — Insomnia",
+      "source_url": "https://medlineplus.gov/insomnia.html",
+      "content": "## Hiểu biểu hiện\n\nMất ngủ có thể là khó bắt đầu ngủ, khó duy trì giấc ngủ hoặc cả hai. Bạn có thể không thấy hồi phục sau khi thức dậy. Những đợt ngắn có thể liên quan áp lực hoặc thay đổi cuộc sống.\n\n## Chuẩn bị một nhật ký đơn giản\n\nGhi lại thời điểm khó ngủ, lịch sinh hoạt và ảnh hưởng ban ngày. Khi đi khám, thông tin về thuốc đang dùng, caffeine, rượu và các thay đổi gần đây cũng hữu ích. Không tự dừng thuốc chỉ vì nghi ngờ chúng ảnh hưởng giấc ngủ.\n\n## Tìm hỗ trợ phù hợp\n\nKhó ngủ có thể liên quan nhiều nguyên nhân, bao gồm tình trạng sức khỏe hoặc rối loạn giấc ngủ khác. Nếu tình trạng kéo dài hay làm bạn khó làm việc, học tập, hãy liên hệ chuyên viên y tế.\n\nĐiều trị cần phù hợp nguyên nhân và hoàn cảnh. Đừng tự chọn thuốc ngủ hoặc dùng thuốc của người khác dựa trên một bài viết."
+    },
+    {
+      "slug": "ngay-to-va-buon-ngu-ban-ngay",
+      "category": "sleep",
+      "title": "Ngáy to và buồn ngủ ban ngày có đáng lưu ý?",
+      "summary": "Nhận biết dấu hiệu cần trao đổi với nhân viên y tế mà không tự chẩn đoán.",
+      "source_name": "MedlinePlus — Sleep Apnea",
+      "source_url": "https://medlineplus.gov/sleepapnea.html",
+      "content": "## Không phải ai ngáy cũng có bệnh\n\nNgưng thở khi ngủ là tình trạng nhịp thở dừng hoặc trở nên rất nông trong lúc ngủ. Ngáy to có thể đi kèm, nhưng chỉ riêng tiếng ngáy không đủ để kết luận.\n\n## Chú ý điều người thân quan sát\n\nNếu có người nhận thấy bạn ngừng thở, thở hổn hển hoặc có tiếng nghẹn trong đêm, hãy ghi lại mô tả. Buồn ngủ ban ngày dù đã ngủ đủ thời gian cũng là thông tin nên chia sẻ khi đi khám.\n\n## Đánh giá cần chuyên môn\n\nChẩn đoán có thể dựa trên bệnh sử, khám và khảo sát giấc ngủ. Ứng dụng ghi giờ ngủ không tự phát hiện hay xác nhận ngưng thở khi ngủ.\n\nĐừng tự chọn thiết bị hỗ trợ thở từ dấu hiệu trên mạng. Nếu đang buồn ngủ đến mức ảnh hưởng an toàn, tránh lái xe hoặc công việc nguy hiểm và tìm hỗ trợ y tế."
+    },
+    {
+      "slug": "van-dong-trong-sinh-hoat",
+      "category": "movement",
+      "title": "Vận động có thể bắt đầu ngay trong sinh hoạt",
+      "summary": "Đi bộ, di chuyển và hoạt động hằng ngày đều có thể góp phần vào sức khỏe.",
+      "source_name": "WHO — Physical activity",
+      "source_url": "https://www.who.int/news-room/fact-sheets/detail/physical-activity",
+      "content": "## Rộng hơn một buổi tập\n\nHoạt động thể chất bao gồm chuyển động khi đi lại, làm việc, vui chơi và sinh hoạt. Bạn không cần chờ có thời gian đến phòng tập mới bắt đầu. Mọi mức vận động đều có giá trị so với không vận động.\n\n## Tìm cách phù hợp hoàn cảnh\n\n- Đi bộ một đoạn đường an toàn khi có thể.\n- Đứng lên và di chuyển sau thời gian ngồi lâu.\n- Chọn hoạt động bạn thấy dễ chịu và có thể lặp lại.\n\nCường độ và thời lượng nên tăng dần theo khả năng. Nếu dùng xe lăn hoặc có hạn chế vận động, vẫn có những hoạt động phù hợp cần được điều chỉnh riêng.\n\n## Đều đặn quan trọng hơn một ngày quá sức\n\nVận động thường xuyên có lợi cho thể chất, giấc ngủ và tinh thần.  Nếu đang có bệnh hoặc lo ngại về an toàn khi tập, hãy hỏi chuyên viên y tế để chọn mức phù hợp."
+    },
+    {
+      "slug": "bat-dau-tap-luyen-tu-tu",
+      "category": "movement",
+      "title": "Bắt đầu tập luyện mà không tăng quá nhanh",
+      "summary": "Lặp lại, tăng dần và thay đổi hoạt động giúp xây dựng thói quen lâu dài.",
+      "source_name": "MedlinePlus — Exercise and Physical Fitness",
+      "source_url": "https://medlineplus.gov/exerciseandphysicalfitness.html",
+      "content": "## Cho cơ thể thời gian thích nghi\n\nMột lịch tập hữu ích cần có tính đều đặn. Bắt đầu quá nặng có thể khiến bạn khó duy trì. Hãy chọn mức phù hợp hiện tại, rồi tăng từng chút khi đã quen.\n\n## Kết hợp nhiều dạng hoạt động\n\nVận động sức bền, sức mạnh, thăng bằng và linh hoạt có vai trò khác nhau. Không nhất thiết tập tất cả trong một buổi. Bạn có thể sắp xếp chúng vào những thời điểm phù hợp trong tuần.\n\n- Bắt đầu bằng buổi ngắn, dễ thực hiện.\n- Tăng thời gian hoặc độ khó từng bước.\n- Đổi hoạt động để giữ hứng thú.\n\n## Điều chỉnh theo khả năng\n\nThói quen tập luyện cần thay đổi khi sức khỏe hoặc khả năng di chuyển thay đổi. Trước khi bắt đầu, hãy trao đổi với chuyên viên y tế nếu bạn khó giữ thăng bằng, hạn chế vận động hoặc lo rằng tập luyện chưa an toàn."
+    },
+    {
+      "slug": "hieu-cuong-do-van-dong",
+      "category": "movement",
+      "title": "Nhận biết vận động vừa và vận động mạnh",
+      "summary": "Khả năng nói chuyện khi vận động là một cách đơn giản để ước lượng cường độ.",
+      "source_name": "CDC — What Counts as Physical Activity for Adults",
+      "source_url": "https://www.cdc.gov/physical-activity-basics/adding-adults/what-counts.html",
+      "content": "## Cường độ là mức cơ thể làm việc\n\nCùng một hoạt động có thể tạo mức gắng sức khác nhau ở mỗi người. Khi vận động vừa, bạn thường vẫn nói chuyện được nhưng khó hát. Khi vận động mạnh, thường khó nói nhiều từ liên tiếp mà không nghỉ lấy hơi.\n\n## Chia nhỏ trong tuần\n\nKhuyến nghị chung cho người lớn là kết hợp vận động sức bền và tăng cường cơ. Thời gian vận động có thể chia thành những khoảng ngắn, không nhất thiết hoàn thành trong một buổi.\n\n- Đi bộ nhanh là một ví dụ vận động vừa.\n- Chạy bộ có thể là vận động mạnh.\n- Chọn mức phù hợp khả năng hiện tại.\n\n## Dùng dấu hiệu để điều chỉnh\n\nBài kiểm tra nói chuyện chỉ là cách ước lượng, không chẩn đoán sức khỏe hay thay thế chỉ dẫn khi bạn có bệnh. Nếu mới bắt đầu, ưu tiên mức dễ chịu và tăng dần."
+    },
+    {
+      "slug": "can-nang-va-cai-nhin-toan-dien",
+      "category": "weight",
+      "title": "Cân nặng cần được nhìn trong bối cảnh toàn diện",
+      "summary": "Nhiều yếu tố cùng ảnh hưởng cân nặng; một chỉ số không mô tả toàn bộ sức khỏe.",
+      "source_name": "WHO — Obesity and overweight",
+      "source_url": "https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight",
+      "content": "## Không chỉ là ý chí\n\nCân nặng chịu tác động của môi trường, sinh học, hoàn cảnh xã hội và hành vi. Béo phì là tình trạng sức khỏe phức tạp; quy kết cho tính cách dễ làm người cần hỗ trợ ngại tìm giúp đỡ.\n\n## Hiểu giới hạn của chỉ số\n\nBMI được tính từ cân nặng và chiều cao, có thể hỗ trợ đánh giá nhưng không mô tả đầy đủ mọi khác biệt của cơ thể. Cách diễn giải ở trẻ em khác với người lớn. Đừng tự áp ngưỡng người lớn cho trẻ.\n\n## Tập trung vào thay đổi bền vững\n\nDuy trì chế độ ăn phù hợp và hoạt động thể chất là những phần quan trọng, nhưng kế hoạch cần xét hoàn cảnh riêng. Nếu lo ngại về cân nặng, hãy trao đổi với chuyên viên y tế để được đánh giá toàn diện.\n\n Tránh đặt mục tiêu cực đoan hoặc sử dụng một kết quả BMI để tự kết luận bệnh."
+    },
+    {
+      "slug": "muc-tieu-thoi-quen-can-nang",
+      "category": "weight",
+      "title": "Đặt mục tiêu thói quen thay vì chỉ nhìn số cân",
+      "summary": "Một kế hoạch cụ thể và có thể điều chỉnh giúp bạn theo dõi tiến bộ thực tế.",
+      "source_name": "CDC — Steps for Losing Weight",
+      "source_url": "https://www.cdc.gov/healthy-weight-growth/losing-weight/index.html",
+      "content": "## Hiểu điều bạn muốn thay đổi\n\nQuản lý cân nặng liên quan dinh dưỡng, vận động, giấc ngủ và cách ứng phó căng thẳng. Thuốc, bệnh lý, tuổi và hoàn cảnh sống cũng có thể ảnh hưởng. Không nên xem một con số là toàn bộ kết quả.\n\n## Chọn mục tiêu cụ thể\n\nThay vì yêu cầu bản thân thay đổi mọi thứ, hãy chọn một hành vi nhỏ. Ví dụ, chuẩn bị bữa ăn trước hoặc dành thời gian đi bộ phù hợp lịch làm việc.\n\n- Ghi lại thói quen hiện tại trong vài ngày.\n- Xác định một trở ngại thực tế.\n- Chọn một thay đổi có thể lặp lại.\n\n## Xem lại và điều chỉnh\n\nTheo dõi giúp nhận ra điều thuận lợi và điều chưa phù hợp.  Tìm sự hỗ trợ từ người thân hoặc chuyên viên y tế khi cần.\n\nNếu lo về thuốc hoặc tình trạng sức khỏe ảnh hưởng cân nặng, hãy trao đổi trước khi tự thay đổi điều trị."
+    },
+    {
+      "slug": "cham-soc-tinh-than-moi-ngay",
+      "category": "mental",
+      "title": "Chăm sóc tinh thần bằng những việc nhỏ mỗi ngày",
+      "summary": "Tự chăm sóc có thể bắt đầu từ nghỉ ngơi, kết nối và những hoạt động bạn thấy phù hợp.",
+      "is_featured": true,
+      "source_name": "NIMH — Caring for Your Mental Health",
+      "source_url": "https://www.nimh.nih.gov/health/topics/caring-for-your-mental-health",
+      "content": "## Tự chăm sóc có nhiều hình thức\n\nĐiều giúp một người thư giãn có thể không phù hợp người khác. Bạn có thể thử đọc sách, nghe nhạc, vận động nhẹ hoặc dành thời gian ngoài trời, rồi giữ lại hoạt động mình thấy hữu ích.\n\n## Giữ các nền tảng hằng ngày\n\n- Ưu tiên giấc ngủ và những bữa ăn đều đặn.\n- Sắp xếp việc cần làm, cho phép việc khác chờ.\n- Duy trì liên hệ với người có thể hỗ trợ.\n\n\n\n## Khi tự chăm sóc chưa đủ\n\nNếu khó ngủ, giảm hứng thú, khó tập trung hoặc triệu chứng gây khổ sở kéo dài và ảnh hưởng cuộc sống, nên tìm hỗ trợ chuyên môn. Bạn có thể mô tả điều đang trải qua thay vì tự gán một chẩn đoán.\n\nTự chăm sóc có thể hỗ trợ sức khỏe tinh thần, nhưng không thay thế điều trị khi cần."
+    },
+    {
+      "slug": "nhan-dien-cang-thang",
+      "category": "mental",
+      "title": "Nhận diện căng thẳng và cách cơ thể phản ứng",
+      "summary": "Căng thẳng ngắn hạn và kéo dài có thể ảnh hưởng sinh hoạt theo những cách khác nhau.",
+      "source_name": "MedlinePlus — Stress",
+      "source_url": "https://medlineplus.gov/stress.html",
+      "content": "## Phản ứng trước yêu cầu và thách thức\n\nCăng thẳng là cách cơ thể và tâm trí đáp ứng khi gặp áp lực. Trong một tình huống ngắn, phản ứng này có thể giúp bạn chú ý và hành động. Nếu kéo dài, nó có thể trở thành gánh nặng.\n\n## Quan sát bối cảnh của bạn\n\nChú ý những lúc áp lực xuất hiện: công việc, học tập, thay đổi gia đình hoặc khó khăn khác. Ghi lại hoàn cảnh và ảnh hưởng đến giấc ngủ, cảm xúc, sinh hoạt có thể giúp bạn mô tả rõ hơn.\n\n- Nhận diện điều có thể thay đổi.\n- Dành thời gian nghỉ và hoạt động dễ chịu.\n- Tìm người đáng tin để chia sẻ.\n\n## Tìm hỗ trợ khi bị quá tải\n\nKhông phải phản ứng căng thẳng nào cũng là bệnh. Tuy nhiên, nếu bạn khó tự ứng phó hoặc sinh hoạt bị ảnh hưởng kéo dài, hãy trao đổi với nhân viên y tế."
+    },
+    {
+      "slug": "hieu-suc-khoe-tinh-than",
+      "category": "mental",
+      "title": "Sức khỏe tinh thần là một phần của sức khỏe chung",
+      "summary": "Khả năng học tập, làm việc và kết nối chịu ảnh hưởng của nhiều yếu tố trong cuộc sống.",
+      "source_name": "WHO — Mental health",
+      "source_url": "https://www.who.int/news-room/fact-sheets/detail/mental-health-strengthening-our-response",
+      "content": "## Không chỉ là không có bệnh\n\nSức khỏe tinh thần liên quan khả năng ứng phó với áp lực, phát huy khả năng, học tập, làm việc và đóng góp cho cộng đồng. Trạng thái này có thể thay đổi theo thời gian và hoàn cảnh.\n\n## Nhiều yếu tố cùng tác động\n\nTrải nghiệm cá nhân, mối quan hệ và điều kiện sống đều có thể ảnh hưởng. Vì vậy, không thể kết luận sức khỏe tinh thần chỉ từ một tâm trạng hoặc một chỉ số trong ứng dụng.\n\nTôn trọng và lắng nghe giúp người gặp khó khăn dễ tìm hỗ trợ hơn. Bạn không cần có lời giải cho mọi vấn đề mới có thể ở bên một người thân.\n\n## Hỗ trợ và môi trường an toàn\n\nChăm sóc tinh thần bao gồm cả hành động cá nhân và điều kiện sống hỗ trợ. Khi gặp khó khăn kéo dài, tìm dịch vụ chuyên môn là một lựa chọn phù hợp."
+    },
+    {
+      "slug": "rua-tay-dung-luc",
+      "category": "general",
+      "title": "Rửa tay đúng lúc trong sinh hoạt hằng ngày",
+      "summary": "Xà phòng và nước sạch là những dụng cụ đơn giản giúp hạn chế lây nhiễm.",
+      "source_name": "CDC — About Handwashing",
+      "source_url": "https://www.cdc.gov/clean-hands/about/index.html",
+      "content": "## Chú ý những thời điểm quan trọng\n\nRửa tay trước khi chuẩn bị hoặc ăn thức ăn, sau khi đi vệ sinh, sau khi ho hay hắt hơi và sau khi chạm rác hoặc động vật. Tay chưa sạch có thể đưa mầm bệnh tới mắt, mũi, miệng hoặc thức ăn.\n\n## Làm đủ các bước\n\n- Làm ướt tay bằng nước sạch và dùng xà phòng.\n- Xoa cả mu bàn tay, kẽ ngón và vùng dưới móng.\n- Chà ít nhất 20 giây.\n- Xả sạch rồi làm khô bằng khăn sạch hoặc máy sấy tay.\n\n\n\n## Khi không có xà phòng và nước\n\nDung dịch sát khuẩn tay chứa ít nhất 60% cồn là lựa chọn khi không có điều kiện rửa tay. Tuy vậy, cần rửa bằng xà phòng và nước khi có thể, nhất là lúc tay thấy bẩn hoặc dính dầu mỡ. Để sản phẩm có cồn ngoài tầm với của trẻ và hướng dẫn trẻ sử dụng an toàn."
+    },
+    {
+      "slug": "uong-nuoc-phu-hop",
+      "category": "general",
+      "title": "Uống nước phù hợp với sinh hoạt của bạn",
+      "summary": "Nhu cầu nước thay đổi theo hoàn cảnh; không có một con số phù hợp mọi người.",
+      "source_name": "CDC — About Water and Healthier Drinks",
+      "source_url": "https://www.cdc.gov/healthy-weight-growth/water-healthy-drinks/index.html",
+      "content": "## Nước có nhiều vai trò\n\nNước giúp điều hòa nhiệt độ, hỗ trợ khớp và loại bỏ chất thải. Tổng lượng nước còn đến từ đồ uống khác và thực phẩm chứa nhiều nước, không chỉ nước lọc.\n\n## Nhu cầu không cố định\n\nTuổi, mức vận động, thời tiết, thai kỳ và cho con bú có thể ảnh hưởng nhu cầu. Khi nóng hoặc vận động nhiều, cơ thể thường cần thêm nước. Một mục tiêu chung trong ứng dụng không thay thế chỉ dẫn y tế riêng.\n\n## Tạo điều kiện để nhớ uống\n\n- Mang bình nước khi ra ngoài.\n- Chuẩn bị nước trong bữa ăn.\n- Chọn nước thay đồ uống nhiều đường khi phù hợp.\n\nNước lọc không cung cấp calories; thay một số đồ uống có đường có thể giúp giảm năng lượng từ đồ uống. Nếu được dặn hạn chế dịch hoặc có tình trạng sức khỏe đặc biệt, hãy hỏi chuyên viên y tế về lượng phù hợp."
+    },
+    {
+      "slug": "chuan-bi-trao-doi-tiem-chung",
+      "category": "general",
+      "title": "Chuẩn bị thông tin trước khi hỏi về tiêm chủng",
+      "summary": "Tuổi, công việc, chuyến đi và tiền sử có thể ảnh hưởng những vaccine cần trao đổi.",
+      "source_name": "CDC — What Vaccines are Recommended for You",
+      "source_url": "https://www.cdc.gov/vaccines-adults/recommended-vaccines/index.html",
+      "content": "## Tiêm chủng cần được xem lại theo thời gian\n\nNgười lớn cũng cần quan tâm vaccine. Những khuyến nghị có thể khác nhau theo tuổi, tình trạng sức khỏe, công việc, thai kỳ và nơi sinh sống. Lịch của một quốc gia không tự động áp dụng nguyên vẹn ở nơi khác.\n\n## Mang theo thông tin sẵn có\n\n- Sổ hoặc hồ sơ những mũi đã tiêm.\n- Thông tin về phản ứng từng gặp sau tiêm.\n- Thuốc đang dùng và tình trạng sức khỏe cần lưu ý.\n- Kế hoạch đi xa hoặc thay đổi công việc.\n\nNếu không còn hồ sơ, hãy nói rõ điều đó để nhân viên y tế hướng dẫn. \n\n## Hỏi theo hoàn cảnh tại Việt Nam\n\nLiên hệ cơ sở tiêm chủng hoặc nhân viên y tế để được đối chiếu hướng dẫn hiện hành, loại vaccine và thời điểm phù hợp. Bài viết giúp chuẩn bị câu hỏi, không cung cấp một lịch tiêm cá nhân hay chỉ định cho từng người."
+    },
+    {
+      "slug": "hieu-chu-ky-kinh-nguyet",
+      "category": "women",
+      "title": "Theo dõi kinh nguyệt để hiểu cơ thể hơn",
+      "summary": "Ghi nhận trải nghiệm giúp bạn trao đổi rõ hơn về sức khỏe kinh nguyệt.",
+      "source_name": "WHO — Menstrual health",
+      "source_url": "https://www.who.int/news-room/fact-sheets/detail/menstrual-health",
+      "content": "## Trải nghiệm của mỗi người khác nhau\n\nKinh nguyệt là quá trình tự nhiên, nhưng mức đau, lượng máu và ảnh hưởng sinh hoạt có thể khác nhau. Sức khỏe kinh nguyệt còn liên quan thông tin chính xác, vật dụng phù hợp, điều kiện vệ sinh và khả năng tiếp cận chăm sóc.\n\n## Ghi nhận điều bạn thấy hữu ích\n\nBạn có thể ghi ngày bắt đầu, số ngày có kinh và những triệu chứng đáng chú ý. Không cần chia sẻ thông tin này nếu không muốn. Nhật ký giúp mô tả thay đổi, không tự xác định bệnh.\n\n- Chú ý mức độ ảnh hưởng học tập, công việc.\n- Chuẩn bị vật dụng và nơi vệ sinh phù hợp.\n- Tìm hỗ trợ khi đau hoặc chảy máu gây lo ngại.\n\n## Không phải chịu đựng trong im lặng\n\nĐau nghiêm trọng hoặc ra máu nhiều đáng được đánh giá. Nếu gặp khó khăn, hãy trao đổi với nhân viên y tế."
+    },
+    {
+      "slug": "dau-bung-kinh-khi-nao-can-kham",
+      "category": "women",
+      "title": "Đau bụng kinh: khi nào nên tìm hỗ trợ?",
+      "summary": "Chú ý mức đau, thời điểm xuất hiện và ảnh hưởng tới sinh hoạt.",
+      "source_name": "MedlinePlus — Period Pain",
+      "source_url": "https://medlineplus.gov/periodpain.html",
+      "content": "## Quan sát thay đổi của cơn đau\n\nĐau bụng kinh có thể xuất hiện trước hoặc trong những ngày đầu kỳ kinh. Có nhiều nguyên nhân khác nhau; không thể phân biệt chỉ bằng một nhật ký hay bài viết.\n\n## Những cách chăm sóc đơn giản\n\nChườm ấm vùng bụng dưới, vận động phù hợp và nghỉ ngơi có thể giúp một số người dễ chịu hơn. Dùng nhiệt cần tránh làm bỏng da. Nếu muốn dùng thuốc giảm đau, hãy hỏi dược sĩ hoặc bác sĩ về mức phù hợp và các chống chỉ định.\n\n## Khi cần trao đổi với chuyên viên\n\n- Đau đột ngột nặng hơn trước.\n- Đau kèm sốt hoặc xuất hiện ngoài kỳ kinh.\n- Cơn đau ảnh hưởng cuộc sống dù đã tự chăm sóc.\n\nHãy mô tả thời điểm, mức độ và triệu chứng đi kèm khi đi khám. Đừng tự kết luận nguyên nhân hoặc dùng phác đồ của người khác."
+    },
+    {
+      "slug": "nhung-thay-doi-quanh-man-kinh",
+      "category": "women",
+      "title": "Những thay đổi có thể gặp quanh giai đoạn mãn kinh",
+      "summary": "Chu kỳ, giấc ngủ và cảm giác cơ thể có thể thay đổi trong giai đoạn chuyển tiếp.",
+      "source_name": "MedlinePlus — Menopause",
+      "source_url": "https://medlineplus.gov/menopause.html",
+      "content": "## Một giai đoạn chuyển tiếp\n\nTrước mãn kinh, nồng độ hormone thay đổi và chu kỳ có thể trở nên không đều. Một số người gặp bốc hỏa, đổ mồ hôi đêm, khó ngủ hoặc khô âm đạo. Mức độ và trải nghiệm không giống nhau.\n\n## Ghi lại điều ảnh hưởng cuộc sống\n\nChú ý thay đổi chu kỳ, chất lượng ngủ và triệu chứng làm bạn khó chịu. Những ghi nhận này có thể giúp cuộc trao đổi với nhân viên y tế cụ thể hơn. Không nên tự quy mọi triệu chứng mới cho tuổi tác.\n\n## Chăm sóc theo nhu cầu riêng\n\nCó nhiều hướng hỗ trợ, nhưng lựa chọn phụ thuộc triệu chứng, tiền sử và mong muốn của bạn. Không tự bắt đầu hormone hay thuốc bổ theo lời truyền miệng.\n\nMãn kinh thường được xác định khi không có kinh trong 12 tháng, nhưng việc đánh giá cần xem bối cảnh và các nguyên nhân khác."
+    }
+  ]
+}

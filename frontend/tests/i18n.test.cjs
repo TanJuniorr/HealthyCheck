@@ -75,15 +75,8 @@ test('number/date/time display follows the language without changing underlying 
  assert.equal(formatting.formatDuration(91),'1 giờ 31 phút');assert.equal(formatting.formatNumber(NaN),'—');
  assert.deepEqual(original,{steps:11857,weight:68.5,recorded_at:stamp});
 });
-test('local article content translates by stable IDs; identities, authors and routes remain unchanged',async()=>{
- const raw=load('src/data/articles').articles;
- await i18n.changeLanguage('en');const english=localizeStaticData(raw);
- await i18n.changeLanguage('vi');const vietnamese=localizeStaticData(raw);
- assert.notEqual(english[0].title,vietnamese[0].title);assert.match(vietnamese[0].content,/Giữ giờ ngủ/);
- assert.deepEqual(english.map(item=>item.id),vietnamese.map(item=>item.id));
- assert.deepEqual(english.map(item=>item.categoryId),vietnamese.map(item=>item.categoryId));
- assert.equal(english[0].author,vietnamese[0].author);
- assert.equal(raw[0].title,'articles.items.article1.title');
+test('bundled cycle, metric and sleep labels follow the live language',async()=>{
+ await i18n.changeLanguage('vi');
  const cycle=load('src/data/cycle').symptoms;
  assert.equal(localizeStaticData(cycle)[0].name,vi.cycle.cramps);
  const metrics=localizeStaticData(load('src/data/health').healthMetrics);

@@ -15,7 +15,8 @@ import { SectionHeader } from '../../src/components/common/AppHeader';
 import { ArticleCard } from '../../src/components/articles/ArticleCard';
 import { MockAvatar } from '../../src/components/common/MockAvatar';
 import { dailyHighlights as rawHighlightDefinitions } from '../../src/data/health';
-import { featuredArticle as rawFeaturedArticle } from '../../src/data/articles';
+import { useArticleFeed } from '../../src/hooks/useArticleFeed';
+import { articleLanguage } from '../../src/lib/articleContent';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useWeeklyOverview } from '../../src/hooks/healthHooks';
 import { toLocalDateKey } from '../../src/lib/dateUtils';
@@ -32,9 +33,9 @@ import { getMyMenstrualCycleSettings } from '../../src/services/menstrualCycleSe
 
 export default function OverviewScreen() {
   const styles = useThemedStyles(baseStyles);
-  const { t } = useTranslation();
+  const { t,i18n } = useTranslation();
   const highlightDefinitions = localizeStaticData(rawHighlightDefinitions);
-  const featuredArticle = localizeStaticData(rawFeaturedArticle);
+  const articleQuery = useArticleFeed({language:articleLanguage(i18n.resolvedLanguage??'vi'),mode:'featured',pageSize:1});
 
   const router = useRouter();
   const { user, profile } = useAuth();
@@ -263,14 +264,8 @@ export default function OverviewScreen() {
           actionText={t("overview.seeAll")}
           onAction={() => router.push('/explore' as any)}
         />
-        <ArticleCard
-          id={featuredArticle.id}
-          title={featuredArticle.title}
-          description={featuredArticle.description}
-          category={featuredArticle.category}
-          readTime={featuredArticle.readTime}
-          featured={true}
-        />
+        <DataFeedback {...articleQuery}/>
+        {articleQuery.data.map(article=><ArticleCard key={article.id} article={article} featured/>)}
       </ScrollView>
     </View>
   );

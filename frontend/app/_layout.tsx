@@ -26,6 +26,7 @@ export function AuthNavigator() {
   if (gate==='restoring') return <View style={{ flex: 1, backgroundColor: isDark ? Colors.background : Colors.white, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={Colors.primary} accessibilityLabel={t("auth.restoring")} /></View>;
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="admin" />
       <Stack.Protected guard={gate==='guest'} redirectTo={destination}>
         <Stack.Screen name="index" />
         <Stack.Screen name="login" />

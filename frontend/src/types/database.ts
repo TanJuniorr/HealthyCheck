@@ -1,4 +1,5 @@
-// Maintained from the eight-table schema verified and supplied by the project owner.
+import type { ArticleRow, ArticleTranslation, ArticleCategory, ArticleInput, ArticleDetail, ArticleStats, ArticleCardRow, CategoryInput } from './articles';
+// Maintained from the verified application schema.
 // No CLI-generated schema was available in this workspace. Regenerate when connected.
 export type SleepScheduleInput = { bedtime: string; wake_time: string; active_days: number[]; reminder_enabled: boolean; reminder_minutes_before: number };
 export type SleepScheduleRow = SleepScheduleInput & { id: string; user_id: string; created_at: string; updated_at: string };
@@ -79,6 +80,13 @@ export type PersonalTable = Exclude<keyof Rows, 'profiles' | 'foods'>;
 export type Inputs = { health_goals: HealthGoalInsert; step_records: StepRecordInsert; sleep_records: SleepRecordInsert; meal_records: MealRecordInsert; weight_records: WeightRecordInsert; water_records: WaterRecordInsert };
 type Table<R, I, U = Partial<I>> = { Row: R; Insert: I; Update: U; Relationships: [] };
 export type Database = { public: { Tables: {
+  user_roles: Table<{user_id:string;role:'admin'|'user';created_at:string},{user_id:string;role?:'admin'|'user'}>;
+  articles: Table<ArticleRow,ArticleInput & {author_id:string},Partial<ArticleInput>>;
+  article_translations: Table<ArticleTranslation & {id:string;article_id:string;updated_at:string},ArticleTranslation & {article_id:string}>;
+  article_categories: Table<ArticleCategory,CategoryInput>;
+  article_bookmarks: Table<{id:string;user_id:string;article_id:string;created_at:string},{user_id:string;article_id:string},never>;
+  article_read_history: Table<{id:string;user_id:string;article_id:string;last_read_at:string;read_count:number},never,never>;
+  article_category_preferences: Table<{user_id:string;category_id:string;created_at:string},{user_id:string;category_id:string},never>;
   sleep_schedules: Table<SleepScheduleRow, SleepScheduleInput & { user_id: string }>;
   profiles: Table<ProfileRow, { id: string } & ProfileUpdate>;
   health_goals: Table<HealthGoalRow, HealthGoalInsert & { user_id: string }>;
@@ -92,4 +100,10 @@ export type Database = { public: { Tables: {
   app_notifications: Table<AppNotificationRow, Omit<AppNotificationRow, 'id' | 'created_at' | 'read_at'> & Partial<Pick<AppNotificationRow, 'id' | 'created_at' | 'read_at'>>, Partial<Pick<AppNotificationRow, 'read_at'>>>;
   menstrual_cycle_settings: Table<MenstrualCycleSettingsRow, Omit<MenstrualCycleSettingsRow, 'updated_at'> & Partial<Pick<MenstrualCycleSettingsRow, 'updated_at'>>, Partial<Omit<MenstrualCycleSettingsRow, 'user_id'>>>;
   menstrual_cycle_logs: Table<MenstrualCycleLogRow, Omit<MenstrualCycleLogRow, 'id' | 'created_at' | 'updated_at'> & Partial<Pick<MenstrualCycleLogRow, 'id' | 'created_at' | 'updated_at'>>, Partial<Omit<MenstrualCycleLogRow, 'id' | 'user_id' | 'log_date' | 'created_at'>>>;
-}; Views: { [_ in never]: never }; Functions: { search_foods: { Args: { p_query?:string; p_category?:string|null; p_offset?:number; p_limit?:number }; Returns:{data:FoodRow[];total:number} }; complete_health_onboarding: { Args: { p_date_of_birth:string; p_gender:string; p_height_cm:number; p_weight_kg:number }; Returns:ProfileRow[] } }; Enums: { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };
+}; Views: { [_ in never]: never }; Functions: {
+ article_feed:{Args:{p_language?:string;p_query?:string;p_category?:string|null;p_mode?:string;p_offset?:number;p_limit?:number;p_status?:string|null};Returns:{data:ArticleCardRow[];total:number}};
+ get_article:{Args:{p_id:string;p_language?:string};Returns:ArticleDetail|null};
+ save_article:{Args:{p_id:string|null;p_expected_updated_at:string|null;p_article:ArticleInput;p_translations:ArticleTranslation[]};Returns:ArticleRow};
+ record_article_read:{Args:{p_article_id:string};Returns:undefined};
+ article_admin_stats:{Args:Record<string,never>;Returns:ArticleStats};
+ search_foods: { Args: { p_query?:string; p_category?:string|null; p_offset?:number; p_limit?:number }; Returns:{data:FoodRow[];total:number} }; complete_health_onboarding: { Args: { p_date_of_birth:string; p_gender:string; p_height_cm:number; p_weight_kg:number }; Returns:ProfileRow[] } }; Enums: { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };

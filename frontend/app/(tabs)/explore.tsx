@@ -1,240 +1,37 @@
-import { useTranslation } from 'react-i18next';
-import { localizeStaticData } from '../../src/i18n/localize';
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../../src/constants/colors';
-import { Typography } from '../../src/constants/typography';
-import { Spacing, Radius, Layout } from '../../src/constants/spacing';
-import { CategoryChip } from '../../src/components/health/HealthComponents';
-import { SectionHeader } from '../../src/components/common/AppHeader';
-import { ArticleCard } from '../../src/components/articles/ArticleCard';
-import { articles as rawArticles, featuredArticle as rawFeaturedArticle, exploreCategories as rawExploreCategories } from '../../src/data/articles';
-import { useThemedStyles } from '../../src/contexts/ThemeContext';
-
-export default function ExploreScreen() {
-  const styles = useThemedStyles(baseStyles);
-  const { t } = useTranslation();
-  const articles = localizeStaticData(rawArticles);
-  const featuredArticle = localizeStaticData(rawFeaturedArticle);
-  const exploreCategories = localizeStaticData(rawExploreCategories);
-
-  const insets = useSafeAreaInsets();
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Filter recent articles based on selected category and search query
-  const filteredArticles = articles.filter((item) => {
-    const matchesCategory =
-      selectedCategory === 'all' ||
-      item.categoryId === selectedCategory;
-    const matchesSearch =
-      searchQuery.trim() === '' ||
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase());
-
-    // When showing 'all' without search, avoid duplicating the featured article immediately below
-    if (selectedCategory === 'all' && searchQuery.trim() === '' && item.id === featuredArticle.id) {
-      return false;
-    }
-
-    return matchesCategory && matchesSearch;
-  });
-
-  return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: insets.bottom + Layout.tabBarHeight + Spacing.xxl },
-        ]}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* 1. Header with Title & Search Input */}
-        <View style={styles.header}>
-          <Text style={styles.screenTitle}>{t("navigation.explore")}</Text>
-          <Text style={styles.screenSubtitle}>{t("explore.description")}</Text>
-
-          {/* Search bar */}
-          <View style={styles.searchBar}>
-            <Ionicons name="search-outline" size={18} color={Colors.textMuted} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={t("explore.search")}
-              placeholderTextColor={Colors.textMuted}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              returnKeyType="search"
-              clearButtonMode="while-editing"
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity
-                onPress={() => setSearchQuery('')}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Ionicons name="close-circle" size={18} color={Colors.textMuted} />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        {/* 2. Categories Horizontal Scroll */}
-        <View style={styles.categoriesWrapper}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesContent}
-          >
-            {exploreCategories.map((category) => (
-              <CategoryChip
-                key={category.id}
-                label={category.label}
-                icon={category.icon}
-                color={category.color}
-                bgColor={category.bgColor}
-                selected={selectedCategory === category.id}
-                onPress={() => setSelectedCategory(category.id)}
-              />
-            ))}
-          </ScrollView>
-        </View>
-
-        <View style={styles.mainContent}>
-          {/* 3. Featured Article */}
-          {selectedCategory === 'all' && searchQuery.trim() === '' && (
-            <View style={styles.featuredContainer}>
-              <ArticleCard
-                id={featuredArticle.id}
-                title={featuredArticle.title}
-                description={featuredArticle.description}
-                category={featuredArticle.category}
-                readTime={featuredArticle.readTime}
-                featured={true}
-              />
-            </View>
-          )}
-
-          {/* 4. Recent Articles Section */}
-          <SectionHeader title={t("explore.recent")} />
-
-          {filteredArticles.length > 0 ? (
-            <View style={styles.articlesList}>
-              {filteredArticles.map((article) => (
-                <ArticleCard
-                  key={article.id}
-                  id={article.id}
-                  title={article.title}
-                  description={article.description}
-                  category={article.category}
-                  readTime={article.readTime}
-                  featured={false}
-                />
-              ))}
-            </View>
-          ) : (
-            <View style={styles.emptyContainer}>
-              <View style={styles.emptyIconBg}>
-                <Ionicons name="document-text-outline" size={28} color={Colors.textMuted} />
-              </View>
-              <Text style={styles.emptyTitle}>{t("explore.empty")}</Text>
-              <Text style={styles.emptyDescription}>
-                {t("explore.emptyHint")}</Text>
-            </View>
-          )}
-        </View>
-      </ScrollView>
-    </View>
-  );
+import React,{useState} from 'react';
+import {View,Text,FlatList,ScrollView,TextInput,StyleSheet,Platform} from 'react-native';
+import {router} from 'expo-router';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useTranslation} from 'react-i18next';
+import {Colors} from '../../src/constants/colors';
+import {useThemedStyles} from '../../src/contexts/ThemeContext';
+import {useArticleFeed} from '../../src/hooks/useArticleFeed';
+import {useHealthQuery} from '../../src/hooks/useHealthQuery';
+import {getArticleCategories,getArticleRole} from '../../src/services/articlesService';
+import {articleLanguage,categoryName} from '../../src/lib/articleContent';
+import {ArticleCard} from '../../src/components/articles/ArticleCard';
+import {DataFeedback} from '../../src/components/common/DataFeedback';
+import {TextButton} from '../../src/components/common/Buttons';
+export default function ExploreScreen(){
+ const {t,i18n}=useTranslation(),styles=useThemedStyles(baseStyles),insets=useSafeAreaInsets(),language=articleLanguage(i18n.resolvedLanguage??'vi');
+ const [search,setSearch]=useState(''),[category,setCategory]=useState<string|null>(null);
+ const categories=useHealthQuery(()=>getArticleCategories(),'article-categories');
+ const role=useHealthQuery(getArticleRole,'explore-article-role');
+ const latest=useArticleFeed({language,search,category}),featured=useArticleFeed({language,mode:'featured',pageSize:2}),recommended=useArticleFeed({language,mode:'recommended',pageSize:3});
+ const browsing=!search.trim()&&!category;
+ return <View style={[styles.screen,{paddingTop:insets.top}]}><FlatList data={latest.data} keyExtractor={a=>a.id} keyboardShouldPersistTaps="handled" initialNumToRender={8} windowSize={7} contentContainerStyle={[styles.content,{paddingBottom:insets.bottom+110}]} onEndReached={()=>{if(latest.hasMore&&!latest.error)void latest.loadMore();}} onEndReachedThreshold={0.4}
+  ListHeaderComponent={<View style={styles.header}>
+   <Text style={styles.title} accessibilityRole="header">{t('navigation.explore')}</Text><Text style={styles.description}>{t('explore.description')}</Text>
+   <View style={styles.links}><TextButton title={t('cms.savedArticles')} onPress={()=>router.push('/article/saved')}/><TextButton title={t('cms.readHistory')} onPress={()=>router.push('/article/history')}/></View>
+   {Platform.OS==='web'&&role.data==='admin'?<TextButton title={t('cms.admin')} onPress={()=>router.push('/admin')}/>:null}
+   <TextInput accessibilityLabel={t('explore.search')} placeholder={t('explore.search')} placeholderTextColor={Colors.textMuted} style={styles.search} value={search} onChangeText={setSearch} maxLength={160} autoCapitalize="none" clearButtonMode="while-editing"/>
+   <DataFeedback {...categories}/><ScrollView horizontal showsHorizontalScrollIndicator={false}><TextButton title={t('category.all')} onPress={()=>setCategory(null)} color={!category?Colors.primary:Colors.textSecondary}/>{categories.data?.map(c=><TextButton key={c.id} title={categoryName(c,language)} color={category===c.id?Colors.primary:Colors.textSecondary} onPress={()=>setCategory(c.id)}/>)}</ScrollView>
+   {browsing?<><TextButton title={t('cms.chooseInterests')} onPress={()=>router.push('/article/interests')}/><Text style={styles.section} accessibilityRole="header">{t('articles.featured')}</Text><DataFeedback {...featured}/>{featured.data.map(a=><ArticleCard key={a.id} article={a} featured/>)}
+    <Text style={styles.section} accessibilityRole="header">{t('cms.forYou')}</Text><Text style={styles.description}>{t('cms.recommendationInfo')}</Text><DataFeedback {...recommended}/>{recommended.data.map(a=><ArticleCard key={a.id} article={a} recommendation/>)}</>:null}
+   <Text style={styles.section} accessibilityRole="header">{t(search.trim()?'cms.searchResults':'explore.recent')}</Text><DataFeedback {...latest}/>
+  </View>}
+  ListEmptyComponent={!latest.isLoading&&!latest.error?<View style={styles.header}><Text style={styles.section}>{t('explore.empty')}</Text><Text style={styles.description}>{t('explore.emptyHint')}</Text></View>:undefined}
+  ListFooterComponent={latest.hasMore?<TextButton title={t('cms.loadMore')} loading={latest.loadingMore} onPress={latest.loadMore}/>:undefined}
+  renderItem={({item})=><ArticleCard article={item}/>}/></View>;
 }
-
-const baseStyles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  scrollContent: {
-    paddingTop: Spacing.md,
-  },
-  header: {
-    paddingHorizontal: Spacing.screenPadding,
-    marginBottom: Spacing.lg,
-  },
-  screenTitle: {
-    ...Typography.largeTitle,
-    color: Colors.textPrimary,
-  },
-  screenSubtitle: {
-    ...Typography.supporting,
-    color: Colors.textSecondary,
-    marginTop: 4,
-    marginBottom: Spacing.lg,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.md,
-    height: 46,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  searchInput: {
-    flex: 1,
-    ...Typography.bodySmall,
-    color: Colors.textPrimary,
-    marginLeft: Spacing.sm,
-    paddingVertical: 0,
-  },
-  categoriesWrapper: {
-    marginBottom: Spacing.lg,
-  },
-  categoriesContent: {
-    paddingHorizontal: Spacing.screenPadding,
-  },
-  mainContent: {
-    paddingHorizontal: Spacing.screenPadding,
-  },
-  featuredContainer: {
-    marginBottom: Spacing.sm,
-  },
-  articlesList: {
-    marginTop: Spacing.xs,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.xxxl,
-    paddingHorizontal: Spacing.xl,
-  },
-  emptyIconBg: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.divider,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
-  },
-  emptyTitle: {
-    ...Typography.cardTitle,
-    color: Colors.textPrimary,
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  emptyDescription: {
-    ...Typography.supporting,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-});
+const baseStyles=StyleSheet.create({screen:{flex:1,backgroundColor:Colors.background},content:{paddingHorizontal:20,maxWidth:900,width:'100%',alignSelf:'center'},header:{gap:12,paddingTop:16},title:{fontSize:30,fontWeight:'700',color:Colors.textPrimary},description:{fontSize:14,lineHeight:22,color:Colors.textSecondary},section:{fontSize:22,fontWeight:'700',color:Colors.textPrimary,marginVertical:12},search:{fontSize:16,color:Colors.textPrimary,backgroundColor:Colors.surface,borderColor:Colors.border,borderWidth:1,borderRadius:12,padding:14,minHeight:48},links:{flexDirection:'row',flexWrap:'wrap'}});

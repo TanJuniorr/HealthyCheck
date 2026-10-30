@@ -1,0 +1,13 @@
+export type ArticleLanguage='vi'|'en';
+export type ArticleStatus='draft'|'published'|'archived';
+export type ArticleMode='latest'|'featured'|'recommended'|'bookmarks'|'history'|'admin';
+export type ArticleCategory={id:string;slug:string;name_vi:string;name_en:string;description_vi:string;description_en:string;icon:string;sort_order:number;is_active:boolean;created_at:string};
+export type ArticleReference={name:string;url:string};
+export type ArticleTranslation={id?:string;article_id?:string;language:ArticleLanguage;title:string;summary:string;content:string;reading_time_minutes:number;source_name:string;source_url:string;reference_links:ArticleReference[];updated_at?:string};
+export type ArticleRow={id:string;slug:string;category_id:string;author_id:string|null;cover_image_path:string|null;status:ArticleStatus;is_featured:boolean;published_at:string|null;created_at:string;updated_at:string};
+export type ArticleCardRow=Pick<ArticleRow,'id'|'slug'|'cover_image_path'|'status'|'is_featured'|'published_at'|'updated_at'> & Pick<ArticleTranslation,'language'|'title'|'summary'|'reading_time_minutes'> & {category:Pick<ArticleCategory,'id'|'slug'|'name_vi'|'name_en'|'icon'>;is_bookmarked:boolean;last_read_at:string|null;reason:'interest'|'saved'|'reading'|'new'};
+export type ArticleDetail=ArticleRow & {category:ArticleCategory;translation:ArticleTranslation|null;is_bookmarked:boolean};
+export type ArticlePage={data:ArticleCardRow[];total:number;page:number;hasMore:boolean};
+export type ArticleStats={total:number;published:number;draft:number;archived:number};
+export type ArticleInput=Pick<ArticleRow,'slug'|'category_id'|'cover_image_path'|'status'|'is_featured'>;
+export type CategoryInput=Pick<ArticleCategory,'slug'|'name_vi'|'name_en'|'description_vi'|'description_en'|'icon'|'sort_order'|'is_active'>;
