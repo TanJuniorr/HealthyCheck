@@ -2,10 +2,10 @@
 
 ## Đã triển khai
 
-- AuthProvider là nguồn trạng thái chung: session/user, khởi tạo, đăng nhập, đăng ký, đăng xuất, profile và recovery. Một listener auth, một listener AppState trên native; cleanup khi unmount. Giữ SQLite localStorage, bật PKCE, dùng cơ chế điều phối refresh mặc định của supabase-js 2.118 (custom lock đã deprecated). Không lưu mật khẩu thủ công, không log credentials.
+- AuthProvider là nguồn trạng thái chung: session/user, khởi tạo, đăng nhập, đăng ký, đăng xuất, profile và recovery. Một listener auth, một listener AppState trên native; cleanup khi unmount. Supabase dùng AsyncStorage trên native và localStorage trên web; dữ liệu auth cũ trong SQLite localStorage được chuyển sang AsyncStorage khi đọc. Bật PKCE, dùng cơ chế điều phối refresh mặc định của supabase-js 2.118 (custom lock đã deprecated). Không lưu mật khẩu thủ công, không log credentials.
 - Stack.Protected SDK 58 khóa tabs, profile, settings, health, meals, sharing, sleep và article. Khi mất phiên, history của route riêng bị loại bỏ, chuyển Login. Public auth screens chuyển Overview khi có phiên; lúc khôi phục phiên chỉ hiện loading. Welcome mở Sign Up.
 - Email/password thật; email trim/lowercase, mật khẩu giữ nguyên; mật khẩu đăng ký/reset tối thiểu 8 ký tự, xác nhận trùng; khóa submission, hiển thị lỗi tiếng Việt. Không tự vào app khi đăng ký cần xác nhận email. Duplicate signup có thể trả thông báo chung theo cấu hình Supabase.
-- Google/Apple/Facebook giữ giao diện nhưng disabled, có nhãn Coming soon.
+- Google OAuth dùng Supabase PKCE trên web và `expo-web-browser` trên Android/iOS. Callback giữ `flowId` của lần đăng nhập và dùng đúng verifier để đổi code lấy session. Apple và Facebook đã được bỏ khỏi màn hình đăng nhập.
 - Profile và lời chào Overview dùng tài khoản hiện tại. Profile đọc hàng của user, fallback metadata/placeholder; avatar HTTPS nếu có, ngày sinh/chiều cao nếu có. Các giá trị riêng trước đây giả lập được để trống trên Profile. Mock health data ở những màn hình khác được giữ nguyên. Logout chỉ hoàn tất sau Supabase signOut thành công.
 - Forgot Password gọi resetPasswordForEmail thật, thông báo chung, chặn resend 60 giây trong tiến trình. Callback đổi code bằng PKCE; SDK kiểm chứng verifier và phát PASSWORD_RECOVERY. Chỉ phiên recovery mới mở form reset. Trước updateUser(password) còn kiểm chứng user với server. Cancel hủy phiên recovery qua signOut. Callback được replace khỏi history sau xử lý, không log query.
 
@@ -14,10 +14,11 @@
 Không có kết nối quản trị/SQL tới Supabase. Lần đọc schema REST bằng public key hiện tại nhận HTTP 401. Đây không phải bằng chứng schema hoặc RLS hợp lệ. Không có dữ liệu, policy, trigger hay cấu hình production nào bị thay đổi.
 
 1. Kiểm tra frontend/.env thuộc đúng Supabase project; chỉ dùng EXPO_PUBLIC_SUPABASE_URL và EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Không đưa service role/secret vào mobile. .env đã được ngừng theo dõi Git nhưng vẫn giữ trên máy; ignore không xóa lịch sử commit cũ. .env.example để trống.
-2. Authentication → URL Configuration → Redirect URLs: thêm chính xác `healthycheck://auth/callback`. Khi chạy web, thêm origin đang dùng, ví dụ `http://localhost:8083/auth/callback`; production dùng HTTPS origin của ứng dụng. Không dùng wildcard rộng trên production.
-3. Scheme `healthycheck` đã tồn tại trong app.json. Kiểm thử mobile bằng development/production build đã đăng ký scheme; không dựa vào Expo Go để xác nhận callback này hoạt động. Phải mở email trên cùng thiết bị/cùng dữ liệu ứng dụng hoặc cùng browser origin đã gửi yêu cầu (PKCE verifier). Đổi thiết bị, xóa storage hoặc dùng lại link sẽ thất bại an toàn. Recovery authorization chỉ giữ trong RAM; nếu đóng app sau callback và trước khi đổi mật khẩu, gửi link mới.
-4. Giữ reset email template sử dụng ConfirmationURL của Supabase để callback nhận authorization code. Không thay bằng URL chứa access/refresh token; app không chấp nhận implicit-token callback. Xác minh email confirmation và SMTP/rate limits trong Dashboard. Đăng ký xác nhận email xong có thể quay về Login thủ công; không cần giả lập session.
-5. Chạy file auth-schema-inspection.sql (chỉ SELECT) để xác minh columns, khóa ngoại, RLS, policies và trigger auth.users. Kết quả SQL Editor chỉ dùng kiểm tra cấu trúc.
+2. Authentication → URL Configuration → Redirect URLs: thêm `healthycheck://auth/callback` cho development/production build đã cài. Khi chạy trong Expo Go, `expo-linking` tạo URL dạng `exp://<host>:<port>/--/auth/callback`; thêm pattern development `exp://**/--/auth/callback`. Khi chạy web, thêm đúng URL callback của origin đang dùng. Supabase yêu cầu `redirectTo` phải khớp danh sách cho phép; Site URL là URL dự phòng, nên không để Site URL là localhost nếu người dùng đăng nhập trên điện thoại. Chỉ dùng wildcard cho môi trường phát triển, không dùng wildcard rộng trên production.
+3. Scheme `healthycheck` đã tồn tại trong app.json. `oauthRedirectUrl()` dùng `Linking.createURL('/auth/callback')`: Expo Go nhận callback qua `exp://.../--/auth/callback`, bản cài dùng scheme `healthycheck`. Google Cloud Authorized redirect URI vẫn phải là callback của Supabase (`https://<project-ref>.supabase.co/auth/v1/callback`), không phải URL `healthycheck://` hay `exp://`. Phải mở email recovery trên cùng thiết bị/cùng dữ liệu ứng dụng hoặc cùng browser origin đã gửi yêu cầu (PKCE verifier). Đổi thiết bị, xóa storage hoặc dùng lại link sẽ thất bại an toàn. Recovery authorization chỉ giữ trong RAM; nếu đóng app sau callback và trước khi đổi mật khẩu, gửi link mới.
+4. Google Cloud dùng OAuth Client loại Web application. `frontend/supabase/config.toml` là cấu hình cho Supabase local; hiện không có cấu hình Google trong file đó. App `.env` đang trỏ tới Supabase hosted, nên trạng thái Google thật cần được xác minh ở Dashboard → Authentication → Providers → Google. Nếu chạy Supabase local, phải khai báo provider và secret qua biến môi trường, không commit secret vào repo.
+5. Giữ reset email template sử dụng ConfirmationURL của Supabase để callback nhận authorization code. Không thay bằng URL chứa access/refresh token; app không chấp nhận implicit-token callback. Xác minh email confirmation và SMTP/rate limits trong Dashboard. Đăng ký xác nhận email xong có thể quay về Login thủ công; không cần giả lập session.
+6. Chạy file auth-schema-inspection.sql (chỉ SELECT) để xác minh columns, khóa ngoại, RLS, policies và trigger auth.users. Kết quả SQL Editor chỉ dùng kiểm tra cấu trúc.
 
 ## Đề xuất database — chưa thực thi, phải đối chiếu schema trước
 
@@ -45,7 +46,7 @@ Các ca dưới đây chưa được xác nhận end-to-end với database thậ
 | 08 | Profile có dữ liệu | Đúng tên/email/avatar/ngày sinh/chiều cao của tài khoản; refresh khi focus |
 | 09 | Tài khoản thiếu profile / lỗi mạng | Không crash; metadata/placeholder, loading/error riêng và retry bằng cách mở lại screen |
 | 10 | Forgot Password, resend, mở email | Request thật, generic confirmation; cooldown; cùng thiết bị đổi được password sau PKCE; link sai/hết hạn/replay/khác thiết bị không mở form; login thông thường mở reset-password cũng không mở form |
-| 11 | Bấm Google/Apple/Facebook | Disabled, không xác thực/đi vào app |
+| 11 | Đăng nhập Google trên thiết bị | Google quay về app, PKCE callback đổi code thành session; Apple/Facebook không hiển thị |
 | 12 | A đăng nhập, gọi REST bằng JWT A nhưng yêu cầu profile/records B, thử insert/update owner B | Không thấy/sửa/ghi dữ liệu B; kiểm tra SELECT/INSERT/UPDATE/DELETE theo quyền được cấp. Đăng xuất rồi login B không hiển thị identity/profile A |
 
 ```powershell

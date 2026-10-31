@@ -87,14 +87,23 @@ export default function LoginScreen() {
       const providerError = getString(params.error_description) ?? getString(params.error);
       if (code) {
         // The existing PKCE callback route exchanges the code and lets AuthContext
-        // persist the session before navigating through the auth gate.
-        router.replace({ pathname: '/auth/callback', params: { code } });
+        // persist the session before navigating through the auth gate. Preserve
+        // Supabase's flow ID so the callback uses this sign-in's exact verifier.
+        router.replace({ pathname: '/auth/callback', params: { code, flowId: data.flowId ?? undefined } });
       } else if (providerError) {
+        if (__DEV__) console.error('[auth] Google OAuth provider returned an error.', { errorReturned: true });
         setFeedback(authErrorMessage(new Error(providerError)));
       } else {
+        if (__DEV__) console.error('[auth] Google OAuth callback did not contain a code or provider error.');
         setFeedback('errors.invalidLink');
       }
     } catch (error) {
+      const details = error as { name?: unknown; code?: unknown; status?: unknown } | null;
+      if (__DEV__) console.error('[auth] Google OAuth launch failed.', {
+        name: typeof details?.name === 'string' ? details.name : null,
+        code: typeof details?.code === 'string' ? details.code : null,
+        status: typeof details?.status === 'number' ? details.status : null,
+      });
       setFeedback(authErrorMessage(error));
     } finally {
       submittingRef.current = false;
