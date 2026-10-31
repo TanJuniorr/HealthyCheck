@@ -5,6 +5,7 @@ import React, { useRef, useState } from 'react';
 import { useAuth } from '../src/contexts/AuthContext';
 import { authErrorMessage, isValidEmail } from '../src/lib/authErrors';
 import {
+  ActivityIndicator,
   View,
   Text,
   StyleSheet,
@@ -22,6 +23,10 @@ import { Spacing, Radius } from '../src/constants/spacing';
 import { AppTextInput } from '../src/components/common/AppTextInput';
 import { PrimaryButton } from '../src/components/common/Buttons';
 import { useThemedStyles } from '../src/contexts/ThemeContext';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
+import { supabase } from '../src/lib/supabase';
+import { oauthRedirectUrl } from '../src/lib/authRecovery';
 
 export default function LoginScreen() {
   const styles = useThemedStyles(baseStyles);
@@ -36,6 +41,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
 
   const handleSignIn = async () => {
     if (submittingRef.current) return;
@@ -50,6 +56,59 @@ export default function LoginScreen() {
     try { await signIn(normalizedEmail, password); }
     catch (error) { setFeedback(authErrorMessage(error)); }
     finally { submittingRef.current = false; setIsSubmitting(false); }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setFeedback('');
+    setIsGoogleSubmitting(true);
+    try {
+      const redirectTo = oauthRedirectUrl();
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          skipBrowserRedirect: Platform.OS !== 'web',
+        },
+      });
+      if (error) throw error;
+
+      // On web, Supabase performs a full-page redirect to Google automatically.
+      if (Platform.OS === 'web') return;
+      if (!data.url) throw new Error('Google authorization URL was not returned.');
+
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      if (result.type !== 'success') return;
+
+      const params = Linking.parse(result.url).queryParams ?? {};
+      const getString = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
+      const code = getString(params.code);
+      const providerError = getString(params.error_description) ?? getString(params.error);
+      if (code) {
+        // The existing PKCE callback route exchanges the code and lets AuthContext
+        // persist the session before navigating through the auth gate. Preserve
+        // Supabase's flow ID so the callback uses this sign-in's exact verifier.
+        router.replace({ pathname: '/auth/callback', params: { code, flowId: data.flowId ?? undefined } });
+      } else if (providerError) {
+        if (__DEV__) console.error('[auth] Google OAuth provider returned an error.', { errorReturned: true });
+        setFeedback(authErrorMessage(new Error(providerError)));
+      } else {
+        if (__DEV__) console.error('[auth] Google OAuth callback did not contain a code or provider error.');
+        setFeedback('errors.invalidLink');
+      }
+    } catch (error) {
+      const details = error as { name?: unknown; code?: unknown; status?: unknown } | null;
+      if (__DEV__) console.error('[auth] Google OAuth launch failed.', {
+        name: typeof details?.name === 'string' ? details.name : null,
+        code: typeof details?.code === 'string' ? details.code : null,
+        status: typeof details?.status === 'number' ? details.status : null,
+      });
+      setFeedback(authErrorMessage(error));
+    } finally {
+      submittingRef.current = false;
+      setIsGoogleSubmitting(false);
+    }
   };
 
   return (
@@ -122,7 +181,7 @@ export default function LoginScreen() {
             title={isSubmitting ? t("auth.signingIn") : t("auth.signIn")}
             onPress={handleSignIn}
             loading={isSubmitting}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isGoogleSubmitting}
             style={styles.signInButton}
           />
         </View>
@@ -130,43 +189,22 @@ export default function LoginScreen() {
         {/* Divider */}
         <View style={styles.dividerContainer}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>{t("auth.socialSoon")}</Text>
+          <Text style={styles.dividerText}>{t("auth.socialPrompt")}</Text>
           <View style={styles.dividerLine} />
         </View>
 
-        {/* Social Login Buttons */}
+        {/* Google OAuth */}
         <View style={styles.socialContainer}>
           <TouchableOpacity
-            style={[styles.socialButton, { opacity: 0.5 }]}
-            disabled
-            accessibilityState={{ disabled: true }}
+            style={[styles.socialButton, isGoogleSubmitting && styles.disabledSocialButton]}
+            onPress={() => void handleGoogleSignIn()}
+            disabled={isGoogleSubmitting || isSubmitting}
+            accessibilityState={{ disabled: isGoogleSubmitting || isSubmitting, busy: isGoogleSubmitting }}
             activeOpacity={0.7}
             accessibilityLabel={t("auth.google")}
           >
-            <Ionicons name="logo-google" size={20} color="#DB4437" />
-            <Text style={styles.socialButtonText}>Google</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.socialButton, { opacity: 0.5 }]}
-            disabled
-            accessibilityState={{ disabled: true }}
-            activeOpacity={0.7}
-            accessibilityLabel={t("auth.apple")}
-          >
-            <Ionicons name="logo-apple" size={20} color={Colors.textPrimary} />
-            <Text style={styles.socialButtonText}>Apple</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.socialButton, { opacity: 0.5 }]}
-            disabled
-            accessibilityState={{ disabled: true }}
-            activeOpacity={0.7}
-            accessibilityLabel={t("auth.facebook")}
-          >
-            <Ionicons name="logo-facebook" size={20} color="#1877F2" />
-            <Text style={styles.socialButtonText}>Facebook</Text>
+            {isGoogleSubmitting ? <ActivityIndicator size="small" color={Colors.primary} /> : <Ionicons name="logo-google" size={20} color="#DB4437" />}
+            <Text style={styles.socialButtonText}>{isGoogleSubmitting ? t("auth.signingIn") : t("auth.google")}</Text>
           </TouchableOpacity>
         </View>
 
@@ -276,11 +314,10 @@ const baseStyles = StyleSheet.create({
   },
   socialContainer: {
     flexDirection: 'row',
-    gap: Spacing.md,
     marginBottom: Spacing.xxl,
   },
   socialButton: {
-    flex: 1,
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -291,6 +328,7 @@ const baseStyles = StyleSheet.create({
     backgroundColor: Colors.surface,
     gap: Spacing.xs + 2,
   },
+  disabledSocialButton: { opacity: 0.65 },
   socialButtonText: {
     ...Typography.buttonSmall,
     color: Colors.textPrimary,

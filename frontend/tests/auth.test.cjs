@@ -82,6 +82,19 @@ test('PKCE callbacks share in-flight exchanges and reject missing or invalid ses
   await assert.rejects(invalid.exchangeAuthCode('invalid-code'), /invalid verifier/);
 });
 
+test('PKCE callback exchanges with the flow ID returned by Supabase OAuth', async () => {
+  let request;
+  const service = recovery({
+    async exchangeCodeForSession(code, options) {
+      request = { code, flowId: options?.flowId };
+      return { data: { session: { access_token: 'session' } }, error: null };
+    },
+  });
+  await service.exchangeAuthCode('oauth-code', 'oauth-flow');
+  assert.equal(request.code, 'oauth-code');
+  assert.equal(request.flowId, 'oauth-flow');
+});
+
 test('web recovery uses the current web origin', () => {
   assert.equal(recovery({}, null, 'web').recoveryRedirectUrl(), 'https://app.example/auth/callback');
 });
