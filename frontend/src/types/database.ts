@@ -110,4 +110,6 @@ export type Database = { public: { Tables: {
  save_article:{Args:{p_id:string|null;p_expected_updated_at:string|null;p_article:ArticleInput;p_translations:ArticleTranslation[]};Returns:ArticleRow};
  record_article_read:{Args:{p_article_id:string};Returns:undefined};
  article_admin_stats:{Args:Record<string,never>;Returns:ArticleStats};
- search_foods: { Args: { p_query?:string; p_category?:string|null; p_offset?:number; p_limit?:number }; Returns:{data:FoodRow[];total:number} }; complete_health_onboarding: { Args: { p_date_of_birth:string; p_gender:string; p_height_cm:number; p_weight_kg:number }; Returns:ProfileRow[] } }; Enums: { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };
+ search_foods: { Args: { p_query?:string; p_category?:string|null; p_offset?:number; p_limit?:number }; Returns:{data:FoodRow[];total:number} }; complete_health_onboarding: { Args: { p_date_of_birth:string; p_gender:string; p_height_cm:number; p_weight_kg:number }; Returns:ProfileRow[] }; sharing_recipient_exists: { Args: { p_email: string }; Returns: boolean } }; Enums:
+ { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };
+ 

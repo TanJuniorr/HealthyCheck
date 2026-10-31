@@ -50,6 +50,7 @@ export function AuthNavigator() {
         <Stack.Screen name="settings" />
         <Stack.Screen name="meals" />
         <Stack.Screen name="sharing-setup" />
+        <Stack.Screen name="shared-with-me" />
         <Stack.Screen name="sleep-schedule" />
         <Stack.Screen name="notifications" />
         <Stack.Screen name="notifications/[id]" />
