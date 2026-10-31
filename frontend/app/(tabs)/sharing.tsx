@@ -488,6 +488,11 @@ export default function SharingScreen() {
           onPress={() => router.push('/sharing-setup' as any)}
           style={styles.stickyAddButton}
         />
+        <TextButton
+  title={t('sharedWithMe.viewSharedWithMe')}
+  onPress={() => router.push('/shared-with-me' as any)}
+/>
+
       </View>
 
       {/* Revoke Confirmation Modal */}

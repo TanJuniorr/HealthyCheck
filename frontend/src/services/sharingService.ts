@@ -7,7 +7,8 @@ import type {
 } from '../types/database';
 import { requireAuthenticatedUserId, queryResult } from './queryCore';
 import { validId } from '../lib/dataValidation';
-import { DataAccessError, invalid } from '../lib/dataErrors';
+import { DataAccessError, dataError, invalid } from '../lib/dataErrors';
+
 
 type SharingListener = (owner: string) => void;
 const sharingListeners = new Set<SharingListener>();
@@ -64,6 +65,32 @@ export function validateCategories(categories: {
     invalid('sharing.errorNoCategorySelected');
   }
 }
+async function getOwnerEmail(): Promise<string | null> {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) throw dataError(error);
+  const email = data.user?.email?.trim().toLowerCase();
+  return email ? email : null;
+}
+
+async function checkRecipientAccount(recipientEmail: string | null): Promise<void> {
+
+    if (!recipientEmail) return;
+  const { data: exists, error: rpcError } = await supabase.rpc(
+    'sharing_recipient_exists',
+    { p_email: recipientEmail },
+  );
+  if (rpcError) {
+    const code = (rpcError as { code?: string }).code ?? '';
+    const message = (rpcError as { message?: string }).message ?? '';
+    if (code === 'PGRST202' || message.includes('sharing_recipient_exists')) return;
+    throw dataError(rpcError);
+  }
+  if (exists === false) {
+    invalid('sharing.errorRecipientNoAccount');
+  }
+}
+
+
 
 export async function getMySharingInvites(): Promise<SharingInviteRow[]> {
   const owner = await requireAuthenticatedUserId();
@@ -110,7 +137,12 @@ export async function createSharingInvite(input: {
     invalid('sharing.errorInvalidPrivacy');
   }
   const owner = await requireAuthenticatedUserId();
-  const payload: SharingInviteInsert & { owner_id: string } = {
+  const ownerEmail = await getOwnerEmail();
+if (recipient_email && ownerEmail && recipient_email.toLowerCase() === ownerEmail) {
+  invalid('sharing.errorSelfShare');
+}
+  await checkRecipientAccount(recipient_email);
+ const payload: SharingInviteInsert & { owner_id: string } = {
     owner_id: owner,
     recipient_label,
     recipient_email,
@@ -171,10 +203,16 @@ export async function updateSharingInvite(
   };
 
   if (input.recipient !== undefined) {
-    const { recipient_label, recipient_email } = validateRecipient(input.recipient);
-    patch.recipient_label = recipient_label;
-    patch.recipient_email = recipient_email;
-  }
+  const { recipient_label, recipient_email } = validateRecipient(input.recipient);
+  const ownerEmail = await getOwnerEmail();
+  if (recipient_email && ownerEmail && recipient_email.toLowerCase() === ownerEmail) {
+  invalid('sharing.errorSelfShare');
+}
+await checkRecipientAccount(recipient_email);
+patch.recipient_label = recipient_label;
+patch.recipient_email = recipient_email;
+}
+
 
   if (input.privacy_level !== undefined) {
     if (!['specific', 'family', 'community'].includes(input.privacy_level)) {
