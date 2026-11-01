@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase';
 import type { FoodRow } from '../types/database';
 import { validId, normalizeRow, normalizePagination } from '../lib/dataValidation';
 import { FOOD_GROUPS } from '../lib/foodPortions';
-import { DataAccessError } from '../lib/dataErrors';
+import { DataAccessError, dataError } from '../lib/dataErrors';
 import { assertIdentity, columns, queryResult, requireAuthenticatedUserId, type HistoryOptions } from './queryCore';
 export { calculateFoodNutrition, getFoodServingGrams } from '../lib/healthCalculations';
 export type FoodOptions = HistoryOptions & { search?: string; category?: string };
@@ -26,13 +26,26 @@ export async function createPersonalEstimatedFood(input: {
  const values=[input.calories_per_100g,input.protein_per_100g,input.carbs_per_100g,input.fat_per_100g];
  if(values.some(value=>!Number.isFinite(value)||value<0)||input.calories_per_100g>1000||values.slice(1).some(value=>value>100))throw new DataAccessError('INVALID_INPUT','meals.invalidFoodNutrition');
  const owner=await requireAuthenticatedUserId();
- const row=await queryResult(supabase.from('foods').insert({
+ const payload={
   name:nameVi,calories_per_100g:input.calories_per_100g,protein_per_100g:input.protein_per_100g,
   carbs_per_100g:input.carbs_per_100g,fat_per_100g:input.fat_per_100g,category:'prepared',serving_size:'100 g',
   calories:null,protein_g:null,carbs_g:null,fat_g:null,created_by:owner,
   catalog_metadata:{name_vi:nameVi,name_en:nameEn,aliases:[],selectable:true,group:'prepared',source:'ai_food_scan',
-   source_description:'AI-estimated nutrition values, editable by the owner.',data_type:'user_ai_estimate',base_unit:'g'},
- }).select(columns.foods).single(),owner);
+   source_description:'AI-estimated nutrition values, editable by the owner.',data_type:'user_ai_estimate',base_unit:'g' as const},
+ };
+ let result;
+ try {
+  result=await supabase.from('foods').insert(payload).select(columns.foods).single();
+ } catch (error) {
+  throw dataError(error);
+ }
+ if(result.error) {
+  const failure=result.error as {code?:string;message?:string};
+  const missingOwnerColumn=['42703','PGRST204'].includes(failure.code??'')&&/created_by/i.test(failure.message??'');
+  if(missingOwnerColumn||failure.code==='42501')throw new DataAccessError('DATABASE','foodScan.quickAddMigrationRequired');
+  throw dataError(result.error);
+ }
+ const row=result.data;
  if(!row)throw new DataAccessError('DATABASE','errors.database');
  await assertIdentity(owner);
  return normalizeRow('foods',row);

@@ -103,6 +103,7 @@
     "requiredBilingualNames": "Enter the food name in both Vietnamese and English.",
     "invalidEstimatedNutrition": "Check the calories and nutrition values per 100 g.",
     "customFoodAdded": "Food added to your personal catalogue. Tap save to record the meal.",
+    "quickAddMigrationRequired": "Personal food saving is not enabled in the database yet. Run migration 20261101_add_private_ai_foods.sql in the Supabase SQL Editor, then try again.",
     "catalogCalories": "From catalogue: {{calories}} kcal",
     "confidence": "Confidence {{value}}%",
     "selectMeal": "Meal",

@@ -103,6 +103,7 @@
     "requiredBilingualNames": "Vui lòng nhập tên món bằng cả tiếng Việt và tiếng Anh.",
     "invalidEstimatedNutrition": "Kiểm tra lại kcal và các chất dinh dưỡng trên 100 g.",
     "customFoodAdded": "Đã thêm món vào danh mục cá nhân. Nhấn nút lưu để ghi bữa ăn.",
+    "quickAddMigrationRequired": "Database chưa bật quyền thêm món cá nhân. Hãy chạy migration 20261101_add_private_ai_foods.sql trong Supabase SQL Editor, rồi thử lại.",
     "catalogCalories": "Theo danh mục: {{calories}} kcal",
     "confidence": "Độ tin cậy {{value}}%",
     "selectMeal": "Bữa ăn",

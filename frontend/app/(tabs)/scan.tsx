@@ -25,6 +25,7 @@ const MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 const MAX_IMAGE_BASE64_LENGTH = 5_500_000;
 
 type ReviewItem = FoodScanEstimate & {
+  reviewKey: string;
   gramsText: string;
   query: string;
   candidates: FoodRow[];
@@ -238,8 +239,9 @@ function FoodScanScreen() {
         setError(t('foodScan.notFood'));
         return;
       }
-      const reviews: ReviewItem[] = result.items.map(item => ({
+      const reviews: ReviewItem[] = result.items.map((item, index) => ({
         ...item,
+        reviewKey: `${id}-${index}`,
         gramsText: String(item.estimated_grams),
         query: item.name_vi,
         candidates: [],
@@ -339,7 +341,8 @@ function FoodScanScreen() {
       setNotice(t('foodScan.customFoodAdded'));
     } catch (cause) {
       setItems(current => current.map((currentItem, itemIndex) => itemIndex === index ? { ...currentItem, creatingCustomFood: false } : currentItem));
-      setError(dataError(cause).message || t('foodScan.saveError'));
+      const message = dataError(cause).message;
+      setError(message === 'foodScan.quickAddMigrationRequired' ? t(message) : message || t('foodScan.saveError'));
     }
   };
 
@@ -446,7 +449,7 @@ function FoodScanScreen() {
         ) : null}
 
         {error ? <Text accessibilityRole="alert" style={styles.errorText}>{error}</Text> : null}
-        {notice ? <Text accessibilityRole="status" style={styles.noticeText}>{notice}</Text> : null}
+        {notice ? <Text accessibilityRole="text" accessibilityLiveRegion="polite" style={styles.noticeText}>{notice}</Text> : null}
 
         {items.length > 0 ? (
           <View style={styles.resultsSection}>
@@ -467,7 +470,7 @@ function FoodScanScreen() {
                 ? calculateFoodNutrition(selectedFood, grams).calories
                 : null;
               return (
-                <View key={`${item.name_vi}-${index}`} style={styles.foodCard}>
+                <View key={item.reviewKey} style={styles.foodCard}>
                   <View style={styles.foodNameRow}>
                     <View style={styles.foodIcon}><Ionicons name="restaurant-outline" size={20} color={Colors.orange} /></View>
                     <View style={styles.foodHeading}>
@@ -600,7 +603,7 @@ function FoodScanScreen() {
             <PrimaryButton title={t('foodScan.save', { count: selectedCount })} onPress={save} loading={saving} disabled={saved || !selectedCount || creatingFood} style={styles.saveButton} />
             {savedNotice ? (
               <View style={styles.savedBox}>
-                <Text accessibilityRole="status" style={styles.savedText}>{t('foodScan.saved')}</Text>
+                <Text accessibilityRole="text" accessibilityLiveRegion="polite" style={styles.savedText}>{t('foodScan.saved')}</Text>
                 <PrimaryButton title={t('foodScan.viewNutrition')} onPress={() => router.push('/health/nutrition')} />
               </View>
             ) : null}
