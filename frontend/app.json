@@ -37,10 +37,18 @@
       ],
       "expo-localization",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Healthy Check cần dùng camera để chụp ảnh món ăn và ước tính dinh dưỡng.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
         "expo-image-picker",
         {
-          "photosPermission": "Healthy Check cần truy cập ảnh để bạn chọn ảnh đại diện và ảnh bài viết.",
-          "cameraPermission": false,
+          "photosPermission": "Healthy Check cần truy cập ảnh để bạn chọn ảnh đại diện, ảnh bài viết hoặc quét món ăn.",
+          "cameraPermission": "Healthy Check cần dùng camera để chụp ảnh món ăn và ước tính dinh dưỡng.",
           "microphonePermission": false
         }
       ],

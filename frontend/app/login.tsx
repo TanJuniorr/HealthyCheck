@@ -73,12 +73,19 @@ export default function LoginScreen() {
         },
       });
       if (error) throw error;
-
       // On web, Supabase performs a full-page redirect to Google automatically.
       if (Platform.OS === 'web') return;
       if (!data.url) throw new Error('Google authorization URL was not returned.');
 
+      const sentRedirectTo = new URL(data.url).searchParams.get('redirect_to');
+      if (__DEV__) console.info('[auth] OAuth redirect diagnostics', {
+        platform: Platform.OS,
+        target: redirectTo,
+        sent: sentRedirectTo,
+      });
+
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      if (__DEV__) console.info('[auth] OAuth browser result', { type: result.type });
       if (result.type !== 'success') return;
 
       const params = Linking.parse(result.url).queryParams ?? {};
