@@ -24,7 +24,10 @@ export function oauthRedirectUrl(): string {
     return getWebCallbackUrl();
   }
 
-  return Linking.createURL("/auth/callback");
+  // Keep the path relative: a leading slash makes createURL emit
+  // `healthycheck:///auth/callback`, which does not match the registered
+  // `healthycheck://auth/callback` redirect URI.
+  return Linking.createURL("auth/callback");
 }
 
 // --------------------------------------------------
