@@ -38,6 +38,12 @@ test('article CRUD reports conflicts and rejects hidden privileged payload field
  const g=serviceFixture(()=>({data:null}));await assert.rejects(g.service.deleteArticle(B,'2026-10-30T00:00:00Z'),e=>e.message==='cms.conflict');
  assert.equal(g.calls[0].url.searchParams.get('updated_at'),'eq.2026-10-30T00:00:00Z');
 });
+test('slug preflight excludes the current article, verifies identity and still maps racing unique constraints',async()=>{
+ const f=serviceFixture(()=>({data:[{id:B}]}));assert.equal(await f.service.isArticleSlugAvailable('draft-slug',B),false);assert.equal(f.calls[0].url.searchParams.get('slug'),'eq.draft-slug');assert.equal(f.calls[0].url.searchParams.get('id'),'neq.'+B);assert.equal(f.calls[0].url.searchParams.get('limit'),'1');
+ const available=serviceFixture(()=>({data:[]}));assert.equal(await available.service.isArticleSlugAvailable('new-slug'),true);await assert.rejects(available.service.isArticleSlugAvailable('Invalid slug'),e=>e.message==='cms.invalidSlug');
+ const race=serviceFixture(()=>({status:409,data:{code:'23505',message:'private constraint detail'}}));await assert.rejects(race.service.saveArticle(null,null,{slug:'same-slug',category_id:A,status:'draft',cover_image_path:null,is_featured:false},[]),e=>e.message==='cms.duplicate');
+ let release;const stale=serviceFixture(()=>new Promise(resolve=>{release=resolve;}));const pending=stale.service.isArticleSlugAvailable('test');await tick();stale.setOwner(B);release({data:[]});await assert.rejects(pending,e=>e.code==='AUTH_CHANGED');
+});
 test('safe Markdown supports headings/lists/formatting while blocking script URLs, HTML execution and remote images',()=>{
  const content=createLoader()('src/lib/articleContent');
  const parts=content.articleInlines('**Đậm** và *nghiêng* [Nguồn](https://www.who.int/) [x](javascript:alert) <script>alert(1)</script>');
@@ -80,8 +86,8 @@ test('article search debounces, rejects obsolete language/account responses and 
 test('bookmark failures keep prior state; retries and double taps issue one mutation and labels translate live',async()=>{
  let attempts=0,release;const f=uiFixture({[boundary('src/contexts/AuthContext.tsx')]:{useAuth:()=>({user:{id:A}})},[boundary('src/services/articlesService.ts')]:{setArticleBookmark:async()=>{attempts++;if(attempts===1)throw Error('Network unavailable');await new Promise(resolve=>{release=resolve;});}}});
  const Button=f.load('src/components/articles/BookmarkButton').BookmarkControl,i18n=f.load('src/i18n/index').default;await i18n.changeLanguage('vi');const props={owner:A,id:B,saved:false};const render=()=>f.render(()=>Button(props));
- let tree=render();await elements(tree).find(e=>e.type==='TextButton').props.onPress();tree=render();assert.ok(elements(tree).some(e=>e.props.accessibilityRole==='alert'));assert.equal(elements(tree).find(e=>e.type==='TextButton').props.title,i18n.t('articles.bookmark'));
- const run=elements(tree).find(e=>e.type==='TextButton').props.onPress,pending=run();await run();assert.equal(attempts,2);release();await pending;await i18n.changeLanguage('en');tree=render();assert.equal(elements(tree).find(e=>e.type==='TextButton').props.title,i18n.t('articles.removeBookmark'));
+ let tree=render();await elements(tree).find(e=>e.type==='Pressable').props.onPress({stopPropagation(){}});tree=render();assert.ok(elements(tree).some(e=>e.props.accessibilityRole==='alert'));assert.equal(elements(tree).find(e=>e.type==='Pressable').props.accessibilityLabel,i18n.t('articles.bookmark'));
+ const run=()=>elements(tree).find(e=>e.type==='Pressable').props.onPress({stopPropagation(){}}),pending=run();await run();assert.equal(attempts,2);release();await pending;await i18n.changeLanguage('en');tree=render();assert.equal(elements(tree).find(e=>e.type==='Pressable').props.accessibilityLabel,i18n.t('articles.removeBookmark'));
 });
 test('Admin layout blocks non-admins and failed permission requests with retry before rendering editor routes',async()=>{
  let role={data:'user',isLoading:false,error:null,refresh:async()=>{}};
@@ -94,12 +100,12 @@ test('CMS retains failed edits and prevents incomplete publication while support
  let writes=0;const calls=[];const f=uiFixture({'expo-router':{router:{replace(){}},usePreventRemove:()=>()=>{}},[boundary('src/contexts/AuthContext.tsx')]:{useAuth:()=>({user:{id:A}})},[boundary('src/services/articlesService.ts')]:{saveArticle:async(...args)=>{writes++;calls.push(args);throw Error('Network unavailable');}},[boundary('src/services/articleImages.ts')]:{uploadArticleImage:async()=>null,deleteArticleImage:async()=>{}},[boundary('src/components/articles/ArticleImage.tsx')]:{ArticleImage:'ArticleImage'},[boundary('src/components/articles/ArticleMarkdown.tsx')]:{ArticleMarkdown:'ArticleMarkdown'}});
  const Form=f.load('src/components/articles/AdminArticleEditor').AdminArticleEditor,i18n=f.load('src/i18n/index').default;await i18n.changeLanguage('vi');
  const props={initial:null,initialTranslations:[],categories:[{id:B,name_vi:'Giấc ngủ',name_en:'Sleep',is_active:true}],reload:async()=>{}};
- const render=()=>f.render(()=>Form(props));let tree=render();elements(tree).find(e=>e.type==='TextInput'&&e.props.accessibilityLabel===i18n.t('cms.articleTitle')).props.onChangeText('Bản thảo đang viết');tree=render();
- await elements(tree).find(e=>e.type==='PrimaryButton'&&e.props.title===i18n.t('common.save')).props.onPress();tree=render();assert.equal(writes,1);assert.equal(calls[0][2].slug,'ban-thao-dang-viet');assert.ok(elements(tree).some(e=>e.props.accessibilityRole==='alert'));
+ const render=()=>f.renderDeep(()=>Form(props));let tree=render();elements(tree).find(e=>e.type==='TextInput'&&e.props.accessibilityLabel===i18n.t('cms.articleTitle')).props.onChangeText('Bản thảo đang viết');tree=render();
+ await elements(tree).find(e=>e.type==='TextButton'&&e.props.title===i18n.t('cms.editor.saveDraft')).props.onPress();tree=render();assert.equal(writes,1);assert.equal(calls[0][2].slug,'ban-thao-dang-viet');assert.ok(elements(tree).some(e=>e.props.accessibilityRole==='alert'));
  assert.equal(elements(tree).find(e=>e.type==='TextInput'&&e.props.accessibilityLabel===i18n.t('cms.articleTitle')).props.value,'Bản thảo đang viết');
- elements(tree).find(e=>e.type==='TextButton'&&e.props.title===i18n.t('cms.publish')).props.onPress();tree=render();await elements(tree).find(e=>e.type==='PrimaryButton'&&e.props.title===i18n.t('cms.confirm')).props.onPress();assert.equal(writes,1);
+ elements(tree).find(e=>e.type==='PrimaryButton'&&e.props.title===i18n.t('cms.publish')).props.onPress();tree=render();await elements(tree).find(e=>e.type==='PrimaryButton'&&e.props.title===i18n.t('cms.confirm')).props.onPress();assert.equal(writes,1);
  await i18n.changeLanguage('en');tree=render();assert.equal(elements(tree).find(e=>e.type==='TextInput'&&e.props.accessibilityLabel===i18n.t('cms.articleTitle')).props.value,'Bản thảo đang viết');
- elements(tree).find(e=>e.type==='TextButton'&&e.props.title===i18n.t('cms.languages.en')).props.onPress();tree=render();assert.equal(elements(tree).find(e=>e.type==='TextInput'&&e.props.accessibilityLabel===i18n.t('cms.articleTitle')).props.value,'');
+ elements(tree).find(e=>e.type==='Pressable'&&e.props.accessibilityLabel===i18n.t('cms.languages.en')).props.onPress();tree=render();assert.equal(elements(tree).find(e=>e.type==='TextInput'&&e.props.accessibilityLabel===i18n.t('cms.articleTitle')).props.value,'');
  elements(tree).find(e=>e.type==='TextButton'&&e.props.title===i18n.t('cms.preview')).props.onPress();tree=render();assert.ok(elements(tree).some(e=>e.type==='Modal'&&e.props.visible));
 });
 test('Explore uses paged data, preserves network retry and renders an empty state without demo articles',()=>{

@@ -2,8 +2,8 @@ import type {ArticleCategory,ArticleInput,ArticleLanguage,ArticleReference,Artic
 import {DataAccessError} from './dataErrors';
 export function articleLanguage(language:string):ArticleLanguage{return language.startsWith('vi')?'vi':'en';}
 export function categoryName(category:Pick<ArticleCategory,'name_vi'|'name_en'>,language:string){return language.startsWith('vi')?category.name_vi:category.name_en;}
-export function articleSlug(title:string){return title.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,160);}
-export function safeArticleUrl(value:string):string|null{try{const u=new URL(value);return u.protocol==='https:'&&!!u.hostname&&!u.username&&!u.password?u.href:null;}catch{return null;}}
+export function articleSlug(title:string){return title.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,160).replace(/-$/,'');}
+export function safeArticleUrl(value:string):string|null{try{if(/\s/.test(value))return null;const u=new URL(value);return u.protocol==='https:'&&!!u.hostname&&!u.username&&!u.password?u.href:null;}catch{return null;}}
 export function validArticleImagePath(value:string){return /^[0-9a-f-]{36}\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp)$/.test(value);}
 export function emptyArticleTranslation(language:ArticleLanguage):ArticleTranslation{return {language,title:'',summary:'',content:'',reading_time_minutes:1,source_name:'',source_url:'',reference_links:[]};}
 export function parseArticleReferences(text:string):ArticleReference[]{return text.split('\n').filter(line=>line.trim()).map(line=>{const at=line.indexOf('|');return {name:line.slice(0,at).trim(),url:line.slice(at+1).trim()};});}
@@ -20,15 +20,16 @@ export function validateCategoryInput(input:CategoryInput){
  if(!input.name_vi.trim()||!input.name_en.trim())throw new DataAccessError('INVALID_INPUT','cms.requiredCategory');
  if(!Number.isSafeInteger(input.sort_order)||Math.abs(input.sort_order)>2147483647)throw new DataAccessError('INVALID_INPUT','cms.invalidSortOrder');
 }
-export type MarkdownFormat='h2'|'h3'|'bold'|'italic'|'list'|'link';
+export type MarkdownFormat='h2'|'h3'|'bold'|'italic'|'list'|'ordered'|'quote'|'link';
 export function formatArticleSelection(content:string,selection:{start:number;end:number},kind:MarkdownFormat,placeholder:string){
  const start=Math.max(0,Math.min(content.length,selection.start)),end=Math.max(start,Math.min(content.length,selection.end));
  const selected=content.slice(start,end)||placeholder;
  const prefix=start>0&&content[start-1]!=='\n'?'\n':'';
- const replacement=kind==='bold'?'**'+selected+'**':kind==='italic'?'*'+selected+'*':kind==='link'?'['+selected+'](https://)':prefix+(kind==='h2'?'## ':kind==='h3'?'### ':'- ')+selected;
+ const marker=kind==='h2'?'## ':kind==='h3'?'### ':kind==='quote'?'> ':'- ';
+ const replacement=kind==='bold'?'**'+selected+'**':kind==='italic'?'*'+selected+'*':kind==='link'?'['+selected+'](https://)':prefix+selected.split('\n').map((line,i)=>(kind==='ordered'?`${i+1}. `:marker)+line).join('\n');
  return {content:content.slice(0,start)+replacement+content.slice(end),selection:{start:start+replacement.length,end:start+replacement.length}};
 }
-export type MarkdownBlock={type:'h2'|'h3'|'paragraph'|'list'|'image';text:string;url?:string};
+export type MarkdownBlock={type:'h2'|'h3'|'paragraph'|'list'|'quote'|'image';text:string;url?:string;marker?:string};
 // A deliberately small Markdown subset. Raw HTML is always text, never a DOM,
 // WebView, innerHTML or executable content. Images resolve only our private bucket.
 export function articleBlocks(content:string):MarkdownBlock[]{
@@ -36,9 +37,10 @@ export function articleBlocks(content:string):MarkdownBlock[]{
  const flush=()=>{if(paragraph.length){blocks.push({type:'paragraph',text:paragraph.join('\n')});paragraph=[];}};
  for(const line of content.slice(0,100000).split(/\r?\n/)){
   if(!line.trim()){flush();continue;}
-  const heading=/^(#{2,3})\s+(.+)$/.exec(line),list=/^\s*(?:[-*]|\d+\.)\s+(.+)$/.exec(line),image=/^!\[([^\]]*)\]\(article-image:([^\s)]+)\)$/.exec(line);
+  const heading=/^(#{2,3})\s+(.+)$/.exec(line),list=/^\s*([-*]|\d+\.)\s+(.+)$/.exec(line),quote=/^>\s?(.*)$/.exec(line),image=/^!\[([^\]]*)\]\(article-image:([^\s)]+)\)$/.exec(line);
   if(heading){flush();blocks.push({type:heading[1].length===2?'h2':'h3',text:heading[2]});}
-  else if(list){flush();blocks.push({type:'list',text:list[1]});}
+  else if(list){flush();blocks.push({type:'list',text:list[2],marker:/\d/.test(list[1])?list[1]:'•'});}
+  else if(quote){flush();blocks.push({type:'quote',text:quote[1]});}
   else if(image&&validArticleImagePath(image[2])){flush();blocks.push({type:'image',text:image[1],url:image[2]});}
   else paragraph.push(line);
  }

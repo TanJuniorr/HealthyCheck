@@ -35,6 +35,15 @@ export async function getArticleFeed(options:ArticleQuery):Promise<ArticlePage>{
 }
 export async function getArticle(id:string,language:ArticleLanguage):Promise<ArticleDetail|null>{validId(id);const owner=await requireAuthenticatedUserId();return result(supabase.rpc('get_article',{p_id:id,p_language:language}),owner);}
 export async function getArticleTranslations(id:string){validId(id);const owner=await requireAuthenticatedUserId();return await result(supabase.from('article_translations').select('id,article_id,language,title,summary,content,reading_time_minutes,source_name,source_url,reference_links,updated_at').eq('article_id',id).limit(2),owner)??[];}
+export async function isArticleSlugAvailable(slug:string,excludeId:string|null=null){
+ if(!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)||slug.length>160)throw new DataAccessError('INVALID_INPUT','cms.invalidSlug');
+ if(excludeId)validId(excludeId);
+ const owner=await requireAuthenticatedUserId();
+ let query=supabase.from('articles').select('id').eq('slug',slug);
+ if(excludeId)query=query.neq('id',excludeId);
+ const rows=await result<{id:string}[]>(query.limit(1),owner);
+ return !rows?.length;
+}
 export async function getArticleStats(){const owner=await requireAuthenticatedUserId();return result(supabase.rpc('article_admin_stats'),owner);}
 export async function saveArticle(id:string|null,expected:string|null,article:ArticleInput,translations:ArticleTranslation[]):Promise<ArticleRow>{
  if(id)validId(id);validId(article.category_id);

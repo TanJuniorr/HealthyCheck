@@ -83,6 +83,7 @@ const baseStyles = StyleSheet.create({
   },
   buttonText: {
     ...Typography.button,
+    flexShrink: 1,
     color: Colors.white,
     fontWeight: '700',
     textAlign: 'center',
@@ -90,8 +91,8 @@ const baseStyles = StyleSheet.create({
 });
 
 export function TextButton({ title, onPress, style, color = Colors.primary, disabled = false, loading = false }: PrimaryButtonProps & { color?: string }) {
-  return <TouchableOpacity accessibilityRole="button" accessibilityState={{ disabled: disabled || loading, busy: loading }} disabled={disabled || loading} onPress={onPress} style={[{ padding: Spacing.md, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', opacity: disabled ? 0.6 : 1 }, style]}>
+  return <TouchableOpacity accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ disabled: disabled || loading, busy: loading }} disabled={disabled || loading} onPress={onPress} style={[{ padding: Spacing.md, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', opacity: disabled ? 0.6 : 1 }, style]}>
     {loading ? <ActivityIndicator color={color} style={{ marginRight: Spacing.sm }} /> : null}
-    <Text style={{ ...Typography.button, color }}>{title}</Text>
+    <Text style={{ ...Typography.button, color, flexShrink: 1, textAlign: 'center' }}>{title}</Text>
   </TouchableOpacity>;
 }

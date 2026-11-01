@@ -1042,7 +1042,33 @@
     "futureTime": "Water intake cannot be recorded in the future.",
     "busy": "Another water entry is being saved. Please wait."
   },
+  "exploreUi": {"menu": "Explore options", "clearFilters": "Clear filters", "noCategories": "No categories yet. You can still browse all articles.", "noFeatured": "No featured articles yet. Browse the latest below.", "noRecommended": "New articles will appear here when available.", "noSearch": "No articles match your search.", "noCategory": "No articles in this category yet.", "refresh": "Refresh articles"},
   "cms": {
+    "dashboardUi": {"search": "Search articles by title or content…", "clear": "Clear article search", "article": "Article", "status": "Status", "updated": "Updated", "actionsFor": "Actions for {{title}}", "updatedSuccess": "Article updated. List and statistics refreshed.", "noSearch": "No articles match your search. Try another keyword.", "noFilter": "No articles have this status.", "noArticles": "No articles yet. Create your first article."},
+    "editor": {
+      "basicInfo": "Article information", "articleDetails": "Title & summary", "writeContent": "Write your article", "publishSettings": "Publication checklist",
+      "steps": {"0": "Information", "1": "Content", "2": "Publish"}, "stepLabel": "Step {{step}}: {{name}}",
+      "mode": {"edit": "Write", "preview": "Preview", "split": "Side by side"},
+      "titlePlaceholder": "Write a clear, useful article title", "summaryPlaceholder": "Help readers understand what they will learn…",
+      "slugPlaceholder": "Suggested automatically from the title", "contentPlaceholder": "## Start with a heading\n\nShare useful, verified health information…",
+      "sourcePlaceholder": "Name of the organization or publication", "referencesPlaceholder": "Source name | https://example.org/article",
+      "chooseCategory": "Choose a category", "coverHint": "Cover image · 16:9", "characters": "{{count}} / {{limit}} characters",
+      "estimatedTime": "{{minutes}} min read", "previewEmpty": "Your formatted content will appear here.", "undo": "Undo", "redo": "Redo",
+      "saveChanges": "Save changes", "saveDraft": "Save draft", "restoreDraft": "Restore as draft", "saveAndLeave": "Save and leave",
+      "previous": "Previous", "next": "Next step", "closePreview": "Back to editor", "closeMenu": "Close menu",
+      "autosaving": "Saving draft…", "saved": "All changes saved", "unsaved": "Unsaved changes",
+      "autosaveHint": "Draft changes save automatically after 12 seconds.", "manualSaveHint": "Save your changes using the action bar.",
+      "saveFailed": "Not saved. Review the errors and save again.", "autosaveInvalid": "Autosave paused: review your fields and save manually.",
+      "validationTitle": "Fields to review: {{count}}", "categoryRequired": "Choose an existing category.",
+      "titleRequired": "Enter an article title.", "titleLong": "Title must be at most 240 characters.",
+      "summaryRequired": "Enter a summary.", "summaryLong": "Summary must be at most 1,200 characters.",
+      "contentRequired": "Enter at least 100 characters of content for this language.", "contentLong": "Content must be at most 100,000 characters.",
+      "sourceRequired": "Enter the primary source name.", "sourceLong": "Source name must be at most 240 characters.",
+      "sourceUrlInvalid": "Enter a valid HTTPS source URL (up to 2,048 characters).",
+      "contentLinks": "Use valid HTTPS links and images uploaded to article Storage in the content.",
+      "authorHint": "The original author is assigned by the server and preserved when editing.", "authorId": "Author ID: {{id}}",
+      "imageSize": "{{format}} · {{size}} MB", "checks": {"basics": "Article details & translations", "content": "Content & reading time", "sources": "Sources & references"}
+    },
     "admin": "HealthyCheck Admin",
     "denied": "You do not have access",
     "dashboard": "Admin dashboard",
@@ -1136,7 +1162,8 @@
       "bold": "Bold",
       "italic": "Italic",
       "list": "List",
-      "link": "Link"
+      "link": "Link",
+      "ordered": "Numbered list", "quote": "Block quote"
     },
     "categoryFields": {
       "slug": "Category slug",

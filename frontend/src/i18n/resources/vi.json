@@ -1042,7 +1042,33 @@
     "futureTime": "Không thể ghi nhận lần uống nước trong tương lai.",
     "busy": "Một lần uống nước khác đang được lưu. Vui lòng đợi."
   },
+  "exploreUi": {"menu": "Tiện ích Khám phá", "clearFilters": "Xóa bộ lọc", "noCategories": "Chưa có danh mục. Bạn vẫn có thể xem tất cả bài viết.", "noFeatured": "Chưa có bài nổi bật. Khám phá các bài mới bên dưới.", "noRecommended": "Các bài mới sẽ xuất hiện tại đây khi có nội dung phù hợp.", "noSearch": "Không tìm thấy bài phù hợp với từ khóa.", "noCategory": "Chưa có bài viết trong danh mục này.", "refresh": "Làm mới bài viết"},
   "cms": {
+    "dashboardUi": {"search": "Tìm bài viết theo tiêu đề hoặc nội dung…", "clear": "Xóa từ khóa tìm bài viết", "article": "Bài viết", "status": "Trạng thái", "updated": "Cập nhật", "actionsFor": "Thao tác với {{title}}", "updatedSuccess": "Đã cập nhật bài viết. Danh sách và thống kê đã làm mới.", "noSearch": "Không tìm thấy bài viết. Hãy thử từ khóa khác.", "noFilter": "Chưa có bài viết ở trạng thái này.", "noArticles": "Chưa có bài viết. Hãy tạo bài viết đầu tiên."},
+    "editor": {
+      "basicInfo": "Thông tin bài viết", "articleDetails": "Tiêu đề & tóm tắt", "writeContent": "Biên soạn nội dung", "publishSettings": "Kiểm tra xuất bản",
+      "steps": {"0": "Thông tin", "1": "Nội dung", "2": "Xuất bản"}, "stepLabel": "Bước {{step}}: {{name}}",
+      "mode": {"edit": "Soạn thảo", "preview": "Xem trước", "split": "Song song"},
+      "titlePlaceholder": "Đặt tiêu đề rõ ràng, hữu ích cho người đọc", "summaryPlaceholder": "Giới thiệu những thông tin người đọc sẽ tìm thấy…",
+      "slugPlaceholder": "Tự gợi ý từ tiêu đề bài viết", "contentPlaceholder": "## Bắt đầu bằng một tiêu đề\n\nChia sẻ kiến thức sức khỏe hữu ích, đã kiểm chứng…",
+      "sourcePlaceholder": "Tên tổ chức hoặc ấn phẩm tham khảo", "referencesPlaceholder": "Tên nguồn | https://example.org/bai-viet",
+      "chooseCategory": "Chọn danh mục", "coverHint": "Ảnh đại diện · 16:9", "characters": "{{count}} / {{limit}} ký tự",
+      "estimatedTime": "{{minutes}} phút đọc", "previewEmpty": "Nội dung đã định dạng sẽ xuất hiện tại đây.", "undo": "Hoàn tác", "redo": "Làm lại",
+      "saveChanges": "Lưu thay đổi", "saveDraft": "Lưu bản nháp", "restoreDraft": "Khôi phục bản nháp", "saveAndLeave": "Lưu và rời đi",
+      "previous": "Quay lại", "next": "Tiếp theo", "closePreview": "Về trình biên tập", "closeMenu": "Đóng menu",
+      "autosaving": "Đang lưu bản nháp…", "saved": "Đã lưu mọi thay đổi", "unsaved": "Có thay đổi chưa lưu",
+      "autosaveHint": "Bản nháp tự lưu sau 12 giây ngừng chỉnh sửa.", "manualSaveHint": "Dùng thanh hành động để lưu thay đổi.",
+      "saveFailed": "Chưa lưu được. Kiểm tra lỗi và lưu lại.", "autosaveInvalid": "Tạm dừng tự lưu: kiểm tra các trường và lưu thủ công.",
+      "validationTitle": "Các mục cần kiểm tra: {{count}}", "categoryRequired": "Chọn một danh mục hiện có.",
+      "titleRequired": "Nhập tiêu đề bài viết.", "titleLong": "Tiêu đề không được vượt quá 240 ký tự.",
+      "summaryRequired": "Nhập tóm tắt bài viết.", "summaryLong": "Tóm tắt không được vượt quá 1.200 ký tự.",
+      "contentRequired": "Nhập ít nhất 100 ký tự nội dung cho ngôn ngữ này.", "contentLong": "Nội dung không được vượt quá 100.000 ký tự.",
+      "sourceRequired": "Nhập tên nguồn tham khảo chính.", "sourceLong": "Tên nguồn không được vượt quá 240 ký tự.",
+      "sourceUrlInvalid": "Nhập đường dẫn nguồn HTTPS hợp lệ (tối đa 2.048 ký tự).",
+      "contentLinks": "Dùng liên kết HTTPS hợp lệ và ảnh đã tải lên kho ảnh bài viết trong nội dung.",
+      "authorHint": "Tác giả gốc do máy chủ gán và được giữ nguyên khi chỉnh sửa.", "authorId": "Mã tác giả: {{id}}",
+      "imageSize": "{{format}} · {{size}} MB", "checks": {"basics": "Thông tin bài viết & bản dịch", "content": "Nội dung & thời gian đọc", "sources": "Nguồn & tài liệu tham khảo"}
+    },
     "admin": "Quản trị HealthyCheck",
     "denied": "Bạn không có quyền truy cập",
     "dashboard": "Tổng quan quản trị",
@@ -1136,7 +1162,8 @@
       "bold": "In đậm",
       "italic": "In nghiêng",
       "list": "Danh sách",
-      "link": "Liên kết"
+      "link": "Liên kết",
+      "ordered": "Danh sách đánh số", "quote": "Trích dẫn"
     },
     "categoryFields": {
       "slug": "Slug danh mục",

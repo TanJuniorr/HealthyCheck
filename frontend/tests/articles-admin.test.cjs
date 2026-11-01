@@ -5,19 +5,21 @@ const boundary=name=>path.resolve(__dirname,'../'+name),tick=()=>new Promise(res
 const A='11111111-1111-4111-8111-111111111111',B='22222222-2222-4222-8222-222222222222';
 const row={id:B,slug:'native-draft',category_id:A,status:'draft',updated_at:'2026-10-30T00:00:00Z',cover_image_path:null,is_featured:false};
 const category={id:A,name_vi:'Giấc ngủ',name_en:'Sleep',is_active:true};
-function editorFixture(service={},routerOverrides={}){
+function editorFixture(service={},routerOverrides={},dimensions={width:390,height:844}){
  let prevented=false,blocked,disabled=0;
- const f=uiFixture({'expo-router':{router:{replace(){},canGoBack:()=>true,back(){},...routerOverrides},usePreventRemove(value,callback){prevented=value;blocked=callback;return()=>{disabled++;};}},
+ const f=uiFixture({__dimensions:dimensions,__timers:{setTimeout:()=>1,clearTimeout(){}},'expo-router':{router:{replace(){},canGoBack:()=>true,back(){},...routerOverrides},usePreventRemove(value,callback){prevented=value;blocked=callback;return()=>{disabled++;};}},
   [boundary('src/contexts/AuthContext.tsx')]:{useAuth:()=>({user:{id:A}})},
   [boundary('src/services/articlesService.ts')]:service,
   [boundary('src/services/articleImages.ts')]:{pickArticleImage:async()=>({uri:'file:///picked.jpg',bytes:new Uint8Array([255,216,255]),mime:'image/jpeg'}),uploadArticleImage:async()=>A+'/'+B+'/'+A+'.jpg',deleteArticleImage:async()=>{}},
   [boundary('src/components/articles/ArticleImage.tsx')]:{ArticleImage:'ArticleImage'},[boundary('src/components/articles/ArticleMarkdown.tsx')]:{ArticleMarkdown:'ArticleMarkdown'}});
  const Editor=f.load('src/components/articles/AdminArticleEditor').AdminArticleEditor;
  const props={initial:row,initialTranslations:[],categories:[category],reload:async()=>{}};
- const render=()=>f.render(()=>Editor(props));
+ const render=()=>f.renderDeep(()=>Editor(props));
  return {...f,props,render,get prevented(){return prevented;},get disabled(){return disabled;},block(repeat){blocked({repeat});}};
 }
 const byTitle=(tree,type,title)=>elements(tree).find(e=>e.type===type&&e.props.title===title);
+const byLabel=(tree,label)=>elements(tree).find(e=>e.props.accessibilityLabel===label);
+const step=(tree,t,index)=>byLabel(tree,t('cms.editor.stepLabel',{step:index+1,name:t(`cms.editor.steps.${index}`)})).props.onPress();
 
 test('native Explore shows only the admin add/manage controls and refreshes all article lists',()=>{
  let role='user',refreshes=0;const routes=[];
@@ -27,11 +29,11 @@ test('native Explore shows only the admin add/manage controls and refreshes all 
   [boundary('src/hooks/useHealthQuery.ts')]:{useHealthQuery:()=>({data:[],isLoading:false,error:null,refresh:async()=>{refreshes++;}})},
   [boundary('src/services/articlesService.ts')]:{},[boundary('src/components/articles/ArticleCard.tsx')]:{ArticleCard:'ArticleCard'}});
  const Screen=f.load('app/(tabs)/explore').default,t=f.load('src/i18n/index').default.t.bind(f.load('src/i18n/index').default);
- const header=()=>elements(f.render(()=>Screen())).find(e=>e.props.data).props.ListHeaderComponent;
- assert.equal(elements(header()).some(e=>e.props.accessibilityLabel===t('cms.newArticle')),false);
- role='admin';const tree=header();elements(tree).find(e=>e.props.accessibilityLabel===t('cms.newArticle')).props.onPress();byTitle(tree,'TextButton',t('cms.manageArticles')).props.onPress();assert.deepEqual(routes,['/admin/editor/new','/admin']);
+ const header=()=>elements(f.render(()=>Screen())).find(e=>e.props.data)?f.render(()=>Screen()):null;
+ assert.equal(elements(header()).some(e=>e.props.title===t('cms.newArticle')),false);
+ role='admin';const tree=header();byTitle(tree,'TextButton',t('cms.newArticle')).props.onPress();byTitle(tree,'TextButton',t('cms.manageArticles')).props.onPress();assert.deepEqual(routes,['/admin/editor/new','/admin']);
  const list=elements(f.render(()=>Screen())).find(e=>e.props.data);list.props.onRefresh();assert.equal(refreshes,5);
- role=null;assert.equal(elements(header()).some(e=>e.props.accessibilityLabel===t('cms.newArticle')),false);
+ role=null;assert.equal(elements(header()).some(e=>e.props.title===t('cms.newArticle')),false);
 });
 
 test('role state revalidates foreground/poll changes, masks errors and keys sessions by Auth UUID',async()=>{
@@ -79,22 +81,36 @@ test('native picker previews bytes, validates size/MIME and uploads an ArrayBuff
 });
 
 test('editor retains both languages/reading time, formats selected Markdown and confirms unsaved navigation',async()=>{
- const f=editorFixture(),i18n=f.load('src/i18n/index').default;await i18n.changeLanguage('vi');let tree=f.render();assert.equal(f.prevented,false);
- const input=label=>elements(tree).find(e=>e.type==='TextInput'&&e.props.accessibilityLabel===i18n.t(label));
- input('cms.articleTitle').props.onChangeText('Bản thảo');tree=f.render();input('cms.content').props.onChangeText('Một đoạn văn');tree=f.render();input('cms.content').props.onSelectionChange({nativeEvent:{selection:{start:4,end:8}}});tree=f.render();byTitle(tree,'TextButton',i18n.t('cms.format.bold')).props.onPress();tree=f.render();assert.equal(input('cms.content').props.value,'Một **đoạn** văn');
- input('cms.readingTime').props.onChangeText('7');tree=f.render();byTitle(tree,'TextButton',i18n.t('cms.languages.en')).props.onPress();tree=f.render();input('cms.articleTitle').props.onChangeText('English draft');tree=f.render();byTitle(tree,'TextButton',i18n.t('cms.languages.vi')).props.onPress();tree=f.render();assert.equal(input('cms.articleTitle').props.value,'Bản thảo');assert.equal(input('cms.readingTime').props.value,'7');assert.equal(f.prevented,true);
- let repeated=0;f.block(()=>{repeated++;});tree=f.render();byTitle(tree,'TextButton',i18n.t('cms.keepEditing')).props.onPress();assert.equal(repeated,0);f.block(()=>{repeated++;});tree=f.render();byTitle(tree,'PrimaryButton',i18n.t('cms.discardChanges')).props.onPress();f.render();assert.equal(repeated,1);assert.equal(f.prevented,false);assert.equal(f.disabled,1);
+ const f=editorFixture(),i18n=f.load('src/i18n/index').default,t=i18n.t.bind(i18n);await i18n.changeLanguage('vi');let tree=f.render();assert.equal(f.prevented,false);
+ const input=label=>byLabel(tree,t(label));
+ input('cms.articleTitle').props.onChangeText('Bản thảo');tree=f.render();step(tree,t,1);tree=f.render();input('cms.content').props.onChangeText('Một đoạn văn');tree=f.render();input('cms.content').props.onSelectionChange({nativeEvent:{selection:{start:4,end:8}}});tree=f.render();byLabel(tree,t('cms.format.bold')).props.onPress();tree=f.render();assert.equal(input('cms.content').props.value,'Một **đoạn** văn');
+ input('cms.readingTime').props.onChangeText('7');tree=f.render();byLabel(tree,t('cms.languages.en')).props.onPress();tree=f.render();input('cms.content').props.onChangeText('English content');tree=f.render();byLabel(tree,t('cms.languages.vi')).props.onPress();tree=f.render();assert.equal(input('cms.content').props.value,'Một **đoạn** văn');assert.equal(input('cms.readingTime').props.value,'7');step(tree,t,0);tree=f.render();assert.equal(input('cms.articleTitle').props.value,'Bản thảo');assert.equal(f.prevented,true);
+ let repeated=0;f.block(()=>{repeated++;});tree=f.render();byTitle(tree,'TextButton',t('cms.keepEditing')).props.onPress();assert.equal(repeated,0);f.block(()=>{repeated++;});tree=f.render();byTitle(tree,'TextButton',t('cms.discardChanges')).props.onPress();f.render();assert.equal(repeated,1);assert.equal(f.prevented,false);assert.equal(f.disabled,1);f.unmount();
 });
 
 test('image selection is previewed before upload and save failures retain staged cover and entered content',async()=>{
  let writes=0,release;const f=editorFixture({saveArticle:async()=>{writes++;await new Promise(resolve=>{release=resolve;});throw Error('Network unavailable');}}),i18n=f.load('src/i18n/index').default;await i18n.changeLanguage('vi');
  let tree=f.render();await byTitle(tree,'TextButton',i18n.t('cms.uploadCover')).props.onPress();tree=f.render();assert.ok(elements(tree).some(e=>e.props.source?.uri==='file:///picked.jpg'));assert.equal(elements(tree).some(e=>e.type==='ArticleImage'),false);
  await byTitle(tree,'PrimaryButton',i18n.t('cms.uploadImage')).props.onPress();tree=f.render();assert.equal(elements(tree).find(e=>e.type==='ArticleImage').props.path,A+'/'+B+'/'+A+'.jpg');
- const save=byTitle(tree,'PrimaryButton',i18n.t('common.save')).props.onPress,pending=save();await save();assert.equal(writes,1);release();await pending;tree=f.render();assert.ok(elements(tree).some(e=>e.props.accessibilityRole==='alert'));assert.equal(elements(tree).find(e=>e.type==='ArticleImage').props.path,A+'/'+B+'/'+A+'.jpg');assert.equal(f.prevented,true);
+ const save=byTitle(tree,'TextButton',i18n.t('cms.editor.saveChanges')).props.onPress,pending=save();await save();assert.equal(writes,1);release();await pending;tree=f.render();assert.ok(elements(tree).some(e=>e.props.accessibilityRole==='alert'));assert.equal(elements(tree).find(e=>e.type==='ArticleImage').props.path,A+'/'+B+'/'+A+'.jpg');assert.equal(f.prevented,true);
 });
 
 test('server reloads never run on editor focus and responses from the previous owner are discarded',async()=>{
  let owner=A,calls=0,release;
  const f=uiFixture({[boundary('src/contexts/AuthContext.tsx')]:{useAuth:()=>({user:{id:owner}})},[boundary('src/services/articlesService.ts')]:{getArticle:async()=>{calls++;if(calls===1)return new Promise(resolve=>{release=resolve;});return row;},getArticleTranslations:async()=>[],getArticleCategories:async()=>[category]},[boundary('src/components/articles/AdminArticleEditor.tsx')]:{AdminArticleEditor:'Editor'}});
  const Screen=f.load('src/components/articles/ArticleEditorScreen').ArticleEditorScreen,render=()=>f.render(()=>Screen({id:B}));render();await tick();assert.equal(calls,1);owner=B;render();await tick();release({...row,slug:'stale-owner'});await tick();let tree=render();assert.equal(elements(tree).find(e=>e.type==='Editor').props.initial.slug,'native-draft');render();render();assert.equal(calls,2);f.unmount();
+});
+test('mobile steps keep the action bar outside scrolling content and save-before-leave clears dirty prevention',async()=>{
+ const f=editorFixture({saveArticle:async(_id,_expected,input)=>({...row,...input,updated_at:'next-version'})}),i18n=f.load('src/i18n/index').default,t=i18n.t.bind(i18n);let tree=f.render();
+ byLabel(tree,t('cms.articleTitle')).props.onChangeText('Keep this draft');tree=f.render();assert.equal(f.prevented,true);
+ const mainScroll=elements(tree).find(e=>e.type==='ScrollView');assert.equal(elements(mainScroll).some(e=>e.props.title===t('cms.editor.saveChanges')),false);
+ for(const index of [1,2,0]){step(tree,t,index);tree=f.render();}assert.equal(byLabel(tree,t('cms.articleTitle')).props.value,'Keep this draft');
+ let left=0;f.block(()=>{left++;});tree=f.render();await byTitle(tree,'PrimaryButton',t('cms.editor.saveAndLeave')).props.onPress();f.render();assert.equal(left,1);assert.equal(f.prevented,false);f.unmount();
+});
+test('desktop shows information, content and sources together; published secondary actions require confirmation',async()=>{
+ const writes=[],f=editorFixture({isArticleSlugAvailable:async()=>true,saveArticle:async(_id,_expected,input)=>{writes.push(input.status);return {...row,...input,updated_at:'next-version'};}},{},{width:1280,height:900});
+ f.props.initial={...row,status:'published'};const lib=f.load('src/lib/articleContent');f.props.initialTranslations=[{...lib.emptyArticleTranslation('vi'),title:'Health',summary:'Summary',content:'Verified content. '.repeat(10),source_name:'WHO',source_url:'https://www.who.int/'}];
+ const i18n=f.load('src/i18n/index').default,t=i18n.t.bind(i18n);let tree=f.render();assert.ok(byLabel(tree,t('cms.articleTitle')));assert.ok(byLabel(tree,t('cms.content')));assert.ok(byLabel(tree,t('cms.sourceName')));assert.equal(byLabel(tree,t('cms.editor.stepLabel',{step:1,name:t('cms.editor.steps.0')})),undefined);
+ byLabel(tree,t('cms.actions')).props.onPress();tree=f.render();byTitle(tree,'TextButton',t('cms.unpublish')).props.onPress();tree=f.render();assert.equal(writes.length,0);await byTitle(tree,'PrimaryButton',t('cms.confirm')).props.onPress();tree=f.render();assert.deepEqual(writes,['draft']);
+ byLabel(tree,t('cms.actions')).props.onPress();tree=f.render();byTitle(tree,'TextButton',t('cms.archive')).props.onPress();tree=f.render();assert.equal(writes.length,1);await byTitle(tree,'PrimaryButton',t('cms.confirm')).props.onPress();assert.deepEqual(writes,['draft','archived']);f.unmount();
 });
