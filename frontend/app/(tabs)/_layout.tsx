@@ -14,7 +14,7 @@ export default function TabLayout() {
   useTheme();
 
   const insets = useSafeAreaInsets();
-  const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 0 : 8);
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 0 : 4);
 
   return (
     <Tabs
@@ -27,8 +27,8 @@ export default function TabLayout() {
           borderTopColor: Colors.tabBarBorder,
           borderTopWidth: 1,
           height: Layout.tabBarHeight + bottomInset,
-          paddingBottom: bottomInset > 0 ? bottomInset : 8,
-          paddingTop: 8,
+          paddingBottom: bottomInset > 0 ? bottomInset : 4,
+          paddingTop: 6,
         },
         tabBarLabelStyle: {
           ...Typography.tabLabel,

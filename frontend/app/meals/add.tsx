@@ -11,6 +11,7 @@ import { AppHeader } from '../../src/components/common/AppHeader';
 import { PrimaryButton, TextButton } from '../../src/components/common/Buttons';
 import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { FoodPortionForm } from '../../src/components/health/FoodPortionForm';
+import { FoodThumbnail } from '../../src/components/health/FoodThumbnail';
 import { useFoodSearch } from '../../src/hooks/useFoodSearch';
 import { useHealthQuery } from '../../src/hooks/useHealthQuery';
 import { useAuth } from '../../src/contexts/AuthContext';
@@ -81,20 +82,20 @@ export function MealEditor({date,mealType}:{date?:string;mealType?:string}) {
   <Text style={[styles.foodServing,{padding:12}]}>{formatDate(mealDate)}</Text>
   <View style={styles.mealTypeBar}>{MEAL_TYPES.map(type=><TouchableOpacity key={type} accessibilityRole="button" accessibilityState={{selected:type===selectedMealType,disabled:busy}} disabled={busy} onPress={()=>setSelectedMealType(type)} style={[styles.mealTypeTab,type===selectedMealType&&styles.mealTypeTabSelected]}><Text style={styles.mealTypeLabel}>{t(`meals.${type}`)}</Text></TouchableOpacity>)}</View>
   <View style={styles.searchSection}><View style={styles.searchBox}><Ionicons name="search-outline" size={20} color={Colors.textMuted}/><TextInput accessibilityLabel={t('meals.search')} style={styles.searchInput} placeholder={t('meals.search')} placeholderTextColor={Colors.textMuted} value={search} onChangeText={setSearch} autoCapitalize="none" clearButtonMode="while-editing" maxLength={160}/></View></View>
-  <View><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingHorizontal:16,gap:8,paddingVertical:8}}>{[null,...FOOD_GROUPS].map(value=><TouchableOpacity key={value??'all'} accessibilityRole="button" accessibilityState={{selected:group===value}} onPress={()=>setGroup(value)} style={[styles.mealTypeTab,{flexGrow:0,flexShrink:0},group===value&&styles.mealTypeTabSelected]}><Text style={styles.mealTypeLabel}>{t(value?`meals.groups.${value}`:'meals.allGroups')}</Text></TouchableOpacity>)}</ScrollView></View>
+  <View><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingHorizontal:16,gap:8,paddingVertical:8}}>{[null,...FOOD_GROUPS].map(value=><TouchableOpacity key={value??'all'} accessibilityRole="button" accessibilityState={{selected:group===value}} onPress={()=>setGroup(value)} style={[styles.mealTypeTab,{flexGrow:0,flexShrink:0},group===value&&styles.mealTypeTabSelected]}><Text style={styles.mealTypeLabel}>{t(value?`meals.groups.${value}`:'meals.allGroups')}</Text></TouchableOpacity>)}</ScrollView><Text style={styles.imageCredit}>{t('meals.foodImageCredit')}</Text></View>
   <FlatList data={foods} keyExtractor={item=>item.id} keyboardShouldPersistTaps="handled" initialNumToRender={12} windowSize={7} contentContainerStyle={[styles.listContent,{paddingBottom:20}]} extraData={[drafts,language,busy]} onEndReached={()=>{if(catalogue.hasMore&&!catalogue.error)void catalogue.loadMore();}} onEndReachedThreshold={0.4}
    ListFooterComponent={catalogue.hasMore?<TextButton title={t('meals.loadMore')} onPress={catalogue.loadMore} loading={catalogue.loadingMore}/>:undefined}
    ListHeaderComponent={<View>
     <DataFeedback {...existing}/>
     {rows.length>0&&<Text style={styles.listSectionTitle}>{t('meals.savedItems')}</Text>}
-    {rows.map(row=><View key={row.id} style={styles.foodRow}><View style={styles.foodInfo}><Text style={styles.foodName}>{row.food?rowLabel(row.food,safeNumber(row.quantity_g)):t('nutrition.unavailableFood')}</Text><Text style={styles.foodServing}>{formatTime(row.consumed_at)}</Text></View><TextButton title={t('common.edit')} disabled={busy||!row.food} onPress={()=>{if(row.food)setEditor({food:row.food,grams:safeNumber(row.quantity_g),mealType:row.meal_type,record:row});}}/><TextButton title={t('common.delete')} disabled={busy} color={Colors.error} onPress={()=>{setError(null);setDeleting(row);}}/></View>)}
+    {rows.map(row=><View key={row.id} style={styles.foodRow}>{row.food?<FoodThumbnail food={row.food} size={42}/>:null}<View style={styles.foodInfo}><Text style={styles.foodName}>{row.food?rowLabel(row.food,safeNumber(row.quantity_g)):t('nutrition.unavailableFood')}</Text><Text style={styles.foodServing}>{formatTime(row.consumed_at)}</Text></View><TextButton title={t('common.edit')} disabled={busy||!row.food} onPress={()=>{if(row.food)setEditor({food:row.food,grams:safeNumber(row.quantity_g),mealType:row.meal_type,record:row});}}/><TextButton title={t('common.delete')} disabled={busy} color={Colors.error} onPress={()=>{setError(null);setDeleting(row);}}/></View>)}
     {drafts.length>0&&<Text style={styles.listSectionTitle}>{t('meals.totalSelected')}</Text>}
-    {drafts.map(item=><View key={item.mealType+item.food.id} style={styles.foodRow}><TouchableOpacity accessibilityRole="button" disabled={busy} style={styles.foodInfo} onPress={()=>setEditor({food:item.food,grams:item.grams,mealType:item.mealType})}><Text style={styles.foodName}>{rowLabel(item.food,item.grams)}</Text><Text style={styles.foodServing}>{t(`meals.${item.mealType}`)}</Text></TouchableOpacity><TextButton title={t('common.delete')} disabled={busy} color={Colors.error} onPress={()=>setDrafts(previous=>previous.filter(draft=>draft!==item))}/></View>)}
+    {drafts.map(item=><View key={item.mealType+item.food.id} style={styles.foodRow}><FoodThumbnail food={item.food} size={42}/><TouchableOpacity accessibilityRole="button" disabled={busy} style={styles.foodInfo} onPress={()=>setEditor({food:item.food,grams:item.grams,mealType:item.mealType})}><Text style={styles.foodName}>{rowLabel(item.food,item.grams)}</Text><Text style={styles.foodServing}>{t(`meals.${item.mealType}`)}</Text></TouchableOpacity><TextButton title={t('common.delete')} disabled={busy} color={Colors.error} onPress={()=>setDrafts(previous=>previous.filter(draft=>draft!==item))}/></View>)}
     <Text style={[styles.listSectionTitle,{marginVertical:12}]}>{t('meals.quickFoods')}</Text>
     {catalogue.isLoading||catalogue.error?<DataFeedback {...catalogue}/>:null}
    </View>}
    ListEmptyComponent={!catalogue.isLoading&&!catalogue.error?<View style={styles.emptyContainer}><Text style={styles.emptyTitle}>{t('meals.emptySearch')}</Text><Text style={styles.emptySubtitle}>{t('meals.searchHint')}</Text></View>:undefined}
-   renderItem={({item})=>{const selected=drafts.find(draft=>draft.food.id===item.id&&draft.mealType===selectedMealType);return <TouchableOpacity accessibilityRole="button" accessibilityLabel={foodName(item,language)} disabled={busy} onPress={()=>openFood(item)} style={[styles.foodRow,selected&&{borderColor:Colors.primary}]}><View style={styles.foodIconWrapper}><Ionicons name="nutrition-outline" size={20} color={Colors.orange}/></View><View style={styles.foodInfo}><Text style={styles.foodName}>{foodName(item,language)}</Text><Text style={styles.foodServing}>{t('meals.calorieReference',{value:formatNumber(item.calories_per_100g)})}</Text><Text style={styles.foodServing}>{t('meals.unitGram')}{pieceWeight(item)!==null?` · ${t(portionUnitKey(item))}`:''}{selected?` · ${formatNumber(selected.grams)} g`:''}</Text></View><Ionicons name={selected?'checkmark-circle':'add-circle-outline'} size={24} color={Colors.primary}/></TouchableOpacity>;}}
+   renderItem={({item})=>{const selected=drafts.find(draft=>draft.food.id===item.id&&draft.mealType===selectedMealType);return <TouchableOpacity accessibilityRole="button" accessibilityLabel={foodName(item,language)} disabled={busy} onPress={()=>openFood(item)} style={[styles.foodRow,selected&&{borderColor:Colors.primary}]}><FoodThumbnail food={item} size={48} containerStyle={{marginRight:Spacing.md}}/><View style={styles.foodInfo}><Text style={styles.foodName}>{foodName(item,language)}</Text><Text style={styles.foodServing}>{t('meals.calorieReference',{value:formatNumber(item.calories_per_100g)})}</Text><Text style={styles.foodServing}>{t('meals.unitGram')}{pieceWeight(item)!==null?` · ${t(portionUnitKey(item))}`:''}{selected?` · ${formatNumber(selected.grams)} g`:''}</Text></View><Ionicons name={selected?'checkmark-circle':'add-circle-outline'} size={24} color={Colors.primary}/></TouchableOpacity>;}}
   />
   <View style={[styles.bottomBar,{position:'relative',paddingBottom:Math.max(12,insets.bottom),gap:8}]}>
    {error ? <Text accessibilityRole="alert" style={{color:Colors.error}}>{localizeMessage(error)}</Text> : null}
@@ -201,15 +202,7 @@ const baseStyles = StyleSheet.create({
     borderColor: Colors.border,
     ...Shadows.sm,
   },
-  foodIconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.orangeLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Spacing.md,
-  },
+  imageCredit: { ...Typography.supporting, color: Colors.textMuted, paddingHorizontal: Spacing.screenPadding, paddingBottom: Spacing.xs },
   foodInfo: {
     flex: 1,
   },

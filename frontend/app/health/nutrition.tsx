@@ -20,6 +20,7 @@ import { foodName } from '../../src/lib/foodPortions';
 import { safeNumber } from '../../src/lib/dataValidation';
 import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { CalendarDatePicker } from '../../src/components/common/CalendarDatePicker';
+import { FoodThumbnail } from '../../src/components/health/FoodThumbnail';
 import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
 export default function NutritionScreen() {
@@ -32,7 +33,7 @@ export default function NutritionScreen() {
   const query = useHealthQuery(async () => { const [rows,goals] = await Promise.all([getMealsByDate(selectedDate),getCurrentGoals(selectedDate)]); return { rows,summary:aggregateNutrition(rows,selectedDate,selectedDate,goals?.daily_calories ?? null) }; },'nutrition-screen:'+selectedDate);
   const summary = query.data?.summary;
   const nutritionData = { caloriesGoal:summary?.calorieGoal ?? 0,caloriesConsumed:summary?.calories ?? 0,progress:(summary?.progressPercent ?? 0)/100,protein:{ current:summary?.protein ?? 0,color:Colors.primary },carbs:{ current:summary?.carbs ?? 0,color:Colors.blue },fat:{ current:summary?.fat ?? 0,color:Colors.orange } };
-  const meals = (['breakfast','lunch','dinner','snack'] as const).map(type => { const rows = query.data?.rows.filter(row => row.meal_type === type) ?? []; return { id:type,type:t(`meals.${type}`),icon:'restaurant-outline',time:rows.length ? formatTime(new Date(rows[0].consumed_at),{ hour:'2-digit',minute:'2-digit' }) : '',totalCalories:formatNumber(summary?.byMealType[type].calories,0) ?? '—',items:rows.map(row => ({ name:row.food ? foodName(row.food,i18n.resolvedLanguage ?? 'vi') : t("nutrition.unavailableFood"),quantity:formatNumber(safeNumber(row.quantity_g)),calories:row.food ? formatNumber(calculateFoodNutrition(row.food,safeNumber(row.quantity_g)).calories,0) : '—' })) }; });
+  const meals = (['breakfast','lunch','dinner','snack'] as const).map(type => { const rows = query.data?.rows.filter(row => row.meal_type === type) ?? []; return { id:type,type:t(`meals.${type}`),icon:'restaurant-outline',time:rows.length ? formatTime(new Date(rows[0].consumed_at),{ hour:'2-digit',minute:'2-digit' }) : '',totalCalories:formatNumber(summary?.byMealType[type].calories,0) ?? '—',items:rows.map(row => ({ food:row.food, name:row.food ? foodName(row.food,i18n.resolvedLanguage ?? 'vi') : t("nutrition.unavailableFood"),quantity:formatNumber(safeNumber(row.quantity_g)),calories:row.food ? formatNumber(calculateFoodNutrition(row.food,safeNumber(row.quantity_g)).calories,0) : '—' })) }; });
   const caloriesRemaining = Math.max(0, nutritionData.caloriesGoal - nutritionData.caloriesConsumed);
 
   const handleAddMeal = (mealType = 'dinner') => {
@@ -208,7 +209,7 @@ export default function NutritionScreen() {
                           idx === meal.items.length - 1 && styles.mealItemRowLast,
                         ]}
                       >
-                        <View style={styles.mealItemBullet} />
+                        {item.food ? <FoodThumbnail food={item.food} size={38} /> : <View style={styles.mealItemBullet} />}
                         <Text style={styles.mealItemName}>{item.name} · {item.quantity} g</Text>
                         <Text style={styles.mealItemCalories}>{item.calories} kcal</Text>
                       </View>
@@ -459,6 +460,7 @@ const baseStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: Spacing.sm,
   },
   mealItemRowLast: {},
   mealItemBullet: {

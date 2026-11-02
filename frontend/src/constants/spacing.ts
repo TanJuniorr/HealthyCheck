@@ -67,7 +67,7 @@ export const Shadows = {
 
 export const Layout = {
   /** Standard bottom tab bar height */
-  tabBarHeight: 60,
+  tabBarHeight: 56,
   /** Header height */
   headerHeight: 56,
   /** Min touch target */
