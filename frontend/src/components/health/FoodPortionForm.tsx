@@ -9,6 +9,7 @@ import { dataError } from '../../lib/dataErrors';
 import { localizeMessage } from '../../i18n/localize';
 import { formatNumber } from '../../i18n/formatting';
 import { AppTextInput } from '../common/AppTextInput';
+import { FoodThumbnail } from './FoodThumbnail';
 import { PrimaryButton, TextButton } from '../common/Buttons';
 import { useThemedStyles } from '../../contexts/ThemeContext';
 import { Colors } from '../../constants/colors';
@@ -34,8 +35,8 @@ export function FoodPortionForm({ food, grams: initial, onSave, onClose }: Props
   finally { lock.current=false;if(mounted.current)setBusy(false); }
  };
  return <Modal visible animationType="slide" onRequestClose={close}><KeyboardAvoidingView style={styles.screen} behavior={Platform.OS==='ios'?'padding':'height'}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content,{paddingTop:insets.top+20,paddingBottom:insets.bottom+20}]}>
-  <Text accessibilityRole="header" style={styles.title}>{name}</Text>
-  <Text style={styles.text}>{t('meals.calorieReference',{value:formatNumber(food.calories_per_100g)})}</Text>
+  <View style={styles.foodHeader}><FoodThumbnail food={food} size={68}/><View style={styles.foodHeaderCopy}><Text accessibilityRole="header" style={styles.title}>{name}</Text><Text style={styles.text}>{t('meals.calorieReference',{value:formatNumber(food.calories_per_100g)})}</Text></View></View>
+  <Text style={styles.imageCredit}>{t('meals.foodImageCredit')}</Text>
   <View style={styles.row}><TextButton title={t('meals.unitGram')} disabled={busy || grams===null} onPress={()=>switchUnit('g')}/>{weight!==null && <TextButton title={t(portionUnitKey(food))} disabled={busy || grams===null} onPress={()=>switchUnit('piece')}/>}</View>
   <AppTextInput label={t(unit==='g'?(food.catalog_metadata?.edible_portion?'meals.edibleWeight':'meals.quantityGram'):food.catalog_metadata?.unit_kind==='slice'?'meals.quantitySlice':'meals.quantityPiece')} keyboardType="decimal-pad" editable={!busy} value={text} onChangeText={value=>{setText(value);setGrams(portionGrams(food,value,unit));}}/>
   {grams===null && <Text accessibilityRole="alert" style={styles.error}>{t('meals.invalidPortion')}</Text>}
@@ -53,4 +54,4 @@ export function FoodPortionForm({ food, grams: initial, onSave, onClose }: Props
   <PrimaryButton title={t('common.save')} onPress={save} disabled={grams===null} loading={busy}/><TextButton title={t('common.cancel')} onPress={close} disabled={busy}/>
  </ScrollView></KeyboardAvoidingView></Modal>;
 }
-const baseStyles=StyleSheet.create({screen:{flex:1,backgroundColor:Colors.background},content:{paddingHorizontal:20,gap:16,maxWidth:640,width:'100%',alignSelf:'center'},title:{color:Colors.textPrimary,fontSize:22,fontWeight:'700'},text:{color:Colors.textSecondary,fontSize:14,lineHeight:21},error:{color:Colors.error},row:{flexDirection:'row',flexWrap:'wrap',gap:4},preview:{padding:20,gap:10,backgroundColor:Colors.white,borderRadius:16}});
+const baseStyles=StyleSheet.create({screen:{flex:1,backgroundColor:Colors.background},content:{paddingHorizontal:20,gap:16,maxWidth:640,width:'100%',alignSelf:'center'},foodHeader:{flexDirection:'row',alignItems:'center',gap:12},foodHeaderCopy:{flex:1,gap:4},title:{color:Colors.textPrimary,fontSize:22,fontWeight:'700'},imageCredit:{color:Colors.textMuted,fontSize:12,lineHeight:18},text:{color:Colors.textSecondary,fontSize:14,lineHeight:21},error:{color:Colors.error},row:{flexDirection:'row',flexWrap:'wrap',gap:4},preview:{padding:20,gap:10,backgroundColor:Colors.white,borderRadius:16}});

@@ -13,6 +13,7 @@ import { Typography } from '../../src/constants/typography';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useThemedStyles } from '../../src/contexts/ThemeContext';
 import { calculateFoodNutrition } from '../../src/lib/healthCalculations';
+import { FoodThumbnail } from '../../src/components/health/FoodThumbnail';
 import { dataError } from '../../src/lib/dataErrors';
 import { foodName } from '../../src/lib/foodPortions';
 import { formatNumber } from '../../src/i18n/formatting';
@@ -139,7 +140,7 @@ function FoodScanScreen() {
 
   const selectedCount = items.filter(item => item.selectedFoodId !== null).length;
   const creatingFood = items.some(item => item.creatingCustomFood);
-  const cameraHeight = Math.max(380, Math.min(650, Math.floor(windowHeight * 0.75)));
+  const cameraHeight = Math.max(360, Math.min(600, Math.floor(windowHeight * 0.68)));
 
   useEffect(() => {
     if (!isFocused) {
@@ -455,6 +456,7 @@ function FoodScanScreen() {
           <View style={styles.resultsSection}>
             <Text style={styles.sectionTitle}>{t('foodScan.results')}</Text>
             <Text style={styles.disclaimer}>{t('foodScan.estimateDisclaimer')}</Text>
+            <Text style={styles.imageCredit}>{t('foodScan.imageCredit')}</Text>
             <Text style={styles.mealLabel}>{t('foodScan.selectMeal')}</Text>
             <View style={styles.mealPicker}>
               {MEAL_TYPES.map(type => (
@@ -472,7 +474,7 @@ function FoodScanScreen() {
               return (
                 <View key={item.reviewKey} style={styles.foodCard}>
                   <View style={styles.foodNameRow}>
-                    <View style={styles.foodIcon}><Ionicons name="restaurant-outline" size={20} color={Colors.orange} /></View>
+                    {photo ? <Image source={{ uri: photo.uri }} style={styles.foodScanPhoto} resizeMode="cover" accessibilityLabel={t('foodScan.title')} /> : <View style={styles.foodIconFallback}><Ionicons name="restaurant-outline" size={20} color={Colors.orange} /></View>}
                     <View style={styles.foodHeading}>
                       <Text style={styles.foodName}>{language.startsWith('vi') ? item.name_vi : item.name_en}</Text>
                       <Text style={styles.estimateText}>{t('foodScan.approx', { grams: formatNumber(item.estimated_grams), calories: formatNumber(item.estimated_kcal) })}</Text>
@@ -515,6 +517,7 @@ function FoodScanScreen() {
                       const foodCalories = calculateFoodNutrition(food, Number.isFinite(grams) && grams > 0 ? grams : item.estimated_grams).calories;
                       return (
                         <TouchableOpacity key={food.id} accessibilityRole="button" accessibilityState={{ selected: isSelected }} onPress={() => updateItem(index, { selectedFoodId: food.id })} style={[styles.candidate, isSelected && styles.candidateSelected]}>
+                          <FoodThumbnail food={food} size={42} />
                           <View style={styles.candidateCopy}>
                             <Text style={styles.candidateName}>{foodName(food, language)}</Text>
                             <Text style={styles.candidateCalories}>{t('foodScan.catalogCalories', { calories: formatNumber(foodCalories, 1) })}</Text>
@@ -646,7 +649,9 @@ const baseStyles = StyleSheet.create({
   mealChipTextSelected: { color: Colors.primaryDark, fontWeight: '700' },
   foodCard: { backgroundColor: Colors.white, borderRadius: Radius.xl, padding: Spacing.md, marginBottom: Spacing.md, borderWidth: 1, borderColor: Colors.border, ...Shadows.sm },
   foodNameRow: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.md },
-  foodIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: Colors.orangeLight, alignItems: 'center', justifyContent: 'center', marginRight: Spacing.sm },
+  foodScanPhoto: { width: 52, height: 52, borderRadius: 14, marginRight: Spacing.sm, backgroundColor: Colors.orangeLight },
+  foodIconFallback: { width: 52, height: 52, borderRadius: 14, backgroundColor: Colors.orangeLight, alignItems: 'center', justifyContent: 'center', marginRight: Spacing.sm },
+  imageCredit: { ...Typography.supporting, color: Colors.textMuted, marginBottom: Spacing.md },
   foodHeading: { flex: 1 },
   foodName: { ...Typography.cardTitle, fontSize: 16, color: Colors.textPrimary },
   estimateText: { ...Typography.supporting, color: Colors.textSecondary, marginTop: 3 },
