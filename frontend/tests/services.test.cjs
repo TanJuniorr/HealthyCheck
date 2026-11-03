@@ -149,13 +149,24 @@ test('profile updates allow only verified editable fields and retain unspecified
  assert.equal(f.calls.length,1);
 });
 
+test('lifestyle profile patches validate choices and leave the permanent completion marker untouched',async()=>{
+ const f=fixture(request=>({data:[{id:A,full_name:'Lan',height_cm:'170',activity_level:request.body.activity_level,weight_goal:'maintain',health_onboarding_completed_at:'2020-10-27T00:00:00Z'}]}));
+ const service=f.load('src/services/profileService');
+ const row=await service.updateMyProfile({activity_level:'extremely_active'});
+ assert.equal(row.activity_level,'extremely_active');assert.equal(row.weight_goal,'maintain');assert.equal(row.health_onboarding_completed_at,'2020-10-27T00:00:00Z');
+ assert.deepEqual(f.calls[0].body,{activity_level:'extremely_active'});
+ for(const key of ['activity_level','weight_goal'])await assert.rejects(service.updateMyProfile({[key]:'invalid'}),e=>e.code==='INVALID_INPUT');
+ assert.equal(f.calls.length,1);
+});
+
 test('onboarding service sends one authenticated RPC, rejects owner spoofing and accepts only confirmed completion',async()=>{
- const input={date_of_birth:'1995-05-02',gender:'prefer_not_to_say',height_cm:170.5,weight_kg:65.5};
+ const input={date_of_birth:'1995-05-02',gender:'prefer_not_to_say',height_cm:170.5,weight_kg:65.5,activity_level:'moderately_active',weight_goal:'maintain'};
  const completed={id:A,...input,health_onboarding_completed_at:'2020-10-27T00:00:00Z'};
  const f=fixture(request=>({data:[completed]})),service=f.load('src/services/healthOnboardingService');
  const row=await service.completeHealthOnboarding(input);assert.equal(row.height_cm,170.5);
  assert.equal(f.calls.length,1);assert.ok(f.calls[0].url.pathname.endsWith('/rpc/complete_health_onboarding'));
- assert.deepEqual(f.calls[0].body,{p_date_of_birth:input.date_of_birth,p_gender:input.gender,p_height_cm:170.5,p_weight_kg:65.5});
+ assert.deepEqual(f.calls[0].body,{p_date_of_birth:input.date_of_birth,p_gender:input.gender,p_height_cm:170.5,p_weight_kg:65.5,p_activity_level:'moderately_active',p_weight_goal:'maintain'});
+ assert.equal(row.activity_level,input.activity_level);assert.equal(row.weight_goal,input.weight_goal);
  await assert.rejects(service.completeHealthOnboarding({...input,user_id:B}),e=>e.code==='INVALID_INPUT');assert.equal(f.calls.length,1);
  for(const response of [[],[{...completed,health_onboarding_completed_at:null}],[{...completed,id:B}]]){
   const g=fixture(()=>({data:response}));await assert.rejects(g.load('src/services/healthOnboardingService').completeHealthOnboarding(input));
@@ -164,13 +175,18 @@ test('onboarding service sends one authenticated RPC, rejects owner spoofing and
  const g=fixture(async()=>{started();await new Promise(resolve=>{release=resolve;});return {data:[completed]};}),s=g.load('src/services/healthOnboardingService');
  const request=s.completeHealthOnboarding(input);await ready;await assert.rejects(s.completeHealthOnboarding(input),e=>e.message==='onboarding.busy');release();await request;assert.equal(g.calls.length,1);
  const rejected=fixture(()=>({status:403,data:{code:'42501'}}));await assert.rejects(rejected.load('src/services/healthOnboardingService').completeHealthOnboarding(input),e=>e.code==='PERMISSION_DENIED');
+ let attempts=0;const retryFixture=fixture(()=>++attempts===1?{status:503,data:{message:'Network unavailable'}}:{data:[completed]});
+ const retryService=retryFixture.load('src/services/healthOnboardingService');
+ await assert.rejects(retryService.completeHealthOnboarding(input));assert.equal((await retryService.completeHealthOnboarding(input)).activity_level,'moderately_active');assert.equal(attempts,2);
+ const changed=fixture(()=>{changed.setOwner(B);return {data:[completed]};});
+ await assert.rejects(changed.load('src/services/healthOnboardingService').completeHealthOnboarding(input),e=>e.code==='AUTH_CHANGED');
 });
 test('confirmed onboarding appears in Profile and Dashboard BMI using the real height/weight without creating goals',async()=>{
  let profile=null,weights=[];
- const input={date_of_birth:'1995-05-02',gender:'prefer_not_to_say',height_cm:170.5,weight_kg:65.5};
+ const input={date_of_birth:'1995-05-02',gender:'prefer_not_to_say',height_cm:170.5,weight_kg:65.5,activity_level:'lightly_active',weight_goal:'gain_weight_slow'};
  const f=fixture(request=>{
   if(request.url.pathname.endsWith('/rpc/complete_health_onboarding')){
-   profile={id:A,date_of_birth:input.date_of_birth,gender:input.gender,height_cm:input.height_cm,health_onboarding_completed_at:'2020-10-27T00:00:00Z'};
+   profile={id:A,date_of_birth:input.date_of_birth,gender:input.gender,height_cm:input.height_cm,activity_level:input.activity_level,weight_goal:input.weight_goal,health_onboarding_completed_at:'2020-10-27T00:00:00Z'};
    weights=[{id:B,user_id:A,weight_kg:input.weight_kg,recorded_at:'2020-10-27T00:00:00Z'}];return {data:[profile]};
   }
   if(request.url.pathname.endsWith('/profiles'))return {data:profile?[profile]:[]};
@@ -179,6 +195,14 @@ test('confirmed onboarding appears in Profile and Dashboard BMI using the real h
  });
  await f.load('src/services/healthOnboardingService').completeHealthOnboarding(input);
  const saved=await f.load('src/services/profileService').getMyProfile();assert.equal(saved.height_cm,170.5);assert.equal(saved.date_of_birth,input.date_of_birth);assert.equal(saved.gender,input.gender);
+ assert.equal(saved.activity_level,input.activity_level);assert.equal(saved.weight_goal,input.weight_goal);
+ const read=f.calls.find(request=>request.url.pathname.endsWith('/profiles'));
+ assert.ok(read.url.searchParams.get('select').split(',').includes('activity_level'));assert.ok(read.url.searchParams.get('select').split(',').includes('weight_goal'));
+ f.setOwner(null);await assert.rejects(f.load('src/services/profileService').getMyProfile(),e=>e.code==='UNAUTHENTICATED');
+ f.setOwner(A);const restored=await f.load('src/lib/profileRepository').loadProfile(A);
+ assert.equal(restored.activity_level,input.activity_level);assert.equal(restored.weight_goal,input.weight_goal);
+ const fresh=fixture(()=>({data:[profile]}));const reloaded=await fresh.load('src/lib/profileRepository').loadProfile(A);
+ assert.equal(reloaded.activity_level,input.activity_level);assert.equal(reloaded.weight_goal,input.weight_goal);
  const home=await f.load('src/services/dashboardService').getDashboardSummary('2020-10-27');
  assert.equal(home.weight.latestKg,65.5);assert.equal(home.weight.bmi,f.load('src/lib/healthCalculations').calculateBMI(65.5,170.5));
  assert.equal(home.nutrition.calorieGoal,null);assert.equal(home.water.goalMl,null);assert.equal(home.steps.goal,null);

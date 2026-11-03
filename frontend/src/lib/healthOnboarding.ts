@@ -1,10 +1,11 @@
-import type { ProfileGender, ProfileRow } from '../types/database';
+import type { ActivityLevel, WeightGoal, ProfileGender, ProfileRow } from '../types/database';
+import { isActivityLevel, isWeightGoal } from './healthPreferences';
 import { validateProfile } from './dataValidation';
 import { toLocalDateKey, parseLocalDate } from './dateUtils';
 import { DataAccessError } from './dataErrors';
 export const PROFILE_GENDERS: ProfileGender[] = ['male','female','other','prefer_not_to_say'];
-export type HealthOnboardingDraft = {dateOfBirth:string;gender:ProfileGender|'';heightCm:string;weightKg:string};
-export type HealthOnboardingInput = {date_of_birth:string;gender:ProfileGender;height_cm:number;weight_kg:number};
+export type HealthOnboardingDraft = {dateOfBirth:string;gender:ProfileGender|'';heightCm:string;weightKg:string;activityLevel:ActivityLevel|'';weightGoal:WeightGoal|''};
+export type HealthOnboardingInput = {date_of_birth:string;gender:ProfileGender;height_cm:number;weight_kg:number;activity_level:ActivityLevel;weight_goal:WeightGoal};
 export function healthDecimal(value:string):number|null {
  if(!/^(?:\d+(?:[.,]\d*)?|[.,]\d+)$/.test(value.trim()))return null;
  const number=Number(value.trim().replace(',','.'));return Number.isFinite(number)?number:null;
@@ -22,13 +23,16 @@ export function onboardingErrors(draft:HealthOnboardingDraft) {
  const height=healthDecimal(draft.heightCm),weight=healthDecimal(draft.weightKg);
  if(height===null||height<30||height>300)errors.heightCm=draft.heightCm.trim()?'onboarding.invalidHeight':'onboarding.required';
  if(weight===null||weight<=0||weight>500||Math.round(weight*100)<=0)errors.weightKg=draft.weightKg.trim()?'onboarding.invalidWeight':'onboarding.required';
+ if(!isActivityLevel(draft.activityLevel))errors.activityLevel='onboarding.requiredActivityLevel';
+ if(!isWeightGoal(draft.weightGoal))errors.weightGoal='onboarding.requiredWeightGoal';
  return errors;
 }
 export function validateOnboarding(input:HealthOnboardingInput):HealthOnboardingInput {
- if(!input || typeof input!=='object' || Object.keys(input).some(key=>!['date_of_birth','gender','height_cm','weight_kg'].includes(key)))throw new DataAccessError('INVALID_INPUT','onboarding.invalidInput');
- const draft:HealthOnboardingDraft={dateOfBirth:input.date_of_birth,gender:input.gender,heightCm:String(input.height_cm??''),weightKg:String(input.weight_kg??'')};
+ if(!input || typeof input!=='object' || Array.isArray(input) || Object.keys(input).some(key=>!['date_of_birth','gender','height_cm','weight_kg','activity_level','weight_goal'].includes(key)))throw new DataAccessError('INVALID_INPUT','onboarding.invalidInput');
+ if(typeof input.height_cm!=='number'||typeof input.weight_kg!=='number')throw new DataAccessError('INVALID_INPUT','onboarding.invalidInput');
+ const draft:HealthOnboardingDraft={dateOfBirth:input.date_of_birth,gender:input.gender,heightCm:String(input.height_cm??''),weightKg:String(input.weight_kg??''),activityLevel:input.activity_level,weightGoal:input.weight_goal};
  if(typeof draft.dateOfBirth!=='string'||Object.keys(onboardingErrors(draft)).length)throw new DataAccessError('INVALID_INPUT','onboarding.invalidInput');
- validateProfile({date_of_birth:input.date_of_birth,gender:input.gender,height_cm:input.height_cm});
+ validateProfile({date_of_birth:input.date_of_birth,gender:input.gender,height_cm:input.height_cm,activity_level:input.activity_level,weight_goal:input.weight_goal});
  return {...input,height_cm:healthDecimal(draft.heightCm)!,weight_kg:healthDecimal(draft.weightKg)!};
 }
 export function onboardingComplete(profile:ProfileRow|null|undefined):boolean {

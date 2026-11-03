@@ -6,8 +6,10 @@ export type SleepScheduleRow = SleepScheduleInput & { id: string; user_id: strin
 export type Numeric = number | string;
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 export type ProfileGender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
-export type ProfileRow = { health_onboarding_completed_at: string | null; id: string; full_name: string | null; date_of_birth: string | null; height_cm: Numeric | null; gender: ProfileGender | null; avatar_url: string | null; created_at: string; updated_at: string };
-export type ProfileUpdate = Partial<Pick<ProfileRow, 'full_name' | 'date_of_birth' | 'height_cm' | 'gender' | 'avatar_url'>>;
+export type ActivityLevel = 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extremely_active';
+export type WeightGoal = 'lose_fat_slow' | 'lose_fat' | 'maintain' | 'gain_weight_slow' | 'gain_weight';
+export type ProfileRow = { health_onboarding_completed_at: string | null; activity_level: ActivityLevel | null; weight_goal: WeightGoal | null; id: string; full_name: string | null; date_of_birth: string | null; height_cm: Numeric | null; gender: ProfileGender | null; avatar_url: string | null; created_at: string; updated_at: string };
+export type ProfileUpdate = Partial<Pick<ProfileRow, 'full_name' | 'date_of_birth' | 'height_cm' | 'gender' | 'avatar_url' | 'activity_level' | 'weight_goal'>>;
 export type HealthGoalRow = { id: string; user_id: string; daily_steps: number | null; daily_calories: number | null; daily_water_ml: number | null; target_sleep_minutes: number | null; effective_from: string; created_at: string };
 export type HealthGoalInsert = { daily_steps?: number; daily_calories?: number; daily_water_ml?: number; target_sleep_minutes?: number; effective_from?: string };
 export type StepRecordRow = { id: string; user_id: string; record_date: string; steps: number; distance_km: Numeric | null; active_minutes: number | null; created_at: string; updated_at: string };
@@ -110,6 +112,6 @@ export type Database = { public: { Tables: {
  save_article:{Args:{p_id:string|null;p_expected_updated_at:string|null;p_article:ArticleInput;p_translations:ArticleTranslation[]};Returns:ArticleRow};
  record_article_read:{Args:{p_article_id:string};Returns:undefined};
  article_admin_stats:{Args:Record<string,never>;Returns:ArticleStats};
- search_foods: { Args: { p_query?:string; p_category?:string|null; p_offset?:number; p_limit?:number }; Returns:{data:FoodRow[];total:number} }; complete_health_onboarding: { Args: { p_date_of_birth:string; p_gender:string; p_height_cm:number; p_weight_kg:number }; Returns:ProfileRow[] }; sharing_recipient_exists: { Args: { p_email: string }; Returns: boolean } }; Enums:
+ search_foods: { Args: { p_query?:string; p_category?:string|null; p_offset?:number; p_limit?:number }; Returns:{data:FoodRow[];total:number} }; complete_health_onboarding: { Args: { p_date_of_birth:string; p_gender:string; p_height_cm:number; p_weight_kg:number; p_activity_level:ActivityLevel; p_weight_goal:WeightGoal }; Returns:ProfileRow[] }; sharing_recipient_exists: { Args: { p_email: string }; Returns: boolean } }; Enums:
  { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };
  

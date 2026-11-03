@@ -1,6 +1,7 @@
 import { DataAccessError, invalid } from './dataErrors';
 import { timestamp, toLocalDateKey } from './dateUtils';
 import type { Inputs, PersonalTable, ProfileUpdate, Rows } from '../types/database';
+import { isActivityLevel, isWeightGoal } from './healthPreferences';
 export function safeNumber(value: unknown): number {
   if ((typeof value !== 'number' && typeof value !== 'string') || (typeof value === 'string' && !value.trim())) return invalid('Giá trị số không hợp lệ.');
   const number = Number(value); if (!Number.isFinite(number)) return invalid('Giá trị số không hữu hạn.'); return number;
@@ -47,7 +48,9 @@ export function validateInput<T extends PersonalTable>(table: T, input: Inputs[T
 export function validateProfile(input: ProfileUpdate): ProfileUpdate {
   if (!input || typeof input !== 'object' || Array.isArray(input)) invalid('Hồ sơ đầu vào không hợp lệ.');
   const result: ProfileUpdate = {};
-  for (const key of Object.keys(input)) if (!['full_name','date_of_birth','height_cm','gender','avatar_url'].includes(key)) invalid('Trường hồ sơ không được phép.');
+  for (const key of Object.keys(input)) if (!['full_name','date_of_birth','height_cm','gender','avatar_url','activity_level','weight_goal'].includes(key)) invalid('Trường hồ sơ không được phép.');
+  if (input.activity_level !== undefined) { if (input.activity_level !== null && !isActivityLevel(input.activity_level)) invalid('onboarding.requiredActivityLevel'); result.activity_level = input.activity_level; }
+  if (input.weight_goal !== undefined) { if (input.weight_goal !== null && !isWeightGoal(input.weight_goal)) invalid('onboarding.requiredWeightGoal'); result.weight_goal = input.weight_goal; }
   if (input.full_name !== undefined) { if (input.full_name !== null && (typeof input.full_name !== 'string' || !input.full_name.trim() || input.full_name.trim().length > 120)) invalid('Họ tên phải có 1–120 ký tự.'); result.full_name = input.full_name?.trim() ?? null; }
   if (input.date_of_birth !== undefined) { const date = input.date_of_birth === null ? null : toLocalDateKey(input.date_of_birth); if (date && date > toLocalDateKey()) invalid('Ngày sinh không thể ở tương lai.'); result.date_of_birth = date; }
   if (input.height_cm !== undefined) { const height = input.height_cm === null ? null : positive(input.height_cm); if (height !== null && (height < 30 || height > 300)) invalid('Chiều cao hợp lệ từ 30 đến 300 cm.'); result.height_cm = height; }

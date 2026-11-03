@@ -5,6 +5,25 @@
     "step": "Step {{step}} / {{total}}",
     "personalStep": "Personal details",
     "bodyStep": "Body measurements",
+    "lifestyleStep": "Lifestyle and goals",
+    "activityLevel": "Activity level",
+    "weightGoal": "Weight goal",
+    "requiredActivityLevel": "Please select a valid activity level.",
+    "requiredWeightGoal": "Please select a valid weight goal.",
+    "activityLevelOptions": {
+      "sedentary": { "label": "Sedentary", "description": "Mostly sitting, with very little physical activity" },
+      "lightly_active": { "label": "Lightly active", "description": "Light exercise or activity 1–3 days a week" },
+      "moderately_active": { "label": "Moderately active", "description": "Exercise around 3–5 days a week" },
+      "very_active": { "label": "Very active", "description": "High-intensity exercise 6–7 days a week" },
+      "extremely_active": { "label": "Extremely active", "description": "Heavy training combined with physically demanding work" }
+    },
+    "weightGoalOptions": {
+      "lose_fat_slow": { "label": "Lose fat gradually", "description": "Reduce body fat slowly with gentle, sustainable changes" },
+      "lose_fat": { "label": "Lose fat", "description": "Focus on reducing body fat and weight" },
+      "maintain": { "label": "Maintain weight", "description": "Keep your current body weight" },
+      "gain_weight_slow": { "label": "Gain weight gradually", "description": "Build up your weight slowly at a gentle pace" },
+      "gain_weight": { "label": "Gain weight", "description": "Focus on gaining weight steadily" }
+    },
     "height": "Height (cm)",
     "weight": "Weight (kg)",
     "age": "Age: {{value}}",
@@ -15,7 +34,7 @@
     "invalidBirthDate": "Enter a valid birth date that is not in the future.",
     "invalidHeight": "Enter a height from 30 to 300 cm, e.g. 170.5.",
     "invalidWeight": "Enter a weight greater than 0 and no more than 500 kg, e.g. 65.5.",
-    "invalidInput": "Check that all four health profile fields are complete and valid.",
+    "invalidInput": "Check that your birth date, gender, height, weight, activity level and weight goal are complete and valid.",
     "busy": "Saving your health profile. Please wait.",
     "checkingProfile": "Checking your health profile",
     "profileLoadError": "Unable to load your health profile. Check your connection and try again."

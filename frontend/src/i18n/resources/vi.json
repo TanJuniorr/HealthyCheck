@@ -5,6 +5,25 @@
     "step": "Bước {{step}} / {{total}}",
     "personalStep": "Thông tin cá nhân",
     "bodyStep": "Chỉ số cơ thể",
+    "lifestyleStep": "Lối sống và mục tiêu",
+    "activityLevel": "Cường độ vận động",
+    "weightGoal": "Mục tiêu cân nặng",
+    "requiredActivityLevel": "Vui lòng chọn một cường độ vận động hợp lệ.",
+    "requiredWeightGoal": "Vui lòng chọn một mục tiêu cân nặng hợp lệ.",
+    "activityLevelOptions": {
+      "sedentary": { "label": "Ít vận động", "description": "Chủ yếu ngồi, rất ít hoạt động thể chất" },
+      "lightly_active": { "label": "Vận động nhẹ", "description": "Tập luyện hoặc vận động nhẹ 1–3 ngày/tuần" },
+      "moderately_active": { "label": "Vận động vừa", "description": "Tập luyện khoảng 3–5 ngày/tuần" },
+      "very_active": { "label": "Vận động nhiều", "description": "Tập luyện cường độ cao 6–7 ngày/tuần" },
+      "extremely_active": { "label": "Vận động rất nhiều", "description": "Tập luyện nặng kết hợp công việc thể chất nhiều" }
+    },
+    "weightGoalOptions": {
+      "lose_fat_slow": { "label": "Giảm mỡ nhẹ", "description": "Giảm mỡ từ từ, hướng đến thay đổi nhẹ nhàng và bền vững" },
+      "lose_fat": { "label": "Giảm mỡ", "description": "Tập trung giảm mỡ và giảm cân" },
+      "maintain": { "label": "Giữ cân", "description": "Duy trì cân nặng hiện tại" },
+      "gain_weight_slow": { "label": "Tăng cân nhẹ", "description": "Tăng cân từ từ theo nhịp độ nhẹ nhàng" },
+      "gain_weight": { "label": "Tăng cân", "description": "Tập trung tăng cân một cách đều đặn" }
+    },
     "height": "Chiều cao (cm)",
     "weight": "Cân nặng (kg)",
     "age": "Tuổi: {{value}}",
@@ -15,7 +34,7 @@
     "invalidBirthDate": "Ngày sinh phải hợp lệ và không ở tương lai.",
     "invalidHeight": "Nhập chiều cao từ 30 đến 300 cm, ví dụ 170,5.",
     "invalidWeight": "Nhập cân nặng lớn hơn 0 và tối đa 500 kg, ví dụ 65,5.",
-    "invalidInput": "Vui lòng kiểm tra đủ ngày sinh, giới tính, chiều cao và cân nặng hợp lệ.",
+    "invalidInput": "Vui lòng kiểm tra đủ ngày sinh, giới tính, chiều cao, cân nặng, cường độ vận động và mục tiêu cân nặng hợp lệ.",
     "busy": "Đang lưu hồ sơ sức khỏe. Vui lòng chờ.",
     "checkingProfile": "Đang kiểm tra hồ sơ sức khỏe",
     "profileLoadError": "Không tải được hồ sơ sức khỏe. Kiểm tra kết nối và thử lại."

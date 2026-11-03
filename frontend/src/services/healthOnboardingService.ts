@@ -10,7 +10,7 @@ export async function completeHealthOnboarding(payload:HealthOnboardingInput) {
  pending.add(owner);
  try {
   await assertIdentity(owner);
-  const result=await queryResult(supabase.rpc('complete_health_onboarding',{p_date_of_birth:input.date_of_birth,p_gender:input.gender,p_height_cm:input.height_cm,p_weight_kg:input.weight_kg}),owner);
+  const result=await queryResult(supabase.rpc('complete_health_onboarding',{p_date_of_birth:input.date_of_birth,p_gender:input.gender,p_height_cm:input.height_cm,p_weight_kg:input.weight_kg,p_activity_level:input.activity_level,p_weight_goal:input.weight_goal}),owner);
   if(!result || result.length!==1 || result[0].id!==owner || !onboardingComplete(result[0]))throw new DataAccessError('DATABASE','errors.saveUnconfirmed');
   return normalizeRow('profiles',result[0]);
  }finally{pending.delete(owner);}

@@ -8,6 +8,8 @@ import { Colors } from '../src/constants/colors';
 import { AppTextInput } from '../src/components/common/AppTextInput';
 import { PrimaryButton, TextButton } from '../src/components/common/Buttons';
 import { BirthDateField, GenderField } from '../src/components/profile/PersonalHealthFields';
+import { HealthPreferenceField } from '../src/components/profile/HealthPreferenceField';
+import { ACTIVITY_LEVELS, WEIGHT_GOALS } from '../src/lib/healthPreferences';
 import { LanguageSelector } from '../src/components/common/LanguageSelector';
 import { ageFromBirthDate, healthDecimal, onboardingErrors, type HealthOnboardingDraft } from '../src/lib/healthOnboarding';
 import { dataError } from '../src/lib/dataErrors';
@@ -19,36 +21,46 @@ export default function HealthOnboardingScreen() {
 }
 export function HealthOnboardingForm() {
  const {profile,finishHealthOnboarding,signOut}=useAuth(),{t}=useTranslation(),styles=useThemedStyles(baseStyles),insets=useSafeAreaInsets();
- const [draft,setDraft]=useState<HealthOnboardingDraft>({dateOfBirth:profile?.date_of_birth??'',gender:profile?.gender??'',heightCm:profile?.height_cm==null?'':String(profile.height_cm),weightKg:''});
+ const [draft,setDraft]=useState<HealthOnboardingDraft>({dateOfBirth:profile?.date_of_birth??'',gender:profile?.gender??'',heightCm:profile?.height_cm==null?'':String(profile.height_cm),weightKg:'',activityLevel:profile?.activity_level??'',weightGoal:profile?.weight_goal??''});
  const [step,setStep]=useState(1),[touched,setTouched]=useState<Partial<Record<keyof HealthOnboardingDraft,boolean>>>({});
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),lock=useRef(false),mounted=useRef(true);
+ const scroll=useRef<React.ComponentRef<typeof ScrollView>>(null);
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
+ useEffect(()=>{scroll.current?.scrollTo({y:0,animated:false});},[step]);
  const errors=onboardingErrors(draft),age=ageFromBirthDate(draft.dateOfBirth),complete=Object.keys(errors).length===0;
  const change=<K extends keyof HealthOnboardingDraft>(key:K,value:HealthOnboardingDraft[K])=>{if(!lock.current){setDraft(previous=>({...previous,[key]:value}));setTouched(previous=>({...previous,[key]:true}));setError('');}};
- const next=()=>{setTouched(previous=>({...previous,dateOfBirth:true,gender:true}));if(!errors.dateOfBirth&&!errors.gender)setStep(2);};
+ const next=()=>{
+  if(lock.current)return;
+  if(step===1){setTouched(previous=>({...previous,dateOfBirth:true,gender:true}));if(!errors.dateOfBirth&&!errors.gender)setStep(2);}
+  else if(step===2){setTouched(previous=>({...previous,heightCm:true,weightKg:true}));if(!errors.heightCm&&!errors.weightKg)setStep(3);}
+ };
  const save=async()=>{
-  if(lock.current)return;setTouched({dateOfBirth:true,gender:true,heightCm:true,weightKg:true});if(!complete)return;
+  if(lock.current)return;setTouched({dateOfBirth:true,gender:true,heightCm:true,weightKg:true,activityLevel:true,weightGoal:true});if(!complete)return;
   lock.current=true;setBusy(true);setError('');
-  try{await finishHealthOnboarding({date_of_birth:draft.dateOfBirth,gender:draft.gender as Exclude<HealthOnboardingDraft['gender'],''>,height_cm:healthDecimal(draft.heightCm)!,weight_kg:healthDecimal(draft.weightKg)!});}
+  try{await finishHealthOnboarding({date_of_birth:draft.dateOfBirth,gender:draft.gender as Exclude<HealthOnboardingDraft['gender'],''>,height_cm:healthDecimal(draft.heightCm)!,weight_kg:healthDecimal(draft.weightKg)!,activity_level:draft.activityLevel as Exclude<HealthOnboardingDraft['activityLevel'],''>,weight_goal:draft.weightGoal as Exclude<HealthOnboardingDraft['weightGoal'],''>});}
   catch(e){if(mounted.current)setError(dataError(e).message);}finally{lock.current=false;if(mounted.current)setBusy(false);}
  };
  const logout=async()=>{if(lock.current)return;lock.current=true;setBusy(true);try{await signOut();}catch(e){if(mounted.current)setError(authErrorMessage(e));}finally{lock.current=false;if(mounted.current)setBusy(false);}};
- return <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS==='ios'?'padding':'height'}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content,{paddingTop:insets.top+24,paddingBottom:insets.bottom+24}]}>
+ return <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS==='ios'?'padding':'height'}><ScrollView ref={scroll} keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content,{paddingTop:insets.top+24,paddingBottom:insets.bottom+24}]}>
   <Text style={styles.brand}>HealthyCheck</Text><Text accessibilityRole="header" style={styles.title}>{t('onboarding.title')}</Text><Text style={styles.text}>{t('onboarding.description')}</Text>
-  <Text style={styles.progress}>{t('onboarding.step',{step:formatNumber(step),total:formatNumber(2)})}</Text>
+  <Text accessibilityLiveRegion="polite" style={styles.progress}>{t('onboarding.step',{step:formatNumber(step),total:formatNumber(3)})}</Text>
   <View style={styles.card}>
-   <Text style={styles.section}>{t(step===1?'onboarding.personalStep':'onboarding.bodyStep')}</Text>
+   <Text accessibilityRole="header" style={styles.section}>{t(step===1?'onboarding.personalStep':step===2?'onboarding.bodyStep':'onboarding.lifestyleStep')}</Text>
    {step===1?<>
     <BirthDateField value={draft.dateOfBirth} onChange={value=>change('dateOfBirth',value)} disabled={busy} error={touched.dateOfBirth?errors.dateOfBirth:undefined}/>
     {age!==null&&<Text style={styles.text}>{t('onboarding.age',{value:formatNumber(age)})}</Text>}
     <GenderField value={draft.gender} onChange={value=>change('gender',value)} disabled={busy} error={touched.gender?errors.gender:undefined}/>
-   </>:<>
+   </>:step===2?<>
     <AppTextInput editable={!busy} label={t('onboarding.height')} keyboardType="decimal-pad" value={draft.heightCm} onChangeText={value=>change('heightCm',value)} error={touched.heightCm?errors.heightCm:undefined}/>
     <AppTextInput editable={!busy} label={t('onboarding.weight')} keyboardType="decimal-pad" value={draft.weightKg} onChangeText={value=>change('weightKg',value)} error={touched.weightKg?errors.weightKg:undefined}/>
     <Text style={styles.text}>{t('onboarding.weightHint')}</Text>
+   </>:<>
+    <HealthPreferenceField field="activityLevel" options={ACTIVITY_LEVELS} value={draft.activityLevel} onChange={value=>change('activityLevel',value)} disabled={busy} error={touched.activityLevel?errors.activityLevel:undefined}/>
+    <HealthPreferenceField field="weightGoal" options={WEIGHT_GOALS} value={draft.weightGoal} onChange={value=>change('weightGoal',value)} disabled={busy} error={touched.weightGoal?errors.weightGoal:undefined}/>
    </>}
    {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
-   {step===1?<PrimaryButton title={t('common.continue')} disabled={busy} onPress={next}/>:<><PrimaryButton title={t('onboarding.finish')} loading={busy} disabled={!complete} onPress={save}/><TextButton title={t('common.back')} disabled={busy} onPress={()=>setStep(1)}/></>}
+   {step<3?<PrimaryButton title={t('common.continue')} disabled={busy} onPress={next}/>:<PrimaryButton title={t('onboarding.finish')} loading={busy} disabled={busy||!complete} onPress={save}/>}
+   {step>1&&<TextButton title={t('common.back')} disabled={busy} onPress={()=>{if(!lock.current)setStep(previous=>previous-1);}}/>}
   </View>
   <LanguageSelector compact/><TextButton title={t('auth.signOut')} disabled={busy} onPress={logout}/>
  </ScrollView></KeyboardAvoidingView>;

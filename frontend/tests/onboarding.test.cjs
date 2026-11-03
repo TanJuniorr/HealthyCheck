@@ -6,10 +6,23 @@ const boundary=name=>path.resolve(__dirname,'../'+name),tick=()=>new Promise(res
 const A='11111111-1111-4111-8111-111111111111',B='22222222-2222-4222-8222-222222222222';
 const profile={id:A,full_name:'Lan',date_of_birth:'1995-05-02',gender:'prefer_not_to_say',height_cm:170.5,health_onboarding_completed_at:'2020-10-27T00:00:00Z'};
 test('required health fields validate real dates, all genders and decimal measurements without assumed age',()=>{
- const draft={dateOfBirth:'1995-05-02',gender:'prefer_not_to_say',heightCm:'170,5',weightKg:'65,5'};
+ const draft={dateOfBirth:'1995-05-02',gender:'prefer_not_to_say',heightCm:'170,5',weightKg:'65,5',activityLevel:'moderately_active',weightGoal:'maintain'};
  assert.equal(Object.keys(health.onboardingErrors(draft)).length,0);
  for(const gender of health.PROFILE_GENDERS)assert.equal(Object.keys(health.onboardingErrors({...draft,gender})).length,0);
- assert.equal(Object.keys(health.onboardingErrors({dateOfBirth:'',gender:'',heightCm:'',weightKg:''})).length,4);
+ assert.equal(Object.keys(health.onboardingErrors({dateOfBirth:'',gender:'',heightCm:'',weightKg:'',activityLevel:'',weightGoal:''})).length,6);
+ const preferences=load('src/lib/healthPreferences');
+ for(const activityLevel of preferences.ACTIVITY_LEVELS)for(const weightGoal of preferences.WEIGHT_GOALS)assert.equal(Object.keys(health.onboardingErrors({...draft,activityLevel,weightGoal})).length,0);
+ for(const value of ['',null,undefined,'unknown',0,{},['maintain']]){
+  assert.ok(health.onboardingErrors({...draft,activityLevel:value}).activityLevel);
+  assert.ok(health.onboardingErrors({...draft,weightGoal:value}).weightGoal);
+ }
+ const input={date_of_birth:'1995-05-02',gender:'male',height_cm:170,weight_kg:65,activity_level:'sedentary',weight_goal:'lose_fat_slow'};
+ assert.deepEqual({...health.validateOnboarding(input)},input);
+ for(const key of Object.keys(input)){
+  const missing={...input};delete missing[key];assert.throws(()=>health.validateOnboarding(missing),e=>e.code==='INVALID_INPUT');
+ }
+ for(const key of ['activity_level','weight_goal'])for(const value of ['',null,'unknown',0,{},[]])assert.throws(()=>health.validateOnboarding({...input,[key]:value}),e=>e.code==='INVALID_INPUT');
+ for(const key of ['height_cm','weight_kg'])for(const value of ['65',[],[65],{},NaN,Infinity])assert.throws(()=>health.validateOnboarding({...input,[key]:value}),e=>e.code==='INVALID_INPUT');
  for(const dateOfBirth of ['2999-01-01','2020-02-30','not-a-date'])assert.equal(health.onboardingErrors({...draft,dateOfBirth}).dateOfBirth,'onboarding.invalidBirthDate');
  for(const heightCm of ['0','-1','29.9','301','NaN','2e2'])assert.ok(health.onboardingErrors({...draft,heightCm}).heightCm);
  for(const weightKg of ['0','-1','501','Infinity','0.001','bad'])assert.ok(health.onboardingErrors({...draft,weightKg}).weightKg);
@@ -24,6 +37,7 @@ test('routing fails closed until the current owner profile is checked; recovery 
  assert.equal(gate.authGate(state),'checking');assert.equal(gate.gateDestination(gate.authGate(state)),'/auth/profile-check');
  assert.equal(gate.authGate({...state,profileChecked:true}),'onboarding');
  assert.equal(gate.authGate({...state,profileChecked:true,profile}),'ready');
+ assert.equal(gate.authGate({...state,profileChecked:true,profile:{...profile,activity_level:null,weight_goal:null}}),'ready');
  assert.equal(gate.authGate({...state,profileChecked:true,profile:{...profile,id:B}}),'checking');
  assert.equal(gate.authGate({...state,profileError:'network'}),'error');
  assert.equal(gate.authGate({...state,isRecovery:true,profileError:'network'}),'recovery');
@@ -48,24 +62,40 @@ test('actual navigator blocks every app/deep-link route for onboarding, loading 
  const tree=f.render(()=>Navigator());assert.ok(elements(tree).some(e=>e.type==='Protected'&&elements(e).some(child=>child.props?.name==='health-onboarding')&&e.props.redirectTo==='/(tabs)'));
  assert.ok(elements(tree).some(e=>e.props?.name==='auth/callback'));assert.ok(elements(tree).some(e=>e.props?.name==='reset-password'));
 });
-test('onboarding form retains both steps, validates fields, localizes live and retries without duplicate submits',async()=>{
+test('onboarding retains all three steps and selections, localizes live and retries without duplicate submits',async()=>{
  let calls=0,release,saved;
  const f=uiFixture({[boundary('src/contexts/AuthContext.tsx')]:{useAuth:()=>({profile:null,signOut:async()=>{},finishHealthOnboarding:async input=>{calls++;saved=input;if(calls===1)throw Error('Network unavailable');await new Promise(resolve=>{release=resolve;});}})},
   [boundary('src/components/common/AppTextInput.tsx')]:{AppTextInput:'AppTextInput'},
   [boundary('src/components/profile/PersonalHealthFields.tsx')]:{BirthDateField:'BirthDateField',GenderField:'GenderField'},
   [boundary('src/components/common/LanguageSelector.tsx')]:{LanguageSelector:'LanguageSelector'}});
  const Form=f.load('app/health-onboarding').HealthOnboardingForm,i18n=f.load('src/i18n/index').default;await i18n.changeLanguage('vi');
- const render=()=>f.render(()=>Form());let tree=render();
+ const render=()=>f.renderDeep(()=>Form());let tree=render();
+ const progress=step=>assert.ok(elements(tree).some(e=>e.props.children===i18n.t('onboarding.step',{step,total:3})));
+ const next=()=>elements(tree).find(e=>e.type==='PrimaryButton').props.onPress();
+ const back=()=>elements(tree).find(e=>e.type==='TextButton'&&e.props.title===i18n.t('common.back')).props.onPress();
+ progress(1);
  await elements(tree).find(e=>e.type==='PrimaryButton').props.onPress();tree=render();assert.equal(elements(tree).find(e=>e.type==='BirthDateField').props.error,'onboarding.required');assert.equal(calls,0);
  elements(tree).find(e=>e.type==='BirthDateField').props.onChange('1995-05-02');tree=render();elements(tree).find(e=>e.type==='GenderField').props.onChange('prefer_not_to_say');tree=render();
- elements(tree).find(e=>e.type==='PrimaryButton').props.onPress();tree=render();assert.equal(elements(tree).find(e=>e.type==='PrimaryButton').props.disabled,true);
+ next();tree=render();progress(2);next();tree=render();assert.equal(elements(tree).filter(e=>e.type==='AppTextInput')[0].props.error,'onboarding.required');
  elements(tree).filter(e=>e.type==='AppTextInput')[0].props.onChangeText('170,5');tree=render();elements(tree).filter(e=>e.type==='AppTextInput')[1].props.onChangeText('65,5');tree=render();
- elements(tree).find(e=>e.type==='TextButton'&&e.props.title===i18n.t('common.back')).props.onPress();tree=render();assert.equal(elements(tree).find(e=>e.type==='BirthDateField').props.value,'1995-05-02');
- elements(tree).find(e=>e.type==='PrimaryButton').props.onPress();tree=render();assert.equal(elements(tree).filter(e=>e.type==='AppTextInput')[1].props.value,'65,5');
- await elements(tree).find(e=>e.type==='PrimaryButton').props.onPress();tree=render();assert.equal(calls,1);assert.ok(elements(tree).some(e=>e.props.accessibilityRole==='alert'));
- await i18n.changeLanguage('en');tree=render();assert.equal(elements(tree).filter(e=>e.type==='AppTextInput')[0].props.value,'170,5');
- const submit=elements(tree).find(e=>e.type==='PrimaryButton').props.onPress,request=submit();await submit();assert.equal(calls,2);release();await request;
+ back();tree=render();assert.equal(elements(tree).find(e=>e.type==='BirthDateField').props.value,'1995-05-02');
+ next();tree=render();assert.equal(elements(tree).filter(e=>e.type==='AppTextInput')[1].props.value,'65,5');
+ next();tree=render();progress(3);
+ const radios=()=>elements(tree).filter(e=>e.props.accessibilityRole==='radio');
+ assert.equal(radios().length,10);assert.ok(radios().every(e=>!e.props.accessibilityState.checked));
+ assert.equal(elements(tree).find(e=>e.type==='PrimaryButton').props.disabled,true);
+ await next();tree=render();assert.equal(calls,0);assert.equal(elements(tree).filter(e=>e.props.accessibilityRole==='alert').length,2);
+ radios()[0].props.onPress();tree=render();assert.equal(elements(tree).find(e=>e.type==='PrimaryButton').props.disabled,true);
+ radios()[2].props.onPress();tree=render();radios()[7].props.onPress();tree=render();
+ assert.equal(radios().filter(e=>e.props.accessibilityState.checked).length,2);
+ back();tree=render();assert.equal(elements(tree).filter(e=>e.type==='AppTextInput')[0].props.value,'170,5');next();tree=render();
+ assert.ok(radios()[2].props.accessibilityState.checked);assert.ok(radios()[7].props.accessibilityState.checked);
+ await i18n.changeLanguage('en');tree=render();assert.ok(radios()[2].props.accessibilityState.checked);assert.ok(radios()[7].props.accessibilityState.checked);
+ assert.equal(radios()[2].props.accessibilityLabel,'Moderately active. Exercise around 3–5 days a week');
+ await next();tree=render();assert.equal(calls,1);assert.ok(elements(tree).some(e=>e.props.accessibilityRole==='alert'));
+ const submit=elements(tree).find(e=>e.type==='PrimaryButton').props.onPress,request=submit();tree=render();assert.ok(radios().every(e=>e.props.disabled));await submit();assert.equal(calls,2);release();await request;
  assert.equal(saved.height_cm,170.5);assert.equal(saved.weight_kg,65.5);assert.equal(saved.gender,'prefer_not_to_say');assert.equal(saved.date_of_birth,'1995-05-02');
+ assert.equal(saved.activity_level,'moderately_active');assert.equal(saved.weight_goal,'maintain');
 });
 test('birth date is unset until selection, uses a cross-platform picker and blocks future dates',()=>{
  const f=uiFixture(),Field=f.load('src/components/profile/PersonalHealthFields').BirthDateField;let chosen=null;
@@ -92,6 +122,17 @@ test('onboarding uses the live Light/Dark theme for its screen and form card',()
  let tree=f.render(()=>Form());assert.equal(tree.props.style.backgroundColor,colors.LightColors.background);
  dark=true;tree=f.render(()=>Form());assert.equal(tree.props.style.backgroundColor,colors.DarkColors.background);
  assert.ok(elements(tree).some(e=>e.type==='View'&&e.props.style?.borderRadius===20&&e.props.style.backgroundColor===colors.DarkColors.surface));
+ const choices=uiFixture({[boundary('src/contexts/ThemeContext.tsx')]:theme});
+ const Field=choices.load('src/components/profile/HealthPreferenceField').HealthPreferenceField;
+ const renderChoices=()=>choices.render(()=>Field({field:'activityLevel',options:['sedentary','lightly_active'],value:'sedentary',onChange(){}}));
+ let choice=elements(renderChoices()).find(e=>e.props.accessibilityRole==='radio');
+ assert.equal(choice.props.style[0].backgroundColor,colors.DarkColors.surface);
+ assert.equal(choice.props.style[1].backgroundColor,colors.DarkColors.primaryLight);
+ assert.equal(choice.props.style[1].borderColor,colors.DarkColors.primary);
+ assert.equal(choice.props.accessibilityState.checked,true);
+ dark=false;choice=elements(renderChoices()).find(e=>e.props.accessibilityRole==='radio');
+ assert.equal(choice.props.style[0].backgroundColor,colors.LightColors.surface);
+ assert.equal(choice.props.style[1].backgroundColor,colors.LightColors.primaryLight);
 });
 test('AuthProvider rejects stale profiles across account changes, keeps recovery, and adopts confirmed completion without a reload',async()=>{
  let listener,loadOwner,fail=false,session={user:{id:A,user_metadata:{}}};
@@ -99,14 +140,15 @@ test('AuthProvider rejects stale profiles across account changes, keeps recovery
  const pending=[];
  const f=uiFixture({[boundary('src/lib/supabase.ts')]:{supabase:{auth},authConfigurationError:null},
   [boundary('src/lib/profileRepository.ts')]:{loadProfile:async owner=>{loadOwner=owner;if(fail)throw Error('offline');return new Promise(resolve=>pending.push({owner,resolve}));}},
-  [boundary('src/services/healthOnboardingService.ts')]:{completeHealthOnboarding:async()=>({...profile,id:session.user.id})}});
+  [boundary('src/services/healthOnboardingService.ts')]:{completeHealthOnboarding:async input=>({...profile,id:session.user.id,activity_level:input.activity_level,weight_goal:input.weight_goal})}});
  const Provider=f.load('src/contexts/AuthContext').AuthProvider,render=()=>f.render(()=>Provider({children:null})).props.value;
  let state=render();assert.equal(state.isLoading,true);await tick();state=render();await tick();state=render();assert.equal(state.profileChecked,false);assert.equal(loadOwner,A);
  session={user:{id:B,user_metadata:{}}};listener('SIGNED_IN',session);state=render();await tick();state=render();assert.equal(state.profile,null);assert.equal(loadOwner,B);
  pending.find(p=>p.owner===A).resolve(profile);await tick();state=render();assert.equal(state.profile,null);assert.equal(state.profileChecked,false);
  pending.find(p=>p.owner===B).resolve(null);await tick();state=render();assert.equal(state.profileChecked,true);assert.equal(gate.authGate(state),'onboarding');
  const staleRefresh=state.refreshProfile();await tick();
- await state.finishHealthOnboarding({date_of_birth:'1995-05-02',gender:'male',height_cm:170,weight_kg:65});state=render();assert.equal(state.profile.id,B);assert.equal(gate.authGate(state),'ready');
+ await state.finishHealthOnboarding({date_of_birth:'1995-05-02',gender:'male',height_cm:170,weight_kg:65,activity_level:'very_active',weight_goal:'gain_weight'});state=render();assert.equal(state.profile.id,B);assert.equal(gate.authGate(state),'ready');
+ assert.equal(state.profile.activity_level,'very_active');assert.equal(state.profile.weight_goal,'gain_weight');
  pending.filter(p=>p.owner===B).at(-1).resolve(null);await staleRefresh;state=render();assert.equal(gate.authGate(state),'ready');
  fail=true;await state.refreshProfile();state=render();assert.equal(gate.authGate(state),'error');
  fail=false;const retry=state.refreshProfile();state=render();assert.equal(gate.authGate(state),'checking');pending.filter(p=>p.owner===B).at(-1).resolve({...profile,id:B});await retry;state=render();assert.equal(gate.authGate(state),'ready');
