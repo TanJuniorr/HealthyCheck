@@ -1,4 +1,26 @@
 {
+  "recommendations": {
+    "steps": {
+      "startingPoint": "Ước tính khởi đầu theo cường độ vận động. Hãy tăng dần khi phù hợp; đây không phải chỉ tiêu y khoa hay cam kết giảm cân.",
+      "unverifiedHistory": "Lịch sử bước chân chưa xác nhận được độ phủ cả ngày. Đề xuất khởi đầu có độ tin cậy thấp và không dùng các số đếm này làm baseline cá nhân.",
+      "insufficientHistory": "Có ít hơn bốn ngày được xác nhận đầy đủ trong 14 ngày đã kết thúc gần nhất. Đề xuất khởi đầu có độ tin cậy thấp.",
+      "gradualProgression": "Tăng dần từ số bước cả ngày đã xác minh, điều chỉnh thận trọng theo tuổi và baseline thấp. Số bước bổ trợ hướng dẫn về thời lượng và cường độ vận động.",
+      "maintainBaseline": "Duy trì gần mức vận động đã xác minh. Mục tiêu cân nặng không đòi hỏi phải tăng bước chân liên tục.",
+      "reviewBaseline": "Baseline đã xác minh nằm ngoài phạm vi đề xuất bước chân tự động. Cần xem xét hoàn cảnh cá nhân trước khi đặt mục tiêu.",
+      "missingData": "Cần ngày sinh, cường độ vận động và mục tiêu cân nặng để tạo ước tính này.",
+      "invalidData": "Vui lòng kiểm tra dữ liệu hồ sơ và lịch sử trước khi tính đề xuất bước chân.",
+      "under18": "Thuật toán bước chân này dành cho người trưởng thành từ 18 tuổi."
+    },
+    "water": {
+      "drinkingFluidsEstimate": "Ước tính gần đúng cho lượng chất lỏng uống, không phải tổng nước từ thực phẩm và đồ uống hay nước đã ghi trong ứng dụng. Chưa xác định mức phù hợp với sức khỏe cá nhân. Nhu cầu phụ thuộc thời tiết, chế độ ăn, vận động thực tế và sức khỏe; không uống thêm chỉ để đạt con số này.",
+      "fluidRestriction": "Ước tính này không áp dụng khi cần hạn chế dịch. Hãy làm theo hướng dẫn của nhân viên y tế, đặc biệt khi có bệnh thận hoặc suy tim.",
+      "reviewWeight": "Cân nặng nằm ngoài phạm vi ước tính chất lỏng tự động. Cần xem xét hoàn cảnh cá nhân trước khi dùng một mục tiêu tự động.",
+      "reviewEstimate": "Ước tính nằm ngoài phạm vi sàng lọc của sản phẩm và cần xem xét. Các ngưỡng sàng lọc không phải giới hạn y khoa phổ quát.",
+      "missingData": "Cần tuổi hoặc ngày sinh, cân nặng mới nhất và cường độ vận động để tạo ước tính này.",
+      "invalidData": "Vui lòng kiểm tra tuổi, cân nặng và cường độ vận động trước khi tính lượng chất lỏng đề xuất.",
+      "under18": "Ước tính chất lỏng này dành cho người trưởng thành từ 18 tuổi."
+    }
+  },
   "onboarding": {
     "title": "Thiết lập hồ sơ sức khỏe",
     "description": "Hãy cung cấp một số thông tin cơ bản để HealthyCheck có thể theo dõi và tính toán các chỉ số sức khỏe của bạn chính xác hơn.",

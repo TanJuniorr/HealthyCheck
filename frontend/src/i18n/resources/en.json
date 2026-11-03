@@ -1,4 +1,26 @@
 {
+  "recommendations": {
+    "steps": {
+      "startingPoint": "A starting estimate from your activity level. Build up gradually; this is not a medical target or a promise of weight loss.",
+      "unverifiedHistory": "Your step records do not confirm full-day coverage. This starting estimate has low confidence and does not use those counts as a personal baseline.",
+      "insufficientHistory": "There are fewer than four verified complete days in the last 14 completed days. This starting estimate has low confidence.",
+      "gradualProgression": "A gradual increase from verified daily steps, adjusted conservatively for age and a low baseline. Steps complement guidance on activity duration and intensity.",
+      "maintainBaseline": "Maintain roughly your verified activity level. A weight goal does not require endlessly increasing your steps.",
+      "reviewBaseline": "Your verified baseline is outside the range for automatic step estimates. Review your circumstances before setting a target.",
+      "missingData": "A birth date, activity level and weight goal are needed for this estimate.",
+      "invalidData": "Check the profile and history inputs before calculating a step estimate.",
+      "under18": "This step algorithm is designed for adults aged 18 and older."
+    },
+    "water": {
+      "drinkingFluidsEstimate": "A rough estimate for drinking fluids, not total water from food and beverages or the water already logged in the app. Health suitability has not been established. Needs vary with weather, diet, actual activity and health; do not drink extra just to reach this number.",
+      "fluidRestriction": "This estimate does not apply when fluids must be restricted. Follow your clinician's guidance, especially with kidney disease or heart failure.",
+      "reviewWeight": "Your weight is outside the range for automatic fluid estimates. Review your circumstances instead of using an automatic target.",
+      "reviewEstimate": "This estimate is outside the product's screening range and needs review. Screening thresholds are not universal medical limits.",
+      "missingData": "Age or birth date, latest weight and activity level are needed for this estimate.",
+      "invalidData": "Check age, weight and activity information before calculating a fluid estimate.",
+      "under18": "This fluid estimate is designed for adults aged 18 and older."
+    }
+  },
   "onboarding": {
     "title": "Set up your health profile",
     "description": "Share a few basic details so HealthyCheck can track and calculate your health measurements more accurately.",
