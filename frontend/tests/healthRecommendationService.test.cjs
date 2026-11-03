@@ -64,3 +64,13 @@ test('a missing profile is an independent missing-data result, and guests issue 
   const result = await service(f).getMyHealthRecommendations(); for (const key of ['calories', 'steps', 'water']) assert.equal(result[key].status, 'missing_data'); threeReads(f);
   const guest = fixture(); guest.setOwner(null); await assert.rejects(service(guest).getMyHealthRecommendations(), error => error.code === 'UNAUTHENTICATED'); assert.equal(guest.calls.length, 0);
 });
+test('detail screens request only selected recommendation sources, without fetching unused history or inventing skipped results',async()=>{
+ for(const selected of [['calories'],['steps'],['water'],['calories','water']]){
+  const f=fixture();const result=await service(f).getMySelectedHealthRecommendations(selected);
+  assert.deepEqual(Object.keys(result).sort(),[...selected].sort());assert.equal(f.calls.length,2);
+  assert.equal(f.calls.filter(request=>table(request)==='profiles').length,1);
+  assert.equal(f.calls.filter(request=>table(request)==='step_records').length,selected.includes('steps')?1:0);
+  assert.equal(f.calls.filter(request=>table(request)==='weight_records').length,selected.includes('steps')?0:1);
+ }
+ const f=fixture();for(const selected of [[],['bad'],['water','water']])await assert.rejects(service(f).getMySelectedHealthRecommendations(selected));assert.equal(f.calls.length,0);
+});

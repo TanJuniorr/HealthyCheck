@@ -1,4 +1,71 @@
 {
+  "goals": {
+    "forYou": "Mục tiêu sức khỏe dành cho bạn",
+    "intro": "So sánh ước tính mới với mục tiêu đã lưu. Chỉ áp dụng khi bạn lựa chọn; bạn vẫn có thể dùng ứng dụng bình thường nếu bỏ qua.",
+    "kinds": {
+      "calories": "Calo ăn vào",
+      "steps": "Bước chân mỗi ngày",
+      "water": "Nước và chất lỏng uống"
+    },
+    "status": {
+      "success": "Có ước tính",
+      "missing_data": "Thiếu thông tin",
+      "needs_review": "Cần xem xét",
+      "out_of_scope": "Ngoài phạm vi",
+      "query_error": "Lỗi tải dữ liệu"
+    },
+    "recommended": "Đề xuất theo hồ sơ",
+    "fluidEstimate": "Lượng chất lỏng uống ước tính",
+    "perDay": "/ngày",
+    "current": "Mục tiêu hiện tại",
+    "trackedWaterGoal": "Mục tiêu nước đang theo dõi",
+    "actual": {
+      "calories": "Đã ăn hôm nay: {{value}} {{unit}}",
+      "steps": "Đã đi hôm nay: {{value}} {{unit}}",
+      "water": "Đã ghi nhận: {{value}} {{unit}}"
+    },
+    "savedProgress": "Tiến độ theo mục tiêu đã lưu",
+    "details": "Xem chi tiết đề xuất",
+    "completeProfile": "Bổ sung hồ sơ",
+    "calorieMethod": "Ước tính năng lượng Mifflin–St Jeor",
+    "fluidMethod": "Ước tính chất lỏng uống theo cân nặng",
+    "historyMethod": "Lịch sử cả ngày đã xác minh",
+    "startMethod": "Mức khởi đầu theo cường độ vận động",
+    "lowConfidence": "Độ tin cậy thấp",
+    "moderateConfidence": "Độ tin cậy vừa",
+    "applyValue": "Áp dụng {{value}} {{unit}}",
+    "alreadyCurrent": "Đã là mục tiêu hiện tại",
+    "editManually": "Điều chỉnh mục tiêu thủ công",
+    "editWater": "Chỉnh mục tiêu nước theo dõi thủ công",
+    "applyEligible": "Áp dụng đề xuất calo và bước đủ điều kiện",
+    "sleepPreserved": "Mục tiêu ngủ đã lưu: {{value}} phút. Chỉ đổi khi bạn chủ động chỉnh sửa.",
+    "estimateNotice": "Đây là ước tính tham khảo, không phải chỉ định y khoa hay năng lượng tiêu hao đo thực tế. Chưa đánh giá mức phù hợp khi mang thai, cho con bú, cần hạn chế dịch hoặc có bệnh lý cần dinh dưỡng đặc biệt. Hãy tìm hướng dẫn riêng khi cần.",
+    "waterScope": "Chất lỏng uống và nước đã ghi có phạm vi khác nhau. Ứng dụng chỉ cộng các bản ghi bạn nhập; nước trong thức ăn và đồ uống chưa ghi nhận vẫn chưa biết. Không áp dụng tự động ước tính chất lỏng vào mục tiêu nước đang theo dõi.",
+    "confirmTitle": "Xác nhận thay đổi mục tiêu",
+    "confirmBody": "Kiểm tra chính xác các thay đổi bên dưới. Snapshot mới có hiệu lực từ hôm nay; mục tiêu của những ngày trước được giữ nguyên.",
+    "unchanged": "Giữ nguyên: {{fields}}",
+    "confirmApply": "Xác nhận và áp dụng",
+    "saved": "Đã lưu mục tiêu.",
+    "completeFirst": "Hãy nhập đầy đủ bốn mục tiêu thủ công trước. Những mục tiêu còn thiếu sẽ không được tự điền bằng giá trị đoán trước.",
+    "conflict": "Mục tiêu đã thay đổi trong lúc mở trình chỉnh sửa. Hãy đóng, tải lại mục tiêu mới nhất rồi kiểm tra lại thay đổi.",
+    "recommendationChanged": "Đề xuất mới nhất khác bản xem trước này. Hãy tải lại và kiểm tra trước khi áp dụng.",
+    "dayChanged": "Ngày hoặc múi giờ địa phương đã thay đổi. Hãy mở lại trình chỉnh sửa cho hôm nay.",
+    "invalid": "Nhập mục tiêu là số nguyên dương trong phạm vi được hỗ trợ.",
+    "notApplicable": "Chỉ áp dụng đề xuất thành công và tương thích. Mục tiêu nước cần chỉnh thủ công.",
+    "busy": "Đang lưu mục tiêu. Vui lòng chờ.",
+    "manualIntro": "Lựa chọn của bạn được tôn trọng kể cả khi khác đề xuất. Thay đổi có hiệu lực từ hôm nay và giữ nguyên mục tiêu những ngày trước.",
+    "energyEstimates": "BMR ước tính: {{bmr}} kcal/ngày. TDEE ước tính: {{tdee}} kcal/ngày. Đây không phải calo tiêu hao đo bằng cảm biến; không cộng thêm calo từ bước chân.",
+    "calorieReasons": {
+      "required_fields_missing": "Cần bổ sung ngày sinh, chiều cao, cân nặng mới nhất, cường độ vận động và mục tiêu cân nặng.",
+      "formula_coefficient_required": "Không thể chọn hệ số công thức từ thông tin giới tính này. Hệ thống không tự đoán hệ số.",
+      "invalid_data": "Một số thông tin hồ sơ không hợp lệ hoặc nằm ngoài phạm vi đầu vào.",
+      "under_18": "Thuật toán năng lượng này dành cho người trưởng thành từ 18 tuổi.",
+      "nonpositive_energy_estimate": "Ước tính năng lượng này cần được xem xét riêng trước khi đặt mục tiêu.",
+      "underweight_deficit": "Không tự động đề xuất thâm hụt calo khi BMI dưới 18,5.",
+      "low_energy_estimate": "Ước tính thấp hơn ngưỡng sàng lọc của sản phẩm và cần xem xét. Ngưỡng này không phải mức an toàn phổ quát.",
+      "excessive_surplus": "Mức dư năng lượng lớn bất thường so với nhu cầu ước tính và cần được xem xét."
+    }
+  },
   "recommendations": {
     "steps": {
       "startingPoint": "Ước tính khởi đầu theo cường độ vận động. Hãy tăng dần khi phù hợp; đây không phải chỉ tiêu y khoa hay cam kết giảm cân.",

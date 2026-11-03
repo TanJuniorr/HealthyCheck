@@ -80,6 +80,9 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
   }, []);
 
   const refreshProfile = useCallback(async () => {
+    // A callback retained by an old editor must not invalidate the new account's
+    // in-flight profile check or replace its loading state after a session change.
+    if (currentUserId.current !== userId) return;
     const request = ++profileRequest.current;
     if (!userId) { setProfileState({owner:null,data:null,checked:false,loading:false,error:null}); return; }
     setProfileState(previous => ({owner:userId,data:previous.owner===userId?previous.data:null,checked:previous.owner===userId&&previous.checked,loading:true,error:null}));

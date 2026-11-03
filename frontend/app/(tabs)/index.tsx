@@ -19,7 +19,8 @@ import { useArticleFeed } from '../../src/hooks/useArticleFeed';
 import { articleLanguage } from '../../src/lib/articleContent';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useWeeklyOverview } from '../../src/hooks/healthHooks';
-import { toLocalDateKey } from '../../src/lib/dateUtils';
+import { HealthRecommendationsSection } from '../../src/components/health/HealthRecommendationsSection';
+import { useLocalToday } from '../../src/hooks/useLocalToday';
 import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { displayName, initials, profileText } from '../../src/lib/profileRepository';
 import { useHealthQuery } from '../../src/hooks/useHealthQuery';
@@ -62,7 +63,7 @@ export default function OverviewScreen() {
       ? 'overview.greetingAfternoon'
       : 'overview.greetingEvening';
   const insets = useSafeAreaInsets();
-  const today = toLocalDateKey();
+  const today = useLocalToday();
   const cycleSettingsQuery = useHealthQuery(
     () => profile?.gender === 'female' ? getMyMenstrualCycleSettings() : Promise.resolve(null),
     `overview-cycle:${profile?.gender ?? 'unknown'}`,
@@ -218,6 +219,7 @@ export default function OverviewScreen() {
           ))}
         </View>
 
+        <HealthRecommendationsSection actual={{calories:summary?.nutrition.calories??null,steps:summary?.steps.total??null,water:summary?.water.totalMl??null}}/>
         {/* 4. Weekly Summary Section */}
         <SectionHeader title={t("period.thisWeek")} />
         <View style={styles.weeklyGrid}>

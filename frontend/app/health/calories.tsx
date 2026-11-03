@@ -12,7 +12,9 @@ import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 
 import { useNutrition, useHealthGoals } from '../../src/hooks/healthHooks';
-import { getWeekRange, toLocalDateKey } from '../../src/lib/dateUtils';
+import { HealthRecommendationsSection } from '../../src/components/health/HealthRecommendationsSection';
+import { useLocalToday } from '../../src/hooks/useLocalToday';
+import { getWeekRange } from '../../src/lib/dateUtils';
 import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { useThemedStyles } from '../../src/contexts/ThemeContext';
 
@@ -20,7 +22,7 @@ export default function CaloriesScreen() {
   const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
 
-  const today = toLocalDateKey(); const query = useNutrition(getWeekRange(today));
+  const today = useLocalToday(); const query = useNutrition(getWeekRange(today));
   const goals = useHealthGoals(today);
   const day = query.data?.daily.find(item => item.date === today);
   const current = day?.calories ?? null;
@@ -33,6 +35,7 @@ export default function CaloriesScreen() {
       <AppHeader title={t("calories.eaten")} showBack={true} />
       <ScreenContainer scrollable={true} padded={true}>
         <DataFeedback {...query} empty={!query.data?.hasRecords} />
+        <HealthRecommendationsSection kinds={['calories']} goalsQuery={goals} actual={{calories:current}}/>
         {/* Main Progress Hero Card */}
         <View style={styles.heroCard}>
           <ProgressRing

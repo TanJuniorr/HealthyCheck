@@ -10,6 +10,8 @@ import { DataFeedback } from '../../src/components/common/DataFeedback';
 import { WeeklyBarChart } from '../../src/components/charts/WeeklyBarChart';
 import { WaterRecordForm } from '../../src/components/health/WaterRecordForm';
 import { useWaterTracking } from '../../src/hooks/healthHooks';
+import { HealthRecommendationsSection } from '../../src/components/health/HealthRecommendationsSection';
+import { useLocalToday } from '../../src/hooks/useLocalToday';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useThemedStyles } from '../../src/contexts/ThemeContext';
 import { getWeekRange, shiftDay, timestampDateKey, toLocalDateKey } from '../../src/lib/dateUtils';
@@ -23,6 +25,7 @@ import type { WaterRecordRow } from '../../src/types/database';
 export default function WaterScreen(){const {user}=useAuth();return <WaterContent key={user?.id??'signed-out'}/>;}
 function WaterContent(){
  const {t}=useTranslation();const styles=useThemedStyles(baseStyles);
+ const today=useLocalToday();
  const [date,setDate]=useState(toLocalDateKey()),[calendar,setCalendar]=useState(false);
  const [form,setForm]=useState<{record:WaterRecordRow|null;amount?:number}|null>(null);
  const [deleting,setDeleting]=useState<WaterRecordRow|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null),[notice,setNotice]=useState<string|null>(null);
@@ -48,6 +51,7 @@ function WaterContent(){
   </View>
   <TextButton title={t('period.today')} onPress={()=>select(toLocalDateKey())}/><DataFeedback {...query}/>
   {notice ? <Text accessibilityRole="alert" style={styles.success}>{t(notice)}</Text> : null}
+  {date===today?<HealthRecommendationsSection kinds={['water']} actual={{water:query.data?day.totalMl:null}}/>:null}
   <View style={styles.card}>
    <Text style={styles.title}>{t('water.title')}</Text><Text style={styles.total}>{t('water.ml',{value:query.data?formatNumber(day.totalMl):'—'})}</Text>
    <Text style={styles.text}>{t('water.goal',{value:formatNumber(goal)})}</Text>

@@ -1,12 +1,13 @@
-import type { HealthGoalRow } from '../types/database';
+import type { HealthGoalRow, HealthGoalInsert } from '../types/database';
 import { supabase } from '../lib/supabase';
 import { toLocalDateKey, validateDateRange, type DateInput } from '../lib/dateUtils';
 import { columns, makeRepository, queryResult, requireAuthenticatedUserId } from './queryCore';
+import { notifyGoalsChanged } from '../lib/healthQueryEvents';
 const repo = makeRepository('health_goals');
 export const getGoalsHistory = repo.history;
-export const createGoals = repo.add;
-export const updateGoals = repo.update;
-export const deleteGoals = repo.remove;
+export async function createGoals(input:HealthGoalInsert){const row=await repo.add(input);notifyGoalsChanged(row.user_id);return row;}
+export async function updateGoals(id:string,input:Partial<HealthGoalInsert>){const row=await repo.update(id,input);notifyGoalsChanged(row.user_id);return row;}
+export async function deleteGoals(id:string){const owner=await requireAuthenticatedUserId();await repo.remove(id);notifyGoalsChanged(owner);}
 export async function getCurrentGoals(referenceDate: DateInput = new Date()): Promise<HealthGoalRow | null> {
  const date = toLocalDateKey(referenceDate); const id = await requireAuthenticatedUserId();
  return queryResult<HealthGoalRow>(supabase.from('health_goals').select(columns.health_goals).eq('user_id', id).lte('effective_from', date).order('effective_from', { ascending: false }).order('created_at', { ascending: false }).order('id', { ascending: false }).limit(1).maybeSingle(), id);

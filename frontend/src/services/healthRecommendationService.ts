@@ -1,7 +1,7 @@
 import type { CalorieRecommendationResult } from '../lib/calorieRecommendation';
 import type { StepRecommendationResult } from '../lib/stepRecommendation';
 import type { WaterRecommendationResult } from '../lib/waterRecommendation';
-import { dataError, type DataErrorCode } from '../lib/dataErrors';
+import { DataAccessError, dataError, type DataErrorCode } from '../lib/dataErrors';
 import { getMyCalorieRecommendation } from './calorieRecommendationService';
 import { getMyStepRecommendation } from './stepRecommendationService';
 import { getMyWaterRecommendation } from './waterRecommendationService';
@@ -27,10 +27,17 @@ function outcome<T>(result: PromiseSettledResult<T>): T | RecommendationQueryErr
  * can still succeed. No health_goals/actual-intake reads or writes are performed.
  */
 export async function getMyHealthRecommendations(): Promise<HealthRecommendations> {
+  return await getMySelectedHealthRecommendations(['calories','steps','water']) as HealthRecommendations;
+}
+
+/** Detail screens load only their requested estimates; absent keys mean not
+ * requested, never missing health data. Shared reads stay request-scoped.
+ */
+export async function getMySelectedHealthRecommendations(kinds:readonly (keyof HealthRecommendations)[]):Promise<Partial<HealthRecommendations>> {
+  if(!Array.isArray(kinds)||!kinds.length||kinds.some(kind=>!['calories','steps','water'].includes(kind))||new Set(kinds).size!==kinds.length)throw new DataAccessError('INVALID_INPUT','goals.notApplicable');
   const context = await HealthRecommendationSources.create();
-  const [calories, steps, water] = await Promise.allSettled([
-    getMyCalorieRecommendation(context), getMyStepRecommendation(context), getMyWaterRecommendation(context),
-  ]);
+  const loaders={calories:()=>getMyCalorieRecommendation(context),steps:()=>getMyStepRecommendation(context),water:()=>getMyWaterRecommendation(context)};
+  const results=await Promise.allSettled(kinds.map(kind=>loaders[kind as keyof HealthRecommendations]()));
   await context.assertCurrentIdentity();
-  return { calories: outcome(calories), steps: outcome(steps), water: outcome(water) };
+  return Object.fromEntries(kinds.map((kind,index)=>[kind,outcome(results[index])]));
 }

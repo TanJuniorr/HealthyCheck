@@ -1,4 +1,71 @@
 {
+  "goals": {
+    "forYou": "Health goals for you",
+    "intro": "Compare current estimates with your saved goals. Apply them only when you choose; you can keep using the app without applying anything.",
+    "kinds": {
+      "calories": "Food calories",
+      "steps": "Daily steps",
+      "water": "Water and drinking fluids"
+    },
+    "status": {
+      "success": "Estimate available",
+      "missing_data": "Missing information",
+      "needs_review": "Review needed",
+      "out_of_scope": "Outside scope",
+      "query_error": "Unable to load"
+    },
+    "recommended": "Recommended",
+    "fluidEstimate": "Estimated drinking fluids",
+    "perDay": "/day",
+    "current": "Saved goal",
+    "trackedWaterGoal": "Saved tracked-water goal",
+    "actual": {
+      "calories": "Eaten today: {{value}} {{unit}}",
+      "steps": "Walked today: {{value}} {{unit}}",
+      "water": "Logged today: {{value}} {{unit}}"
+    },
+    "savedProgress": "Progress against your saved goal",
+    "details": "View estimate details",
+    "completeProfile": "Complete profile",
+    "calorieMethod": "Mifflin–St Jeor energy estimate",
+    "fluidMethod": "Weight-based drinking-fluid estimate",
+    "historyMethod": "Verified full-day history",
+    "startMethod": "Activity-based starting point",
+    "lowConfidence": "Low confidence",
+    "moderateConfidence": "Moderate confidence",
+    "applyValue": "Apply {{value}} {{unit}}",
+    "alreadyCurrent": "Already your saved goal",
+    "editManually": "Edit goals manually",
+    "editWater": "Edit tracked-water goal manually",
+    "applyEligible": "Apply eligible calorie and step estimates",
+    "sleepPreserved": "Saved sleep goal: {{value}} minutes. Kept unless you explicitly edit it.",
+    "estimateNotice": "These are reference estimates, not medical prescriptions or measured expenditure. Suitability is not assessed for pregnancy, breastfeeding, fluid restriction or conditions requiring special nutrition. Seek individual guidance when needed.",
+    "waterScope": "Drinking fluids and logged water are different scopes. The app adds only entries you log; water in food and unlogged beverages is unknown. This fluid estimate cannot be applied automatically to the tracked-water goal.",
+    "confirmTitle": "Confirm goal changes",
+    "confirmBody": "Review the exact changes below. A new snapshot will apply from today; earlier goals are preserved.",
+    "unchanged": "Kept unchanged: {{fields}}",
+    "confirmApply": "Confirm and apply",
+    "saved": "Goals saved.",
+    "completeFirst": "Set all four goals manually first. Missing goals will not be filled with guessed defaults.",
+    "conflict": "Your saved goals changed while this editor was open. Close it, reload the latest goals and review your changes again.",
+    "recommendationChanged": "Your latest estimate differs from this preview. Reload and review it before applying.",
+    "dayChanged": "The local date or time zone changed. Reopen the editor for today.",
+    "invalid": "Enter positive whole-number goals within the supported range.",
+    "notApplicable": "Only compatible successful estimates can be applied. Edit water goals manually.",
+    "busy": "A goal save is already in progress. Please wait.",
+    "manualIntro": "Your choices are respected even when they differ from estimates. Changes apply from today and preserve earlier goals.",
+    "energyEstimates": "BMR estimate: {{bmr}} kcal/day. TDEE estimate: {{tdee}} kcal/day. These are not sensor-measured calories burned; step calories are not added again.",
+    "calorieReasons": {
+      "required_fields_missing": "Complete your birth date, height, latest weight, activity level and weight goal.",
+      "formula_coefficient_required": "A formula coefficient cannot be selected from this gender information. No coefficient is guessed.",
+      "invalid_data": "Some profile values are invalid or outside the supported input range.",
+      "under_18": "This energy algorithm is designed for adults aged 18 and older.",
+      "nonpositive_energy_estimate": "This energy estimate needs individual review before setting a target.",
+      "underweight_deficit": "A calorie deficit is not proposed automatically when BMI is below 18.5.",
+      "low_energy_estimate": "The estimate is below a product screening threshold and needs review. That threshold is not a universal safe intake.",
+      "excessive_surplus": "The proposed surplus is unusually large relative to estimated needs and requires review."
+    }
+  },
   "recommendations": {
     "steps": {
       "startingPoint": "A starting estimate from your activity level. Build up gradually; this is not a medical target or a promise of weight loss.",

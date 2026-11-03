@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { ageFromBirthDate, healthDecimal } from '../src/lib/healthOnboarding';
+import { ageFromBirthDate } from '../src/lib/healthOnboarding';
 import { formatNumber } from '../src/i18n/formatting';
 import { localizeMessage } from '../src/i18n/localize';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../src/constants/colors';
 import { Typography } from '../src/constants/typography';
@@ -12,24 +12,28 @@ import { Spacing, Radius, Shadows } from '../src/constants/spacing';
 import { AppHeader, SectionHeader } from '../src/components/common/AppHeader';
 import { ScreenContainer } from '../src/components/common/ScreenContainer';
 import { TextButton } from '../src/components/common/Buttons';
-import { PersonalProfileModal, HealthGoalsModal, formatBirthDate, type EditableHealthGoals, type PersonalProfileDraft } from '../src/components/profile/ProfileEditModals';
+import { PersonalProfileModal, formatBirthDate, type PersonalProfileDraft } from '../src/components/profile/ProfileEditModals';
 import { MockAvatar } from '../src/components/common/MockAvatar';
 import { SettingsRow } from '../src/components/health/HealthComponents';
 import { useAuth } from '../src/contexts/AuthContext';
 import { displayName, initials, profileText } from '../src/lib/profileRepository';
 import { useHealthQuery } from '../src/hooks/useHealthQuery';
-import { createGoals, getCurrentGoals } from '../src/services/healthGoalsService';
+import { getCurrentGoals } from '../src/services/healthGoalsService';
 import { addWeightRecord, getLatestWeight } from '../src/services/weightService';
 import { updateMyProfile, ensureMyProfile } from '../src/services/profileService';
 import { DataFeedback } from '../src/components/common/DataFeedback';
 import { authErrorMessage } from '../src/lib/authErrors';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadAvatar, createAvatarSignedUrl, deleteAvatar } from '../src/services/avatarService';
-import { DataAccessError, dataError } from '../src/lib/dataErrors';
-import { toLocalDateKey } from '../src/lib/dateUtils';
+import { dataError } from '../src/lib/dataErrors';
+import { personalHealthEdits } from '../src/lib/profileHealthEditing';
+import { assertIdentity } from '../src/services/queryCore';
+import { HealthRecommendationsSection } from '../src/components/health/HealthRecommendationsSection';
+import { useLocalToday } from '../src/hooks/useLocalToday';
 import { useThemedStyles } from '../src/contexts/ThemeContext';
 
-export default function ProfileScreen() {
+export default function ProfileScreen(){const {user}=useAuth();return <ProfileContent key={user?.id??'guest'}/>;}
+function ProfileContent() {
   const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
 
@@ -40,11 +44,11 @@ export default function ProfileScreen() {
   const [feedback, setFeedback] = useState('');
   const [avatarFailed, setAvatarFailed] = useState(false);
   const [avatarBusy,setAvatarBusy] = useState(false);
-  const [personalEditorOpen, setPersonalEditorOpen] = useState(false);
-  const [goalsEditorOpen, setGoalsEditorOpen] = useState(false);
+  const [personalEditor, setPersonalEditor] = useState<PersonalProfileDraft|null>(null);
+  const params=useLocalSearchParams<{edit?:string}>(),requestedEditor=useRef(''),today=useLocalToday();
   const submittingRef = useRef(false);
   const avatarLock = useRef(false);
-  const records = useHealthQuery(async () => { const [goals,weight] = await Promise.all([getCurrentGoals(),getLatestWeight()]); return { goals,weight }; },'profile-health');
+  const records = useHealthQuery(async () => { const [goals,weight] = await Promise.all([getCurrentGoals(),getLatestWeight()]); return { goals,weight }; },'profile-health:'+today);
   const hasName = Boolean(profile?.full_name?.trim() || (typeof user?.user_metadata.full_name === 'string' && user.user_metadata.full_name.trim()));
   const name = hasName ? displayName(user,profile) : t('profile.member');
   const avatar = profileText(profile, 'avatar_url');
@@ -63,14 +67,10 @@ export default function ProfileScreen() {
       heightCm: height === '—' ? '' : String(height),
       weightKg: records.data?.weight?.weight_kg == null ? '' : String(records.data.weight.weight_kg),
       gender: profile?.gender ?? '',
+      activityLevel:profile?.activity_level??'',weightGoal:profile?.weight_goal??'',
     };
-  }, [birthDate, height, profile?.full_name, profile?.gender, records.data?.weight?.weight_kg, user?.user_metadata.full_name]);
-  const goalsDraft = useMemo(() => ({
-    daily_steps: records.data?.goals?.daily_steps ?? 8000,
-    daily_calories: records.data?.goals?.daily_calories ?? 2000,
-    daily_water_ml: records.data?.goals?.daily_water_ml ?? 2000,
-    target_sleep_minutes: records.data?.goals?.target_sleep_minutes ?? 480,
-  }), [records.data?.goals]);
+  }, [birthDate, height, profile?.full_name, profile?.gender, profile?.activity_level, profile?.weight_goal, records.data?.weight?.weight_kg, user?.user_metadata.full_name]);
+  useEffect(()=>{if(params.edit==='personal'&&requestedEditor.current!==user?.id&&!profileLoading&&!records.isLoading){requestedEditor.current=user?.id??'';setPersonalEditor(personalDraft);}},[params.edit,user?.id,profileLoading,records.isLoading,personalDraft]);
   // Refresh on focus; provider fetches once on session restoration as well.
   useFocusEffect(useCallback(() => { void refreshProfile(); }, [refreshProfile]));
   const handlePickAvatar = async () => {
@@ -87,10 +87,10 @@ export default function ProfileScreen() {
         setFeedback(t('profile.avatarTooLarge'));
         return;
       }
-      if (!profile) await ensureMyProfile();
+      if (!profile) await ensureMyProfile(user.id);
       uploadedPath = await uploadAvatar(image.base64);
       try {
-        await updateMyProfile({ avatar_url:uploadedPath });
+        await updateMyProfile({ avatar_url:uploadedPath },user.id);
       } catch (error) {
         await deleteAvatar(uploadedPath).catch(() => {});
         uploadedPath = null;
@@ -118,30 +118,13 @@ export default function ProfileScreen() {
     catch (error) { setFeedback(authErrorMessage(error)); }
     finally { submittingRef.current = false; setIsSigningOut(false); }
   };
-  const handleSavePersonal = async (draft: PersonalProfileDraft) => {
-    if (!user) throw new Error('Vui lòng đăng nhập để cập nhật hồ sơ.');
-    const heightValue = draft.heightCm.trim() ? healthDecimal(draft.heightCm) : null;
-    const weightValue = draft.weightKg.trim() ? healthDecimal(draft.weightKg) : null;
-    if ((draft.heightCm.trim() && heightValue===null) || (draft.weightKg.trim() && weightValue===null)) throw new DataAccessError('INVALID_INPUT',t('profile.invalidPersonal'));
-    if (heightValue !== null && (!Number.isFinite(heightValue) || heightValue < 30 || heightValue > 300)) throw new DataAccessError('INVALID_INPUT', t('profile.invalidPersonal'));
-    if (draft.fullName.trim().length > 120) throw new DataAccessError('INVALID_INPUT', t('profile.invalidPersonal'));
-    if (weightValue !== null && (!Number.isFinite(weightValue) || weightValue <= 0 || weightValue > 500)) throw new DataAccessError('INVALID_INPUT', t('profile.invalidPersonal'));
-    await ensureMyProfile();
-    await updateMyProfile({
-      full_name: draft.fullName.trim() || null,
-      date_of_birth: draft.dateOfBirth || null,
-      height_cm: heightValue,
-      gender: draft.gender || null,
-    });
-    const previousWeight = Number(records.data?.weight?.weight_kg);
-    if (weightValue !== null && (!Number.isFinite(previousWeight) || Math.abs(previousWeight - weightValue) > 0.001)) {
-      await addWeightRecord({ weight_kg: weightValue });
-    }
-    await Promise.all([refreshProfile(), records.refresh()]);
-  };
-  const handleSaveGoals = async (values: EditableHealthGoals) => {
-    await createGoals({ ...values, effective_from: toLocalDateKey() });
-    await records.refresh();
+  const handleSavePersonal = async (draft: PersonalProfileDraft,initial:PersonalProfileDraft) => {
+    if(!user)return;
+    const {patch,weightKg}=personalHealthEdits(initial,draft);
+    await assertIdentity(user.id);
+    if(Object.keys(patch).length){if(!profile)await ensureMyProfile(user.id);await assertIdentity(user.id);await updateMyProfile(patch,user.id);}
+    try {if(weightKg!==null){await assertIdentity(user.id);await addWeightRecord({weight_kg:weightKg},user.id);}}
+    finally {await refreshProfile();}
   };
 
   return (
@@ -182,7 +165,7 @@ export default function ProfileScreen() {
 
         {!profile && !profileLoading ? <TextButton title={t("profile.create")} onPress={async () => { try { await ensureMyProfile(); await refreshProfile(); } catch (error) { setFeedback(error instanceof Error ? error.message : "profile.createError"); } }} /> : null}
         {/* Personal Info Grid */}
-        <SectionHeader title={t("profile.personal")} actionText={t('common.edit')} onAction={() => setPersonalEditorOpen(true)} />
+        <SectionHeader title={t("profile.personal")} actionText={t('common.edit')} onAction={() => setPersonalEditor(personalDraft)} />
         <View style={styles.personalInfoGrid}>
           <View style={styles.infoBox}>
             <View style={[styles.infoIconBg, { backgroundColor: Colors.primaryLight }]}>
@@ -230,65 +213,11 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Daily Goals Section */}
-        <SectionHeader title={t("profile.dailyGoals")} actionText={t('common.edit')} onAction={() => setGoalsEditorOpen(true)} />
         <View style={styles.card}>
-          {/* Steps */}
-          <View style={styles.goalItem}>
-            <View style={[styles.goalIconBg, { backgroundColor: Colors.primaryLight }]}>
-              <Ionicons name="footsteps-outline" size={20} color={Colors.primary} />
-            </View>
-            <View style={styles.goalDetails}>
-              <Text style={styles.goalTitle}>{t("health.steps")}</Text>
-              <Text style={styles.goalSubtitle}>{t("profile.walking")}</Text>
-            </View>
-            <Text style={styles.goalValue}>
-              {formatNumber(records.data?.goals?.daily_steps)} <Text style={styles.goalUnit}>{t("units.steps")}</Text>
-            </Text>
-          </View>
-
-          {/* Calories */}
-          <View style={styles.goalItem}>
-            <View style={[styles.goalIconBg, { backgroundColor: Colors.orangeLight }]}>
-              <Ionicons name="flame-outline" size={20} color={Colors.orange} />
-            </View>
-            <View style={styles.goalDetails}>
-              <Text style={styles.goalTitle}>{t("calories.active")}</Text>
-              <Text style={styles.goalSubtitle}>{t("profile.calorieTarget")}</Text>
-            </View>
-            <Text style={styles.goalValue}>
-              {formatNumber(records.data?.goals?.daily_calories)} <Text style={styles.goalUnit}>kcal</Text>
-            </Text>
-          </View>
-
-          {/* Water */}
-          <View style={styles.goalItem}>
-            <View style={[styles.goalIconBg, { backgroundColor: Colors.blueLight }]}>
-              <Ionicons name="water-outline" size={20} color={Colors.blue} />
-            </View>
-            <View style={styles.goalDetails}>
-              <Text style={styles.goalTitle}>{t("health.hydration")}</Text>
-              <Text style={styles.goalSubtitle}>{t("profile.waterHint")}</Text>
-            </View>
-            <Text style={styles.goalValue}>
-              {formatNumber(records.data?.goals?.daily_water_ml)} <Text style={styles.goalUnit}>ml</Text>
-            </Text>
-          </View>
-
-          {/* Sleep */}
-          <View style={[styles.goalItem, styles.goalItemLast]}>
-            <View style={[styles.goalIconBg, { backgroundColor: Colors.purpleLight }]}>
-              <Ionicons name="moon-outline" size={20} color={Colors.purple} />
-            </View>
-            <View style={styles.goalDetails}>
-              <Text style={styles.goalTitle}>{t("health.sleep")}</Text>
-              <Text style={styles.goalSubtitle}>{t("profile.sleepHint")}</Text>
-            </View>
-            <Text style={styles.goalValue}>
-              {records.data?.goals?.target_sleep_minutes != null ? formatNumber((records.data.goals.target_sleep_minutes/60),1) : '—'} <Text style={styles.goalUnit}>{t("units.hours")}</Text>
-            </Text>
-          </View>
+          <SettingsRow title={t('onboarding.activityLevel')} value={profile?.activity_level?t(`onboarding.activityLevelOptions.${profile.activity_level}.label`):t('common.unavailable')} icon="walk-outline" onPress={()=>setPersonalEditor(personalDraft)}/>
+          <SettingsRow title={t('onboarding.weightGoal')} value={profile?.weight_goal?t(`onboarding.weightGoalOptions.${profile.weight_goal}.label`):t('common.unavailable')} icon="flag-outline" onPress={()=>setPersonalEditor(personalDraft)}/>
         </View>
+        <HealthRecommendationsSection goalsQuery={{data:records.data?.goals??null,isLoading:records.isLoading,error:records.error,refresh:records.refresh}} onEditProfile={()=>setPersonalEditor(personalDraft)}/>
 
         {/* Preferences & Quick Links */}
         <SectionHeader title={t("profile.preferences")} />
@@ -346,18 +275,7 @@ export default function ProfileScreen() {
           />
         </View>
       </ScreenContainer>
-      {personalEditorOpen ? <PersonalProfileModal
-          visible
-          initial={personalDraft}
-          onClose={() => setPersonalEditorOpen(false)}
-          onSave={handleSavePersonal}
-        /> : null}
-      {goalsEditorOpen ? <HealthGoalsModal
-          visible
-          initial={goalsDraft}
-          onClose={() => setGoalsEditorOpen(false)}
-          onSave={handleSaveGoals}
-        /> : null}
+      {personalEditor ? <PersonalProfileModal key={user?.id} visible initial={personalEditor} onClose={()=>setPersonalEditor(null)} onSave={draft=>handleSavePersonal(draft,personalEditor)}/> : null}
     </View>
   );
 }

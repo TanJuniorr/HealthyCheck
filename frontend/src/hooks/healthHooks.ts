@@ -8,6 +8,9 @@ import { getWeightTrend } from '../services/weightService';
 import { getCurrentGoals } from '../services/healthGoalsService';
 import { aggregateWater } from '../lib/healthCalculations';
 import { getWeekRange,toLocalDateKey } from '../lib/dateUtils';
+import { getMySelectedHealthRecommendations, type HealthRecommendations } from '../services/healthRecommendationService';
+import { useLocalToday } from './useLocalToday';
+export function useHealthRecommendations(kinds:readonly (keyof HealthRecommendations)[]=['calories','steps','water']){const date=useLocalToday();return useHealthQuery(()=>getMySelectedHealthRecommendations(kinds),'health-recommendations:'+date+':'+kinds.join(','));}
 export type DateRange = { start: string; end: string };
 export function useSteps(range: DateRange) { return useHealthQuery(() => getStepsSummary(range.start,range.end),'steps:'+range.start+':'+range.end); }
 export function useSleep(range: DateRange) { return useHealthQuery(() => getSleepSummary(range.start,range.end),'sleep:'+range.start+':'+range.end); }
@@ -26,4 +29,4 @@ export function useWater(range: DateRange) { return useHealthQuery(async () => a
 export function useWeight(range: DateRange) { return useHealthQuery(() => getWeightTrend(range.start,range.end),'weight:'+range.start+':'+range.end); }
 export function useHealthGoals(date = toLocalDateKey()) { return useHealthQuery(() => getCurrentGoals(date),'goals:'+date); }
 export function useHealthOverview(date = toLocalDateKey()) { return useHealthQuery(() => getDashboardSummary(date),'overview:'+date); }
-export function useWeeklyOverview(date = toLocalDateKey()) { const range = getWeekRange(date); return useHealthQuery(() => getWeeklyDashboardSummary(date),'weekly-overview:'+range.start); }
+export function useWeeklyOverview(date = toLocalDateKey()) { const range = getWeekRange(date); return useHealthQuery(() => getWeeklyDashboardSummary(date),'weekly-overview:'+range.start+':'+date); }

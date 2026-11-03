@@ -15,6 +15,8 @@ function uiFixture(extra={}, realAnalysis=false) {
   useEffect(fn,deps){const i=cursor++,state=slots;if(!state[i]||!same(state[i].deps,deps)){const previous=state[i];state[i]={deps};effects.push(()=>{previous?.cleanup?.();state[i].cleanup=fn();});}}
  };
  const loader=createLoader({react:hooks,'@expo/vector-icons':{Ionicons:'Ionicons',MaterialCommunityIcons:'MaterialCommunityIcons'},
+  ...(!extra.__realRecommendations?{[path.resolve(__dirname,'../src/components/health/HealthRecommendationsSection.tsx')]:{HealthRecommendationsSection:'HealthRecommendationsSection'}}:{}),
+  [path.resolve(__dirname,'../src/hooks/useLocalToday.ts')]:{useLocalToday:()=>createLoader()('src/lib/dateUtils').toLocalDateKey()},
   [path.resolve(__dirname,'../src/components/health/SleepScheduleCard.tsx')]:{SleepScheduleCard:'SleepScheduleCard'},
   [path.resolve(__dirname,'../src/components/articles/ArticleImage.tsx')]:{ArticleImage:'ArticleImage'},
   [path.resolve(__dirname,'../src/contexts/ThemeContext.tsx')]:{useThemedStyles:styles=>styles,useTheme:()=>({isDark:false})},

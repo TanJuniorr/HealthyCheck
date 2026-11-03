@@ -107,6 +107,7 @@ export type Database = { public: { Tables: {
   menstrual_cycle_settings: Table<MenstrualCycleSettingsRow, Omit<MenstrualCycleSettingsRow, 'updated_at'> & Partial<Pick<MenstrualCycleSettingsRow, 'updated_at'>>, Partial<Omit<MenstrualCycleSettingsRow, 'user_id'>>>;
   menstrual_cycle_logs: Table<MenstrualCycleLogRow, Omit<MenstrualCycleLogRow, 'id' | 'created_at' | 'updated_at'> & Partial<Pick<MenstrualCycleLogRow, 'id' | 'created_at' | 'updated_at'>>, Partial<Omit<MenstrualCycleLogRow, 'id' | 'user_id' | 'log_date' | 'created_at'>>>;
 }; Views: { [_ in never]: never }; Functions: {
+ save_health_goal_snapshot:{Args:{p_expected_owner:string;p_expected_id:string|null;p_expected_values:Record<string,number>|null;p_changes:Record<string,number>;p_local_date:string;p_time_zone:string};Returns:HealthGoalRow[]};
  article_feed:{Args:{p_language?:string;p_query?:string;p_category?:string|null;p_mode?:string;p_offset?:number;p_limit?:number;p_status?:string|null};Returns:{data:ArticleCardRow[];total:number}};
  get_article:{Args:{p_id:string;p_language?:string};Returns:ArticleDetail|null};
  save_article:{Args:{p_id:string|null;p_expected_updated_at:string|null;p_article:ArticleInput;p_translations:ArticleTranslation[]};Returns:ArticleRow};

@@ -10,6 +10,9 @@ import { ProgressRing } from '../../src/components/charts/ProgressRing';
 import { WeeklyBarChart } from '../../src/components/charts/WeeklyBarChart';
 import { TrendLineChart } from '../../src/components/charts/TrendLineChart';
 import { useSteps } from '../../src/hooks/healthHooks';
+import { HealthRecommendationsSection } from '../../src/components/health/HealthRecommendationsSection';
+import { useLocalToday } from '../../src/hooks/useLocalToday';
+import { useAuth } from '../../src/contexts/AuthContext';
 import { getWeekRange, getMonthRange, toLocalDateKey } from '../../src/lib/dateUtils';
 import { addOrIncrementStepRecord } from '../../src/services/stepsService';
 import { dataError } from '../../src/lib/dataErrors';
@@ -25,7 +28,8 @@ import { useThemedStyles } from '../../src/contexts/ThemeContext';
 import { useNotificationInbox } from '../../src/contexts/NotificationInboxContext';
 
 type Period = 'Today' | 'Week' | 'Month';
-export default function StepsScreen() {
+export default function StepsScreen(){const {user}=useAuth();return <StepsContent key={user?.id??'guest'}/>;}
+function StepsContent() {
   const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
 
@@ -33,7 +37,7 @@ export default function StepsScreen() {
   const [selectedDate,setSelectedDate] = useState(toLocalDateKey());
   const [calendarVisible,setCalendarVisible] = useState(false);
 
-  const today = toLocalDateKey();
+  const today = useLocalToday();
   const range = selectedPeriod === 'Today' ? { start:selectedDate,end:selectedDate } : selectedPeriod === 'Week' ? getWeekRange(selectedDate) : getMonthRange(selectedDate);
   const query = useSteps(range);
   const [entry,setEntry] = useState('');
@@ -100,6 +104,7 @@ export default function StepsScreen() {
       <Text style={styles.selectedDate}>{formatDate(selectedDate)}</Text>
       <ScreenContainer scrollable={true} padded={true}>
         <DataFeedback {...query} empty={query.data?.daysWithRecords === 0 && liveSelectedSteps === 0} />
+        {selectedDate===today&&selectedPeriod==='Today'?<HealthRecommendationsSection kinds={['steps']} actual={{steps:query.data?liveSelectedSteps:null}}/>:null}
         {/* Ring Hero Card */}
         <View style={styles.heroCard}>
           <ProgressRing

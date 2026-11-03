@@ -143,7 +143,9 @@ test('AuthProvider rejects stale profiles across account changes, keeps recovery
   [boundary('src/services/healthOnboardingService.ts')]:{completeHealthOnboarding:async input=>({...profile,id:session.user.id,activity_level:input.activity_level,weight_goal:input.weight_goal})}});
  const Provider=f.load('src/contexts/AuthContext').AuthProvider,render=()=>f.render(()=>Provider({children:null})).props.value;
  let state=render();assert.equal(state.isLoading,true);await tick();state=render();await tick();state=render();assert.equal(state.profileChecked,false);assert.equal(loadOwner,A);
+ const oldAccountRefresh=state.refreshProfile;
  session={user:{id:B,user_metadata:{}}};listener('SIGNED_IN',session);state=render();await tick();state=render();assert.equal(state.profile,null);assert.equal(loadOwner,B);
+ const staleCallback=oldAccountRefresh();await tick();assert.equal(pending.filter(p=>p.owner===A).length,1);await staleCallback;
  pending.find(p=>p.owner===A).resolve(profile);await tick();state=render();assert.equal(state.profile,null);assert.equal(state.profileChecked,false);
  pending.find(p=>p.owner===B).resolve(null);await tick();state=render();assert.equal(state.profileChecked,true);assert.equal(gate.authGate(state),'onboarding');
  const staleRefresh=state.refreshProfile();await tick();

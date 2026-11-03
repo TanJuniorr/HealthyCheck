@@ -94,8 +94,9 @@ export function makeRepository<T extends PersonalTable>(table: T) {
   const row = await queryResult(base(id).eq('id', recordId).maybeSingle(), id) as unknown as Rows[T] | null;
   return row ? normalizeRow(table,row) : null;
  };
- const add = async (payload: Inputs[T]): Promise<Rows[T]> => {
+ const add = async (payload: Inputs[T], expectedOwnerId?:string): Promise<Rows[T]> => {
   const input = validateInput(table, payload); const id = await owner();
+  if(expectedOwnerId&&id!==expectedOwnerId)throw new DataAccessError('AUTH_CHANGED','errors.accountChangedReload');
   const data = await queryResult(personalTable(table).insert({ ...input, user_id: id }).select(columns[table]).single(), id);
   if (!data) throw new DataAccessError('DATABASE', 'Máy chủ không trả về bản ghi đã lưu.');
   return normalizeRow(table,data as unknown as Rows[T]);
