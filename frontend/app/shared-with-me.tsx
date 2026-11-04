@@ -1,367 +1,142 @@
-/**
- * Màn hình "Được chia sẻ với tôi" — phía NGƯỜI NHẬN.
- * Route: /shared-with-me (file này nằm ở frontend/app/shared-with-me.tsx).
- * Muốn vào được màn này thì phải thêm <Stack.Screen name="shared-with-me" />
- * vào nhóm guard "ready" trong frontend/app/_layout.tsx (xem PATCHES.md).
- *
- * Màn này CHỈ ĐỌC, không có bất kỳ nút thêm/sửa/xóa dữ liệu nào của
- * chủ tài khoản. Khi lời mời bị tạm dừng hoặc thu hồi thì màn hình ẩn
- * số liệu ngay và chỉ còn thông báo trạng thái.
- */
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import React, { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../src/constants/colors';
-import { Typography } from '../src/constants/typography';
-import { Radius, Spacing } from '../src/constants/spacing';
-import { PrimaryButton, TextButton } from '../src/components/common/Buttons';
 import { AppHeader } from '../src/components/common/AppHeader';
+import { ScreenContainer } from '../src/components/common/ScreenContainer';
+import { DataFeedback } from '../src/components/common/DataFeedback';
+import { TextButton } from '../src/components/common/Buttons';
+import { SharingCard, SharingConfirmation, SharingDisclosure, SharingGroups, SharingSection } from '../src/components/sharing/SharingUi';
+import { SharedHealthDetails } from '../src/components/sharing/SharedHealthDetails';
+import { useAuth } from '../src/contexts/AuthContext';
 import { useThemedStyles } from '../src/contexts/ThemeContext';
+import { useSharingFeed } from '../src/hooks/useSharingFeed';
+import { Colors } from '../src/constants/colors';
+import { Spacing } from '../src/constants/spacing';
+import { Typography } from '../src/constants/typography';
 import { dataError } from '../src/lib/dataErrors';
-import {
-  getMySharedOwners,
-  getSharedMetrics,
-  subscribeSharedMetrics,
-  type SharedMetrics,
-  type SharedOwner,
-} from '../src/services/sharedWithMeService';
-
-function formatTime(iso: string, fallback: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return fallback;
-  const hh = String(date.getHours()).padStart(2, '0');
-  const mm = String(date.getMinutes()).padStart(2, '0');
-  return `${hh}:${mm}`;
-}
-
-function statusLabel(status: SharedOwner['status'], t: (key: string) => string): string {
-  if (status === 'active') return t('sharedWithMe.statusActive');
-  if (status === 'paused') return t('sharedWithMe.statusPaused');
-  return t('sharedWithMe.statusRevoked');
-}
+import { groupSharingInvites } from '../src/lib/sharingPresentation';
+import { changeSharingInvite } from '../src/services/sharingService';
+import { getMySharedOwners } from '../src/services/sharedWithMeService';
+import type { IncomingSharingInvite } from '../src/types/database';
 
 export default function SharedWithMeScreen() {
-  const styles = useThemedStyles(baseStyles);
+  const { user } = useAuth();
+  const { inviteId } = useLocalSearchParams<{ inviteId?: string }>();
+  return user ? <ReceivedInvites key={`${user.id}:${inviteId ?? ''}`} recipient={user.id} initialInvite={inviteId}/> : null;
+}
+
+function ReceivedInvites({ recipient, initialInvite }: { recipient: string; initialInvite?: string }) {
   const { t } = useTranslation();
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const styles = useThemedStyles(baseStyles);
+  const [selected, setSelected] = useState(initialInvite);
+  const [historyOpen, setHistoryOpen] = useState<boolean>();
+  const [confirmation, setConfirmation] = useState<{ invite: IncomingSharingInvite; action: 'accept' | 'reject' } | null>(null);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const lock = useRef(false);
+  const mounted = useRef(true);
 
-  const [owners, setOwners] = useState<SharedOwner[]>([]);
-  const [selected, setSelected] = useState<SharedOwner | null>(null);
-  const [metrics, setMetrics] = useState<SharedMetrics | null>(null);
-  const [isLoadingOwners, setIsLoadingOwners] = useState(true);
-  const [isLoadingMetrics, setIsLoadingMetrics] = useState(false);
-  const [loadError, setLoadError] = useState('');
-  const [metricsError, setMetricsError] = useState('');
+  const load = useCallback(() => getMySharedOwners(recipient), [recipient]);
+  const feed = useSharingFeed(recipient, 'recipient', recipient, load, true);
 
-  const translateError = useCallback(
-    (err: unknown): string => {
-      const message = dataError(err).message;
-      return message.startsWith('sharedWithMe.') ? t(message) : message;
-    },
-    [t],
-  );
-
-  const fetchOwners = useCallback(async () => {
-    setIsLoadingOwners(true);
-    setLoadError('');
-    try {
-      const data = await getMySharedOwners();
-      setOwners(data);
-      setSelected((current) => {
-        if (!current) return null;
-        return data.find((item) => item.inviteId === current.inviteId) ?? null;
-      });
-    } catch (err) {
-      setLoadError(translateError(err));
-    } finally {
-      setIsLoadingOwners(false);
-    }
-  }, [translateError]);
-
-  useFocusEffect(
-    useCallback(() => {
-      void fetchOwners();
-    }, [fetchOwners]),
-  );
-
-  const fetchMetrics = useCallback(
-    async (owner: SharedOwner) => {
-      setIsLoadingMetrics(true);
-      setMetricsError('');
-      try {
-        const data = await getSharedMetrics(owner);
-        setMetrics(data);
-      } catch (err) {
-        setMetrics(null);
-        setMetricsError(translateError(err));
-      } finally {
-        setIsLoadingMetrics(false);
-      }
-    },
-    [translateError],
-  );
-
-  // Khi chọn 1 chủ tài khoản đang active: tải số liệu + đăng ký Realtime.
-  // Khi chủ tài khoản đó bị tạm dừng/thu hồi: hủy đăng ký, ẩn số liệu.
   useEffect(() => {
-    if (!selected || selected.status !== 'active') {
-      return undefined;
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+
+  const respond = async () => {
+    if (!confirmation || lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    setError('');
+    try {
+      const { invite, action } = confirmation;
+      await changeSharingInvite(recipient, invite.invite_id, invite.version, action);
+      if (mounted.current) {
+        setConfirmation(null);
+        setSelected(invite.invite_id);
+        setSaved(true);
+        feed.refresh();
+      }
+    } catch (failure) {
+      if (mounted.current) {
+        setError(dataError(failure).message);
+        feed.refresh();
+      }
+    } finally {
+      lock.current = false;
+      if (mounted.current) setBusy(false);
     }
-    void Promise.resolve().then(() => fetchMetrics(selected));
-const unsubscribe = subscribeSharedMetrics(
-      selected.ownerId,
-      () => {
-        void fetchMetrics(selected);
-      },
-      () => {
-        void (async () => {
-          const fresh = await getMySharedOwners().catch(() => null);
-          if (!fresh) return;
-          setOwners(fresh);
-          const updated = fresh.find((item) => item.inviteId === selected.inviteId) ?? null;
-          setSelected(updated);
-          if (!updated || updated.status !== 'active') setMetrics(null);
-        })();
-      },
-    );
-    return unsubscribe;
-  }, [selected, fetchMetrics]);
+  };
 
-  const ownerName = (owner: SharedOwner): string =>
-    owner.ownerName?.trim() || t('sharedWithMe.unknownOwner');
+  const openResponse = (invite: IncomingSharingInvite, action: 'accept' | 'reject') => {
+    setError('');
+    setConfirmation({ invite, action });
+  };
 
-  const renderMetricCard = (icon: string, label: string, value: string, hint: string) => (
-    <View style={styles.metricCard} key={label}>
-      <Ionicons name={icon as never} size={26} color={Colors.primary} />
-      <Text style={styles.metricLabel}>{label}</Text>
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricHint}>{hint}</Text>
-    </View>
-  );
+  const invites = feed.data ?? [];
+  const groups = groupSharingInvites(invites);
+  const showHistory = historyOpen ?? groups.history.some(invite => invite.invite_id === initialInvite);
+  const latestByOwner = new Map<string, string>();
+  for (const invite of invites) {
+    if (!latestByOwner.has(invite.owner_id)) latestByOwner.set(invite.owner_id, invite.invite_id);
+  }
+  const renderInvite = (invite: typeof invites[number]) => {
+    const open = selected === invite.invite_id;
+    const historical = invite.status === 'revoked' || invite.status === 'rejected';
+    return <SharingCard key={invite.invite_id} name={invite.owner_name?.trim() || t('sharedWithMe.unknownOwner')}
+      avatarUrl={invite.avatar_url} status={invite.status} sentAt={invite.created_at} permissions={invite}
+      updatedAt={invite.status === 'active' ? invite.updated_at : undefined}
+      identityHint={invite.status === 'pending'
+        ? t('sharedWithMe.senderCode', { code: invite.owner_id.slice(0, 8) })
+        : historical && latestByOwner.get(invite.owner_id) !== invite.invite_id
+          ? t('sharedWithMe.earlierInvite') : undefined}>
+      {invite.status === 'pending' ? <View style={styles.actions}>
+        <TextButton title={t('sharing.acceptAction')} onPress={() => openResponse(invite, 'accept')}/>
+        <TextButton title={t('sharing.rejectAction')} onPress={() => openResponse(invite, 'reject')}/>
+      </View> : null}
+      {invite.status === 'paused' ? <Text style={styles.text}>{t('sharedWithMe.pausedHint')}</Text> : null}
+      {invite.status === 'active' ?
+        <SharingDisclosure title={t('sharedWithMe.metricsDetails')} open={open}
+          onToggle={() => setSelected(open ? undefined : invite.invite_id)}/> : null}
+      {open && invite.status === 'active' ? (
+        feed.isLoading ? <DataFeedback isLoading error={null} refresh={async () => feed.refresh()}/> :
+          <SharedHealthDetails key={`${invite.invite_id}:${invite.version}`} recipient={recipient}
+            invite={invite} refreshInvites={feed.refresh}/>
+      ) : null}
+    </SharingCard>;
+  };
 
-  return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-      <AppHeader title={t('sharedWithMe.title')} />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.noteBox}>
-          <Ionicons name="information-circle-outline" size={20} color={Colors.primary} />
-          <Text style={styles.noteText}>{t('sharedWithMe.viewOnlyNote')}</Text>
-        </View>
-
-        {isLoadingOwners ? (
-          <ActivityIndicator size="large" color={Colors.primary} style={styles.loader} />
-        ) : loadError ? (
-          <View>
-            <Text style={styles.errorText}>{loadError}</Text>
-            <PrimaryButton title={t('sharedWithMe.retry')} onPress={() => void fetchOwners()} />
-          </View>
-        ) : owners.length === 0 ? (
-          <Text style={styles.emptyText}>{t('sharedWithMe.empty')}</Text>
-        ) : (
-          <View>
-            <Text style={styles.sectionTitle}>{t('sharedWithMe.ownersTitle')}</Text>
-            {owners.map((owner) => {
-              const isSelected = selected?.inviteId === owner.inviteId;
-              return (
-                <TouchableOpacity
-                  key={owner.inviteId}
-                  style={[styles.ownerCard, isSelected && styles.ownerCardSelected]}
-                  onPress={() => setSelected(owner)}
-                  accessibilityRole="button"
-                  accessibilityLabel={ownerName(owner)}
-                >
-                  <View style={styles.ownerRow}>
-                    <View style={styles.avatar}>
-                      <Text style={styles.avatarText}>
-                        {ownerName(owner).slice(0, 2).toUpperCase()}
-                      </Text>
-                    </View>
-                    <View style={styles.ownerInfo}>
-                      <Text style={styles.ownerName}>{ownerName(owner)}</Text>
-                      <Text style={styles.ownerMeta}>
-                        {owner.shareSteps ? ` ${t('sharedWithMe.steps')}` : ''}
-                        {owner.shareSleep ? ` ${t('sharedWithMe.sleep')}` : ''}
-                        {owner.shareNutrition ? ` ${t('sharedWithMe.nutrition')}` : ''}
-                      </Text>
-                    </View>
-                    <Text
-                      style={[
-                        styles.statusBadge,
-                        owner.status === 'active' && styles.statusActive,
-                        owner.status === 'paused' && styles.statusPaused,
-                        owner.status === 'revoked' && styles.statusRevoked,
-                      ]}
-                    >
-                      {statusLabel(owner.status, t)}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
-
-        {selected && selected.status !== 'active' && (
-          <View style={styles.notActiveBox}>
-            <Text style={styles.notActiveText}>
-              {selected.status === 'paused'
-                ? t('sharedWithMe.pausedNotice')
-                : t('sharedWithMe.revokedNotice')}
-            </Text>
-          </View>
-        )}
-
-        {selected && selected.status === 'active' && (
-          <View>
-            <View style={styles.liveRow}>
-              <View style={styles.liveDot} />
-              <Text style={styles.liveText}>
-                {t('sharedWithMe.live')}
-                {metrics ? ` • ${t('sharedWithMe.updatedAt')} ${formatTime(metrics.updatedAt, '')}` : ''}
-              </Text>
-            </View>
-
-            {isLoadingMetrics && !metrics ? (
-              <ActivityIndicator size="large" color={Colors.primary} style={styles.loader} />
-            ) : metricsError ? (
-              <View>
-                <Text style={styles.errorText}>{metricsError}</Text>
-                <PrimaryButton
-                  title={t('sharedWithMe.retry')}
-                  onPress={() => void fetchMetrics(selected)}
-                />
-              </View>
-            ) : metrics ? (
-              <View style={styles.metricsGrid}>
-                {selected.shareSteps &&
-                  renderMetricCard(
-                    'footsteps-outline',
-                    t('sharedWithMe.stepsToday'),
-                    metrics.stepsToday === null ? '—' : String(metrics.stepsToday),
-                    t('sharedWithMe.stepsTodayHint'),
-                  )}
-                {selected.shareSleep &&
-                  renderMetricCard(
-                    'moon-outline',
-                    t('sharedWithMe.sleepLast'),
-                    metrics.sleepLastHours === null ? '—' : `${metrics.sleepLastHours} ${t('sharedWithMe.hours')}`,
-                    metrics.sleepLastDate
-                      ? `${t('sharedWithMe.sleepDate')} ${metrics.sleepLastDate}`
-                      : t('sharedWithMe.noSleepData'),
-                  )}
-                {selected.shareNutrition &&
-                  renderMetricCard(
-                    'nutrition-outline',
-                    t('sharedWithMe.nutritionToday'),
-                    metrics.nutritionTodayKcal === null ? '—' : `${metrics.nutritionTodayKcal} kcal`,
-                    metrics.mealsToday === null
-                      ? t('sharedWithMe.noNutritionData')
-                      : `${metrics.mealsToday} ${t('sharedWithMe.meals')}`,
-                  )}
-              </View>
-            ) : null}
-
-            <TextButton
-              title={t('sharedWithMe.reload')}
-              onPress={() => void fetchMetrics(selected)}
-            />
-            <Text style={styles.viewOnlyText}>{t('sharedWithMe.viewOnlyNote')}</Text>
-            <Text style={styles.viewOnlyText}>{t('sharedWithMe.notSharedNote')}</Text>
-          </View>
-        )}
-
-        {selected && (
-          <PrimaryButton
-            title={t('sharedWithMe.backToList')}
-            onPress={() => {
-              setSelected(null);
-              setMetrics(null);
-            }}
-          />
-        )}
-
-        <TextButton title={t('sharedWithMe.backToSharing')} onPress={() => router.back()} />
-      </ScrollView>
-    </View>
-  );
+  return <View style={styles.screen}>
+    <AppHeader title={t('sharedWithMe.title')}/>
+    <ScreenContainer contentContainerStyle={styles.content}>
+      <Text style={styles.text}>{t('sharedWithMe.viewOnlyNote')}</Text>
+      {saved ? <Text accessibilityRole="alert" style={styles.text}>{t('sharing.actionSaved')}</Text> : null}
+      {(!feed.data && feed.isLoading) || feed.error ? <DataFeedback {...feed} refresh={async () => feed.refresh()}/> : null}
+      {feed.data?.length === 0 ? <Text style={styles.text}>{t('sharedWithMe.empty')}</Text> : null}
+      {selected && feed.data && !feed.data.some(invite => invite.invite_id === selected) ?
+        <Text style={styles.text}>{t('sharedWithMe.inviteNotFound')}</Text> : null}
+      {(['pending', 'active', 'paused'] as const).map(group => groups[group].length ?
+        <SharingSection key={group} title={t(`sharedWithMe.sections.${group}`)}>{groups[group].map(renderInvite)}</SharingSection> : null)}
+      {groups.history.length ? <SharingSection title={t('sharing.historyCount', { count: groups.history.length })}
+        open={showHistory} onToggle={() => setHistoryOpen(!showHistory)}>{groups.history.map(renderInvite)}</SharingSection> : null}
+    </ScreenContainer>
+    {confirmation ? <SharingConfirmation title={t(`sharing.confirmAction.${confirmation.action}.title`)}
+      action={t(`sharing.${confirmation.action}Action`)} busy={busy} error={error}
+      onConfirm={respond} onClose={() => { if (!lock.current) setConfirmation(null); }}>
+      <Text style={styles.title}>{confirmation.invite.owner_name || t('sharedWithMe.unknownOwner')}</Text>
+      <SharingGroups permissions={confirmation.invite}/>
+      <Text style={styles.text}>{t(`sharing.confirmAction.${confirmation.action}.body`)}</Text>
+    </SharingConfirmation> : null}
+  </View>;
 }
 
 const baseStyles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
-  content: { paddingHorizontal: Spacing.screenPadding, paddingBottom: Spacing.xxl },
-  loader: { marginTop: Spacing.xxl },
-  noteBox: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    backgroundColor: Colors.primaryLight,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
-  },
-  noteText: { ...Typography.bodySmall, color: Colors.textPrimary, flex: 1, lineHeight: 19 },
-  sectionTitle: { ...Typography.cardTitle, color: Colors.textPrimary, marginBottom: Spacing.md },
-  ownerCard: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
-    marginBottom: Spacing.md,
-  },
-  ownerCardSelected: { borderColor: Colors.primary, borderWidth: 2 },
-  ownerRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: { ...Typography.cardTitle, color: Colors.primary },
-  ownerInfo: { flex: 1 },
-  ownerName: { ...Typography.cardTitle, color: Colors.textPrimary },
-  ownerMeta: { ...Typography.bodySmall, color: Colors.textSecondary, marginTop: 2 },
-  statusBadge: { ...Typography.labelSmall, color: Colors.textMuted },
-  statusActive: { color: Colors.success },
-  statusPaused: { color: Colors.warning },
-  statusRevoked: { color: Colors.error },
-  emptyText: { ...Typography.body, color: Colors.textSecondary, textAlign: 'center', marginTop: Spacing.xxl },
-  errorText: { ...Typography.body, color: Colors.error, textAlign: 'center', marginVertical: Spacing.lg },
-  notActiveBox: {
-    backgroundColor: Colors.warningLight,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
-    marginTop: Spacing.lg,
-  },
-  notActiveText: { ...Typography.body, color: Colors.textPrimary, textAlign: 'center' },
-  liveRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginTop: Spacing.lg },
-  liveDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.success },
-  liveText: { ...Typography.bodySmall, color: Colors.textSecondary },
-  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, marginTop: Spacing.lg },
-  metricCard: {
-    flexBasis: '48%',
-    flexGrow: 1,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: Radius.lg,
-    padding: Spacing.lg,
-    gap: 4,
-  },
-  metricLabel: { ...Typography.labelSmall, color: Colors.primary, marginTop: Spacing.sm },
-  metricValue: { ...Typography.cardTitle, color: Colors.textPrimary },
-  metricHint: { ...Typography.bodySmall, color: Colors.textSecondary },
-  viewOnlyText: { ...Typography.bodySmall, color: Colors.textMuted, textAlign: 'center', marginTop: Spacing.sm },
+  screen: { flex: 1, backgroundColor: Colors.background },
+  content: { paddingTop: Spacing.lg, gap: Spacing.md },
+  title: { ...Typography.cardTitle, color: Colors.textPrimary },
+  text: { color: Colors.textSecondary, lineHeight: 21 },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.xs },
 });

@@ -1,327 +1,138 @@
 import { supabase } from '../lib/supabase';
-import type {
-  PrivacyLevel,
-  SharingInviteInsert,
-  SharingInviteRow,
-  SharingInviteUpdate,
-} from '../types/database';
-import { requireAuthenticatedUserId, queryResult } from './queryCore';
-import { validId } from '../lib/dataValidation';
 import { DataAccessError, dataError, invalid } from '../lib/dataErrors';
+import { validId } from '../lib/dataValidation';
+import type { SharingAction, SharingInviteRow, SharingPermissions, SharingStatus } from '../types/database';
+import { assertIdentity, queryResult, requireAuthenticatedUserId } from './queryCore';
 
+const columns = 'id,owner_id,recipient_user_id,recipient_label,recipient_email,status,version,accepted_at,created_at,updated_at,share_steps,share_sleep,share_nutrition';
+export const sharingGroups = ['steps', 'sleep', 'nutrition'] as const;
+export const emptySharingPermissions: SharingPermissions = { share_steps: false, share_sleep: false, share_nutrition: false };
 
-type SharingListener = (owner: string) => void;
-const sharingListeners = new Set<SharingListener>();
+const sharingErrors = new Set([
+  'sharing.errorAccountChanged', 'sharing.errorInvalidEmail', 'sharing.errorNoCategorySelected',
+  'sharing.errorSelfShare', 'sharing.errorRecipientUnavailable', 'sharing.errorDuplicateInvite',
+  'sharing.errorInviteUnavailable', 'sharing.errorConflict', 'sharing.errorInvalidTransition',
+  'sharing.errorExpansionNotConfirmed',
+]);
 
-export function subscribeSharingChanges(listener: SharingListener) {
-  sharingListeners.add(listener);
-  return () => {
-    sharingListeners.delete(listener);
-  };
+export function validateRecipient(raw: unknown): string {
+  if (typeof raw !== 'string' || !raw.trim()) invalid('sharing.errorRecipientRequired');
+  const email = raw.trim().toLowerCase();
+  if (email.length > 254) invalid('sharing.errorRecipientTooLong');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) invalid('sharing.errorInvalidEmail');
+  return email;
 }
 
-export function notifySharingChanged(owner: string) {
-  for (const listener of sharingListeners) {
-    listener(owner);
-  }
-}
-
-export function validateRecipient(raw: unknown): { recipient_label: string; recipient_email: string | null } {
-  if (typeof raw !== 'string') invalid('sharing.errorRecipientRequired');
-  const trimmed = raw.trim();
-  if (!trimmed) invalid('sharing.errorRecipientRequired');
-  if (trimmed.length > 120) invalid('sharing.errorRecipientTooLong');
-
-  if (trimmed.includes('@')) {
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(trimmed)) invalid('sharing.errorInvalidEmail');
-    return {
-      recipient_label: trimmed,
-      recipient_email: trimmed.toLowerCase(),
-    };
-  }
-
-  if (trimmed.length < 2) invalid('sharing.errorRecipientTooShort');
-  return {
-    recipient_label: trimmed,
-    recipient_email: null,
-  };
-}
-
-export function validateCategories(categories: {
-  share_steps?: boolean;
-  share_sleep?: boolean;
-  share_nutrition?: boolean;
-  share_heart?: boolean;
-  share_cycle?: boolean;
-}) {
-  if (categories.share_heart || categories.share_cycle) {
-    invalid('sharing.errorHeartCycleUnavailable');
-  }
-  const hasAtLeastOne = Boolean(
-    categories.share_steps || categories.share_sleep || categories.share_nutrition
-  );
-  if (!hasAtLeastOne) {
+export function validateCategories(input: SharingPermissions) {
+  const values = sharingGroups.map(group => input[`share_${group}`]);
+  if (values.some(value => typeof value !== 'boolean') || !values.includes(true)) {
     invalid('sharing.errorNoCategorySelected');
   }
 }
-async function getOwnerEmail(): Promise<string | null> {
-  const { data, error } = await supabase.auth.getUser();
-  if (error) throw dataError(error);
-  const email = data.user?.email?.trim().toLowerCase();
-  return email ? email : null;
+
+export function expandsSharing(before: SharingPermissions, after: SharingPermissions) {
+  return sharingGroups.some(group => !before[`share_${group}`] && after[`share_${group}`]);
 }
 
-async function checkRecipientAccount(recipientEmail: string | null): Promise<void> {
-
-    if (!recipientEmail) return;
-  const { data: exists, error: rpcError } = await supabase.rpc(
-    'sharing_recipient_exists',
-    { p_email: recipientEmail },
-  );
-  if (rpcError) {
-    const code = (rpcError as { code?: string }).code ?? '';
-    const message = (rpcError as { message?: string }).message ?? '';
-    if (code === 'PGRST202' || message.includes('sharing_recipient_exists')) return;
-    throw dataError(rpcError);
-  }
-  if (exists === false) {
-    invalid('sharing.errorRecipientNoAccount');
-  }
+const statuses: Record<SharingStatus, string> = {
+  pending: 'sharing.statusPending', active: 'sharing.statusActive', paused: 'sharing.statusPaused',
+  rejected: 'sharing.statusRejected', revoked: 'sharing.statusRevoked',
+};
+export function sharingStatusLabel(status: SharingStatus) {
+  return statuses[status] ?? 'sharing.errorInviteUnavailable';
 }
 
-
-
-export async function getMySharingInvites(): Promise<SharingInviteRow[]> {
-  const owner = await requireAuthenticatedUserId();
-  const result = await queryResult(
-    supabase
-      .from('sharing_invites')
-      .select('*')
-      .eq('owner_id', owner)
-      .order('created_at', { ascending: false }),
-    owner
-  );
-  return result ?? [];
+export async function getMySharingInvites(owner: string): Promise<SharingInviteRow[]> {
+  await assertIdentity(owner);
+  return await queryResult<SharingInviteRow[]>(
+    supabase.from('sharing_invites').select(columns).eq('owner_id', owner)
+      .order('created_at', { ascending: false }).order('id', { ascending: false }),
+    owner,
+  ) ?? [];
 }
 
-export async function getSharingInviteById(id: string): Promise<SharingInviteRow | null> {
+export async function getSharingInviteById(owner: string, id: string) {
   validId(id);
-  const owner = await requireAuthenticatedUserId();
-  const result = await queryResult(
-    supabase
-      .from('sharing_invites')
-      .select('*')
-      .eq('id', id)
-      .eq('owner_id', owner)
-      .maybeSingle(),
-    owner
-  );
-  return result;
+  await assertIdentity(owner);
+  return queryResult<SharingInviteRow>(supabase.from('sharing_invites').select(columns)
+    .eq('owner_id', owner).eq('id', id).maybeSingle(), owner);
 }
 
-export async function createSharingInvite(input: {
-  recipient: string;
-  privacy_level: PrivacyLevel;
-  share_steps: boolean;
-  share_sleep: boolean;
-  share_nutrition: boolean;
-  share_heart?: boolean;
-  share_cycle?: boolean;
-  notify_on_view?: boolean;
-  weekly_digest?: boolean;
-}): Promise<SharingInviteRow> {
-  const { recipient_label, recipient_email } = validateRecipient(input.recipient);
+async function confirmedMutation(
+  request: PromiseLike<{ data: SharingInviteRow | null; error: { message: string } | null }>,
+  owner: string,
+) {
+  const { data, error } = await request;
+  await assertIdentity(owner);
+  if (error) {
+    if (sharingErrors.has(error.message)) throw new DataAccessError('CONSTRAINT', error.message);
+    throw dataError(error);
+  }
+  if (!data || (data.owner_id !== owner && data.recipient_user_id !== owner)) {
+    throw new DataAccessError('DATABASE', 'errors.saveUnconfirmed');
+  }
+  return data;
+}
+
+export async function createSharingInvite(owner: string, email: string, input: SharingPermissions) {
+  const recipient = validateRecipient(email);
   validateCategories(input);
-  if (!['specific', 'family', 'community'].includes(input.privacy_level)) {
-    invalid('sharing.errorInvalidPrivacy');
+  if (await requireAuthenticatedUserId() !== owner) {
+    throw new DataAccessError('AUTH_CHANGED', 'sharing.errorAccountChanged');
   }
-  const owner = await requireAuthenticatedUserId();
-  const ownerEmail = await getOwnerEmail();
-if (recipient_email && ownerEmail && recipient_email.toLowerCase() === ownerEmail) {
-  invalid('sharing.errorSelfShare');
-}
-  await checkRecipientAccount(recipient_email);
- const payload: SharingInviteInsert & { owner_id: string } = {
-    owner_id: owner,
-    recipient_label,
-    recipient_email,
-    privacy_level: input.privacy_level,
-    share_steps: Boolean(input.share_steps),
-    share_sleep: Boolean(input.share_sleep),
-    share_nutrition: Boolean(input.share_nutrition),
-    share_cycle: false,
-    notify_on_view: Boolean(input.notify_on_view),
-    weekly_digest: Boolean(input.weekly_digest),
-    status: 'active',
-  };
-  const result = await queryResult(
-    supabase.from('sharing_invites').insert(payload).select().single(),
-    owner
-  );
-  if (!result) throw new DataAccessError('DATABASE', 'Không thể tạo lời mời chia sẻ.');
-  notifySharingChanged(owner);
-  return result;
+  const invite = await confirmedMutation(supabase.rpc('create_private_sharing_invite', {
+    p_actor: owner, p_email: recipient,
+    p_steps: input.share_steps, p_sleep: input.share_sleep, p_nutrition: input.share_nutrition,
+  }).single(), owner);
+  if (invite.owner_id !== owner || !invite.recipient_user_id || invite.recipient_email !== recipient || invite.status !== 'pending') {
+    throw new DataAccessError('DATABASE', 'errors.saveUnconfirmed');
+  }
+  return invite;
 }
 
-export async function updateSharingInvite(
-  id: string,
-  input: {
-    recipient?: string;
-    privacy_level?: PrivacyLevel;
-    share_steps?: boolean;
-    share_sleep?: boolean;
-    share_nutrition?: boolean;
-    share_heart?: boolean;
-    share_cycle?: boolean;
-    notify_on_view?: boolean;
-    weekly_digest?: boolean;
-  }
-): Promise<SharingInviteRow> {
+export async function changeSharingInvite(
+  owner: string, id: string, version: number, action: SharingAction,
+  permissions?: SharingPermissions, confirmExpansion = false,
+) {
   validId(id);
-  const current = await getSharingInviteById(id);
-  if (!current) throw new DataAccessError('NOT_FOUND', 'Không tìm thấy bản ghi chia sẻ.');
-  if (current.status === 'revoked') {
-    throw new DataAccessError('CONSTRAINT', 'sharing.errorRevokedCannotEdit');
+  if (permissions) validateCategories(permissions);
+  if (await requireAuthenticatedUserId() !== owner) {
+    throw new DataAccessError('AUTH_CHANGED', 'sharing.errorAccountChanged');
   }
-
-  const mergedSteps = input.share_steps !== undefined ? input.share_steps : current.share_steps;
-  const mergedSleep = input.share_sleep !== undefined ? input.share_sleep : current.share_sleep;
-  const mergedNutrition = input.share_nutrition !== undefined ? input.share_nutrition : current.share_nutrition;
-  const mergedCycle = input.share_cycle !== undefined ? input.share_cycle : current.share_cycle;
-
-  validateCategories({
-    share_steps: mergedSteps,
-    share_sleep: mergedSleep,
-    share_nutrition: mergedNutrition,
-    share_heart: input.share_heart,
-    share_cycle: mergedCycle,
-  });
-
-  const patch: SharingInviteUpdate & { updated_at: string } = {
-    updated_at: new Date().toISOString(),
-  };
-
-  if (input.recipient !== undefined) {
-  const { recipient_label, recipient_email } = validateRecipient(input.recipient);
-  const ownerEmail = await getOwnerEmail();
-  if (recipient_email && ownerEmail && recipient_email.toLowerCase() === ownerEmail) {
-  invalid('sharing.errorSelfShare');
-}
-await checkRecipientAccount(recipient_email);
-patch.recipient_label = recipient_label;
-patch.recipient_email = recipient_email;
-}
-
-
-  if (input.privacy_level !== undefined) {
-    if (!['specific', 'family', 'community'].includes(input.privacy_level)) {
-      invalid('sharing.errorInvalidPrivacy');
-    }
-    patch.privacy_level = input.privacy_level;
+  const invite = await confirmedMutation(supabase.rpc('change_private_sharing_invite', {
+    p_actor: owner, p_id: id, p_version: version, p_action: action,
+    ...(permissions ? {
+      p_steps: permissions.share_steps, p_sleep: permissions.share_sleep,
+      p_nutrition: permissions.share_nutrition, p_confirm_expansion: confirmExpansion,
+    } : {}),
+  }).single(), owner);
+  if (invite.id !== id || invite.version < version || (action !== 'edit' && invite.version !== version + 1)) {
+    throw new DataAccessError('DATABASE', 'errors.saveUnconfirmed');
   }
-
-  if (input.share_steps !== undefined) patch.share_steps = Boolean(input.share_steps);
-  if (input.share_sleep !== undefined) patch.share_sleep = Boolean(input.share_sleep);
-  if (input.share_nutrition !== undefined) patch.share_nutrition = Boolean(input.share_nutrition);
-  patch.share_cycle = false;
-  if (input.notify_on_view !== undefined) patch.notify_on_view = Boolean(input.notify_on_view);
-  if (input.weekly_digest !== undefined) patch.weekly_digest = Boolean(input.weekly_digest);
-
-  const owner = await requireAuthenticatedUserId();
-  const result = await queryResult(
-    supabase
-      .from('sharing_invites')
-      .update(patch)
-      .eq('id', id)
-      .eq('owner_id', owner)
-      .select()
-      .single(),
-    owner
-  );
-  if (!result) throw new DataAccessError('DATABASE', 'Không thể cập nhật chia sẻ.');
-  notifySharingChanged(owner);
-  return result;
+  return invite;
 }
 
-export async function pauseSharingInvite(id: string): Promise<SharingInviteRow> {
-  validId(id);
-  const current = await getSharingInviteById(id);
-  if (!current) throw new DataAccessError('NOT_FOUND', 'Không tìm thấy bản ghi chia sẻ.');
-  if (current.status === 'revoked') {
-    throw new DataAccessError('CONSTRAINT', 'sharing.errorRevokedCannotPause');
-  }
-  const owner = await requireAuthenticatedUserId();
-  const result = await queryResult(
-    supabase
-      .from('sharing_invites')
-      .update({ status: 'paused', updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .eq('owner_id', owner)
-      .select()
-      .single(),
-    owner
-  );
-  if (!result) throw new DataAccessError('DATABASE', 'Không thể tạm dừng chia sẻ.');
-  notifySharingChanged(owner);
-  return result;
-}
-
-export async function resumeSharingInvite(id: string): Promise<SharingInviteRow> {
-  validId(id);
-  const current = await getSharingInviteById(id);
-  if (!current) throw new DataAccessError('NOT_FOUND', 'Không tìm thấy bản ghi chia sẻ.');
-  if (current.status === 'revoked') {
-    throw new DataAccessError('CONSTRAINT', 'sharing.errorRevokedCannotResume');
-  }
-  const owner = await requireAuthenticatedUserId();
-  const result = await queryResult(
-    supabase
-      .from('sharing_invites')
-      .update({ status: 'active', updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .eq('owner_id', owner)
-      .select()
-      .single(),
-    owner
-  );
-  if (!result) throw new DataAccessError('DATABASE', 'Không thể tiếp tục chia sẻ.');
-  notifySharingChanged(owner);
-  return result;
-}
-
-export async function revokeSharingInvite(id: string): Promise<SharingInviteRow> {
-  validId(id);
-  const owner = await requireAuthenticatedUserId();
-  const result = await queryResult(
-    supabase
-      .from('sharing_invites')
-      .update({ status: 'revoked', updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .eq('owner_id', owner)
-      .select()
-      .single(),
-    owner
-  );
-  if (!result) throw new DataAccessError('DATABASE', 'Không thể thu hồi chia sẻ.');
-  notifySharingChanged(owner);
-  return result;
-}
-
-export async function deleteSharingInvite(id: string): Promise<void> {
-  validId(id);
-  const owner = await requireAuthenticatedUserId();
-  const result = await queryResult(
-    supabase
-      .from('sharing_invites')
-      .delete()
-      .eq('id', id)
-      .eq('owner_id', owner)
-      .eq('status', 'revoked')
-      .select('id')
-      .maybeSingle(),
-    owner
-  );
-  if (!result) throw new DataAccessError('NOT_FOUND', 'Không tìm thấy bản ghi chia sẻ.');
-  notifySharingChanged(owner);
+// Subscribe to invitation metadata only. Health values are fetched via the
+// permission-checked RPC; no raw records travel through Realtime.
+let subscriptionSequence = 0;
+export function subscribeSharingChanges(owner: string, side: 'sender' | 'recipient', invalidate: () => void) {
+  const filter = side === 'sender' ? 'owner_id' : 'recipient_user_id';
+  let active = true;
+  const versions = new Map<string, number>();
+  const channel = supabase.channel(`private-sharing:${side}:${owner}:${++subscriptionSequence}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'sharing_invites', filter: `${filter}=eq.${owner}` }, event => {
+      if (!active) return;
+      if (side === 'sender' && event.eventType === 'UPDATE') {
+        const { id, version } = event.new;
+        if (typeof id === 'string' && typeof version === 'number') {
+          if (versions.get(id) === version) return;
+          versions.set(id, version);
+        }
+      }
+      invalidate();
+    })
+    .subscribe(status => {
+      if (active && ['SUBSCRIBED', 'CHANNEL_ERROR', 'TIMED_OUT', 'CLOSED'].includes(status)) invalidate();
+    });
+  return () => { active = false; void supabase.removeChannel(channel); };
 }

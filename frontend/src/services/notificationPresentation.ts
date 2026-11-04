@@ -3,8 +3,31 @@ import { formatDate } from '../i18n/formatting';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
+const sharingEvents = {
+  sharing_received: 'recipient', sharing_accepted: 'sender', sharing_rejected: 'sender',
+  sharing_permissions_updated: 'recipient', sharing_paused: 'recipient',
+  sharing_resumed: 'recipient', sharing_revoked: 'recipient',
+} as const;
+
+function sharingSide(kind?: string) {
+  return kind && Object.hasOwn(sharingEvents, kind) ? sharingEvents[kind as keyof typeof sharingEvents] : null;
+}
+
+export function sharingNoticeDestination(item: InboxNotification) {
+  const side = sharingSide(item.kind);
+  if (item.source !== 'remote' || !item.referenceId || !side) return null;
+  return {
+    pathname: side === 'sender' ? '/(tabs)/sharing' as const : '/shared-with-me' as const,
+    params: { inviteId: item.referenceId },
+  };
+}
+
 export function notificationPresentation(item: InboxNotification, t: Translate) {
   const payload = item.payload ?? {};
+  if (sharingSide(item.kind)) return {
+    title: t(`notifications.sharingEvents.${item.kind}.title`),
+    body: t(`notifications.sharingEvents.${item.kind}.body`),
+  };
   switch (item.kind) {
     case 'step_goal':
       return {
@@ -25,20 +48,6 @@ export function notificationPresentation(item: InboxNotification, t: Translate) 
         title: t('cycle.notificationTitle'),
         body: t('cycle.notificationBody', { date: typeof payload.expectedPeriodStart === 'string' ? formatDate(payload.expectedPeriodStart) : '' }),
       };
-    case 'sharing_received': {
-      const categories = [
-        payload.shareSteps ? t('notifications.categorySteps') : '',
-        payload.shareSleep ? t('notifications.categorySleep') : '',
-        payload.shareNutrition ? t('notifications.categoryNutrition') : '',
-      ].filter(Boolean).join(', ');
-      return {
-        title: t('notifications.sharingTitle'),
-        body: t('notifications.sharingBody', {
-          email: typeof payload.sharerEmail === 'string' && payload.sharerEmail ? payload.sharerEmail : t('notifications.someone'),
-          categories: categories || t('notifications.healthData'),
-        }),
-      };
-    }
     default:
       return { title: item.title, body: item.body };
   }

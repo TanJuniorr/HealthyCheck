@@ -24,54 +24,36 @@ export type WeightRecordRow = { id: string; user_id: string; weight_kg: Numeric;
 export type WeightRecordInsert = Pick<WeightRecordRow, 'weight_kg'> & Partial<Pick<WeightRecordRow, 'recorded_at'>>;
 export type WaterRecordRow = { id: string; user_id: string; amount_ml: number; recorded_at: string; created_at: string };
 export type WaterRecordInsert = Pick<WaterRecordRow, 'amount_ml'> & Partial<Pick<WaterRecordRow, 'recorded_at'>>;
-export type PrivacyLevel = 'specific' | 'family' | 'community';
-export type SharingStatus = 'active' | 'paused' | 'revoked';
-export type SharingInviteRow = {
+export type SharingStatus = 'pending' | 'active' | 'paused' | 'rejected' | 'revoked';
+export type SharingAction = 'edit' | 'accept' | 'reject' | 'pause' | 'resume' | 'revoke';
+export type SharingPermissions = { share_steps: boolean; share_sleep: boolean; share_nutrition: boolean };
+export type SharingInviteRow = SharingPermissions & {
   id: string;
   owner_id: string;
+  recipient_user_id: string | null;
   recipient_label: string;
   recipient_email: string | null;
-  privacy_level: PrivacyLevel;
-  share_steps: boolean;
-  share_sleep: boolean;
-  share_nutrition: boolean;
-  share_cycle: boolean;
-  notify_on_view: boolean;
-  weekly_digest: boolean;
   status: SharingStatus;
+  version: number;
+  accepted_at: string | null;
   created_at: string;
   updated_at: string;
 };
-export type SharingInviteInsert = {
-  recipient_label: string;
-  recipient_email?: string | null;
-  privacy_level: PrivacyLevel;
-  share_steps?: boolean;
-  share_sleep?: boolean;
-  share_nutrition?: boolean;
-  share_cycle?: boolean;
-  notify_on_view?: boolean;
-  weekly_digest?: boolean;
-  status?: SharingStatus;
-  created_at?: string;
-  updated_at?: string;
+export type IncomingSharingInvite = SharingPermissions & {
+  invite_id: string;
+  owner_id: string;
+  owner_name: string | null;
+  avatar_url: string | null;
+  status: SharingStatus;
+  version: number;
+  created_at: string;
 };
-export type SharingInviteUpdate = Partial<
-  Pick<
-    SharingInviteRow,
-    | 'recipient_label'
-    | 'recipient_email'
-    | 'privacy_level'
-    | 'share_steps'
-    | 'share_sleep'
-    | 'share_nutrition'
-    | 'share_cycle'
-    | 'notify_on_view'
-    | 'weekly_digest'
-    | 'status'
-    | 'updated_at'
-  >
->;
+export type SharedMetrics = {
+  updatedAt: string;
+  stepsToday: number | null;
+  sleep: { start: string; end: string } | null;
+  nutrition: { calories: number; protein: number | null; carbs: number | null; fat: number | null } | null;
+};
 export type AppNotificationRow = { id: string; recipient_user_id: string; kind: string; payload: Record<string, unknown>; reference_id: string | null; created_at: string; read_at: string | null };
 export type AIChatMessage = { id: string; role: 'user' | 'assistant'; content: string; created_at: string };
 export type AIChatConversationRow = { id: string; user_id: string; title: string; messages: AIChatMessage[]; created_at: string; updated_at: string };
@@ -101,7 +83,7 @@ export type Database = { public: { Tables: {
   meal_records: Omit<Table<MealRecordRow, MealRecordInsert & { user_id: string }>, 'Relationships'> & { Relationships: [{ foreignKeyName: string; columns: ['food_id']; isOneToOne: false; referencedRelation: 'foods'; referencedColumns: ['id'] }] };
   weight_records: Table<WeightRecordRow, WeightRecordInsert & { user_id: string }>;
   water_records: Table<WaterRecordRow, WaterRecordInsert & { user_id: string }>;
-  sharing_invites: Table<SharingInviteRow, SharingInviteInsert & { owner_id: string }, SharingInviteUpdate>;
+  sharing_invites: Table<SharingInviteRow, never, never>;
   app_notifications: Table<AppNotificationRow, Omit<AppNotificationRow, 'id' | 'created_at' | 'read_at'> & Partial<Pick<AppNotificationRow, 'id' | 'created_at' | 'read_at'>>, Partial<Pick<AppNotificationRow, 'read_at'>>>;
   ai_chat_conversations: Table<AIChatConversationRow, Pick<AIChatConversationRow, 'user_id'> & Partial<Pick<AIChatConversationRow, 'title' | 'messages'>>, Partial<Pick<AIChatConversationRow, 'title' | 'messages' | 'updated_at'>>>;
   menstrual_cycle_settings: Table<MenstrualCycleSettingsRow, Omit<MenstrualCycleSettingsRow, 'updated_at'> & Partial<Pick<MenstrualCycleSettingsRow, 'updated_at'>>, Partial<Omit<MenstrualCycleSettingsRow, 'user_id'>>>;
@@ -113,6 +95,9 @@ export type Database = { public: { Tables: {
  save_article:{Args:{p_id:string|null;p_expected_updated_at:string|null;p_article:ArticleInput;p_translations:ArticleTranslation[]};Returns:ArticleRow};
  record_article_read:{Args:{p_article_id:string};Returns:undefined};
  article_admin_stats:{Args:Record<string,never>;Returns:ArticleStats};
- search_foods: { Args: { p_query?:string; p_category?:string|null; p_offset?:number; p_limit?:number }; Returns:{data:FoodRow[];total:number} }; complete_health_onboarding: { Args: { p_date_of_birth:string; p_gender:string; p_height_cm:number; p_weight_kg:number; p_activity_level:ActivityLevel; p_weight_goal:WeightGoal }; Returns:ProfileRow[] }; sharing_recipient_exists: { Args: { p_email: string }; Returns: boolean } }; Enums:
+ search_foods: { Args: { p_query?:string; p_category?:string|null; p_offset?:number; p_limit?:number }; Returns:{data:FoodRow[];total:number} }; complete_health_onboarding: { Args: { p_date_of_birth:string; p_gender:string; p_height_cm:number; p_weight_kg:number; p_activity_level:ActivityLevel; p_weight_goal:WeightGoal }; Returns:ProfileRow[] }; create_private_sharing_invite: { Args: { p_actor: string; p_email: string; p_steps: boolean; p_sleep: boolean; p_nutrition: boolean }; Returns: SharingInviteRow[] };
+ change_private_sharing_invite: { Args: { p_actor: string; p_id: string; p_version: number; p_action: SharingAction; p_steps?: boolean; p_sleep?: boolean; p_nutrition?: boolean; p_confirm_expansion?: boolean }; Returns: SharingInviteRow[] };
+ list_private_sharing_invitations: { Args: { p_actor: string }; Returns: IncomingSharingInvite[] };
+ get_private_shared_metrics: { Args: { p_actor: string; p_id: string; p_version: number; p_time_zone: string }; Returns: SharedMetrics | null } }; Enums:
  { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };
  

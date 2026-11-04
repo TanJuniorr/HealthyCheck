@@ -51,10 +51,13 @@ export function NotificationInboxProvider({ children }: React.PropsWithChildren)
   const [preferences, setPreferences] = useState<NotificationPreferences>(basePreferences);
   const [preferencesOwnerId, setPreferencesOwnerId] = useState<string | null>(null);
   const previousOwnerId = useRef<string | null>(null);
+  const inboxRequest = useRef(0);
 
   const refresh = useCallback(async () => {
-    if (!ownerId) return;
+    if (!ownerId || previousOwnerId.current !== ownerId) return;
+    const request = ++inboxRequest.current;
     const snapshot = await getNotificationInboxSnapshot(ownerId);
+    if (request !== inboxRequest.current || previousOwnerId.current !== ownerId) return;
     setItemsOwnerId(ownerId);
     setItems(snapshot.items);
     setRemoteStatusState({ ownerId, status: snapshot.remoteStatus });
@@ -95,6 +98,7 @@ export function NotificationInboxProvider({ children }: React.PropsWithChildren)
 
   useEffect(() => {
     const previousOwner = previousOwnerId.current;
+    inboxRequest.current++;
     if (previousOwner && previousOwner !== ownerId) void cancelUserHealthReminders(previousOwner);
     previousOwnerId.current = ownerId;
   }, [ownerId]);
@@ -207,27 +211,33 @@ export function NotificationInboxProvider({ children }: React.PropsWithChildren)
     const appState = AppState.addEventListener('change', state => {
       if (state === 'active') void syncNotifications();
     });
+    const poll = setInterval(() => {
+      if (AppState.currentState === 'active') void refresh();
+    }, 30_000);
     const realtime = supabase.channel(`app-notifications:${ownerId}`)
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'app_notifications',
         filter: `recipient_user_id=eq.${ownerId}`,
       }, event => {
         void (async () => {
+          if (!alive) return;
           await refresh();
+          if (!alive || previousOwnerId.current !== ownerId) return;
           if (event.eventType !== 'INSERT') return;
-          const row = event.new as { id?: string; kind?: string; payload?: Record<string, unknown> };
+          const row = event.new as { id?: string; kind?: string };
           if (!row.id || row.kind !== 'sharing_received') return;
           const copy = notificationPresentation({
             id: row.id, title: '', body: '', receivedAt: new Date().toISOString(),
-            readAt: null, source: 'remote', kind: row.kind, payload: row.payload ?? {},
+            readAt: null, source: 'remote', kind: row.kind,
           }, t);
-          await notifyIncomingShare(ownerId, row.id, copy.title, copy.body, row.payload ?? {});
+          await notifyIncomingShare(ownerId, row.id, copy.title, copy.body);
         })().catch(() => {});
       })
       .subscribe();
 
     return () => {
       alive = false;
+      clearInterval(poll);
       received?.remove();
       response?.remove();
       appState.remove();
@@ -277,6 +287,12 @@ export function NotificationInboxProvider({ children }: React.PropsWithChildren)
     await refresh();
   }, [ownerId, refresh, t]);
 
+  const markRead = useCallback(async (id: string) => {
+    if (!ownerId || previousOwnerId.current !== ownerId) return;
+    await markNotificationRead(ownerId, id);
+    await refresh();
+  }, [ownerId, refresh]);
+
   const value = useMemo(() => {
     const visibleItems = itemsOwnerId === ownerId ? items : [];
     const activePreferences = preferencesOwnerId === ownerId ? preferences : basePreferences;
@@ -287,16 +303,12 @@ export function NotificationInboxProvider({ children }: React.PropsWithChildren)
       notificationsEnabled: activePreferences.notificationsEnabled,
       dailyRemindersEnabled: activePreferences.dailyRemindersEnabled,
       refresh,
-      markRead: async (id: string) => {
-        if (!ownerId) return;
-        await markNotificationRead(ownerId, id);
-        await refresh();
-      },
+      markRead,
       setNotificationsEnabled,
       setDailyRemindersEnabled,
       sendStepGoalReached,
     };
-  }, [items, itemsOwnerId, ownerId, preferences, preferencesOwnerId, refresh, remoteStatusState, sendStepGoalReached, setDailyRemindersEnabled, setNotificationsEnabled]);
+  }, [items, itemsOwnerId, ownerId, preferences, preferencesOwnerId, refresh, markRead, remoteStatusState, sendStepGoalReached, setDailyRemindersEnabled, setNotificationsEnabled]);
 
   return <NotificationInboxContext.Provider value={value}>{children}</NotificationInboxContext.Provider>;
 }

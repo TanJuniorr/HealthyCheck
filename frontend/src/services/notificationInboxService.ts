@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Notification } from 'expo-notifications';
 import { toLocalDateKey } from '../lib/dateUtils';
 import { supabase } from '../lib/supabase';
+import { DataAccessError, dataError } from '../lib/dataErrors';
 
 export type InboxNotification = {
   id: string;
@@ -12,6 +13,7 @@ export type InboxNotification = {
   source?: 'local' | 'remote';
   kind?: string;
   payload?: Record<string, unknown>;
+  referenceId?: string | null;
 };
 
 const STORAGE_PREFIX = 'healthy-check:notification-inbox:';
@@ -34,7 +36,7 @@ async function getLocalNotificationInbox(ownerId: string): Promise<InboxNotifica
         typeof item.id === 'string' && typeof item.title === 'string' &&
         typeof item.body === 'string' && typeof item.receivedAt === 'string' &&
         (item.readAt === null || typeof item.readAt === 'string'))
-    ).map(item => ({ ...item, source: 'local' }));
+    ).filter(item => !item.kind?.startsWith('sharing_')).map(item => ({ ...item, source: 'local' }));
   } catch {
     return [];
   }
@@ -45,7 +47,7 @@ export async function getNotificationInboxSnapshot(ownerId: string): Promise<{ i
   try {
     const { data, error } = await supabase
       .from('app_notifications')
-      .select('id,kind,payload,created_at,read_at')
+      .select('id,kind,payload,reference_id,created_at,read_at')
       .eq('recipient_user_id', ownerId)
       .order('created_at', { ascending: false })
       .limit(MAX_NOTIFICATIONS);
@@ -61,6 +63,7 @@ export async function getNotificationInboxSnapshot(ownerId: string): Promise<{ i
       readAt: row.read_at,
       source: 'remote',
       kind: row.kind,
+      referenceId: row.reference_id,
       payload: row.payload && typeof row.payload === 'object' ? row.payload : {},
     }));
     const byId = new Map<string, InboxNotification>();
@@ -94,6 +97,8 @@ export async function saveReceivedNotification(ownerId: string, notification: No
   const data = content.data ?? {};
   const deliveredAt = new Date(notification.date);
   const kind = typeof data.kind === 'string' ? data.kind : undefined;
+  // The server inbox owns sharing events and their read state.
+  if (kind?.startsWith('sharing_')) return;
   const explicitEventKey = typeof data.eventKey === 'string' ? data.eventKey : undefined;
   const eventKey = explicitEventKey ?? (
     kind === 'sleep_missing' || kind === 'wellness_daily' || kind === 'healthycheck-sleep'
@@ -122,12 +127,17 @@ export async function saveReceivedNotification(ownerId: string, notification: No
 export async function markNotificationRead(ownerId: string, id: string): Promise<void> {
   const items = await getNotificationInbox(ownerId);
   const item = items.find(existing => existing.id === id);
+  if (!item || item.readAt) return;
   if (item?.source === 'remote') {
-    await supabase
+    const { data, error } = await supabase
       .from('app_notifications')
       .update({ read_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('recipient_user_id', ownerId);
+      .eq('recipient_user_id', ownerId)
+      .select('id')
+      .maybeSingle();
+    if (error) throw dataError(error);
+    if (data?.id !== id) throw new DataAccessError('DATABASE', 'errors.saveUnconfirmed');
     return;
   }
   await updateInbox(ownerId, localItems => localItems.map(entry => entry.id === id && !entry.readAt

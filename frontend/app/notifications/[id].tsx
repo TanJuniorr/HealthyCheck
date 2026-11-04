@@ -1,16 +1,17 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { AppHeader } from '../../src/components/common/AppHeader';
 import { ScreenContainer } from '../../src/components/common/ScreenContainer';
+import { TextButton } from '../../src/components/common/Buttons';
 import { Colors } from '../../src/constants/colors';
 import { Radius, Shadows, Spacing } from '../../src/constants/spacing';
 import { Typography } from '../../src/constants/typography';
 import { useThemedStyles } from '../../src/contexts/ThemeContext';
 import { useNotificationInbox } from '../../src/contexts/NotificationInboxContext';
-import { notificationPresentation } from '../../src/services/notificationPresentation';
+import { notificationPresentation, sharingNoticeDestination } from '../../src/services/notificationPresentation';
 
 function formatReceivedAt(value: string, locale: string) {
   const date = new Date(value);
@@ -22,13 +23,22 @@ export default function NotificationDetailScreen() {
   const styles = useThemedStyles(baseStyles);
   const { t, i18n } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const [readFailed, setReadFailed] = useState(false);
   const { items, markRead } = useNotificationInbox();
   const notification = useMemo(() => items.find(item => item.id === id), [id, items]);
   const copy = notification ? notificationPresentation(notification, t) : null;
+  const destination = notification ? sharingNoticeDestination(notification) : null;
+  const unread = notification?.readAt === null;
 
   useFocusEffect(useCallback(() => {
-    if (id) void markRead(id);
-  }, [id, markRead]));
+    let alive = true;
+    if (id && unread) {
+      setReadFailed(false);
+      void markRead(id).catch(() => { if (alive) setReadFailed(true); });
+    }
+    return () => { alive = false; };
+  }, [id, unread, markRead]));
 
   return (
     <View style={styles.screen}>
@@ -40,6 +50,8 @@ export default function NotificationDetailScreen() {
             <Text style={styles.title}>{copy?.title}</Text>
             <Text style={styles.time}>{formatReceivedAt(notification.receivedAt, i18n.language)}</Text>
             <Text style={styles.body}>{copy?.body || t('notifications.noDetails')}</Text>
+            {destination ? <TextButton title={t('notifications.openSharing')} onPress={() => router.push(destination)}/> : null}
+            {readFailed && unread ? <Text accessibilityRole="alert" style={styles.body}>{t('notifications.markReadFailed')}</Text> : null}
           </View>
         ) : (
           <View style={styles.missingState}>

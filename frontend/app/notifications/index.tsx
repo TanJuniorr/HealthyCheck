@@ -23,12 +23,11 @@ export default function NotificationsScreen() {
   const styles = useThemedStyles(baseStyles);
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const { items, refresh, markRead, remoteInboxStatus } = useNotificationInbox();
+  const { items, refresh, remoteInboxStatus } = useNotificationInbox();
 
   useFocusEffect(useCallback(() => { void refresh(); }, [refresh]));
 
-  const openItem = async (item: InboxNotification) => {
-    await markRead(item.id);
+  const openItem = (item: InboxNotification) => {
     router.push({ pathname: '/notifications/[id]', params: { id: item.id } });
   };
 
@@ -51,7 +50,7 @@ export default function NotificationsScreen() {
           <TouchableOpacity
             key={item.id}
             style={[styles.notificationCard, !item.readAt && styles.unreadCard]}
-            onPress={() => void openItem(item)}
+            onPress={() => openItem(item)}
             activeOpacity={0.75}
             accessibilityRole="button"
             accessibilityLabel={`${copy.title}. ${copy.body}`}

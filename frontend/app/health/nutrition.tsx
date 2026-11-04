@@ -155,7 +155,14 @@ export default function NutritionScreen() {
             const isLogged = meal.items && meal.items.length > 0;
 
             return (
-              <TouchableOpacity key={meal.id} style={styles.mealCard} onPress={() => handleAddMeal(meal.id)} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={t('nutrition.editMeal',{meal:meal.type})}>
+              <TouchableOpacity
+                key={meal.id}
+                style={styles.mealCard}
+                onPress={() => handleAddMeal(meal.id)}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel={isLogged ? t('nutrition.editMeal', { meal: meal.type }) : `${t('nutrition.log')} ${meal.type}`}
+              >
                 <View style={styles.mealHeader}>
                   <View style={styles.mealHeaderLeft}>
                     <View
@@ -185,16 +192,10 @@ export default function NutritionScreen() {
                         <Text style={styles.mealCalorieUnit}> kcal</Text>
                       </View>
                     ) : (
-                      <TouchableOpacity
-                        style={styles.logNowBadge}
-                        onPress={() => handleAddMeal(meal.id)}
-                        activeOpacity={0.7}
-                        accessibilityRole="button"
-                        accessibilityLabel={t(isLogged ? 'common.edit' : 'nutrition.log') + ` ${meal.type}`}
-                      >
-                        <Ionicons name={isLogged ? 'create-outline' : 'add'} size={14} color={Colors.primary} />
-                        <Text style={styles.logNowText}>{t(isLogged ? 'common.edit' : 'nutrition.log')}</Text>
-                      </TouchableOpacity>
+                      <View style={styles.logNowBadge}>
+                        <Ionicons name="add" size={14} color={Colors.primary} />
+                        <Text style={styles.logNowText}>{t('nutrition.log')}</Text>
+                      </View>
                     )}
                   </View>
                 </View>

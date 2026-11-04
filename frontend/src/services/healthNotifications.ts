@@ -90,7 +90,7 @@ export async function notifyLowHealthScore(ownerId: string, score: number, title
   }
 }
 
-export async function notifyIncomingShare(ownerId: string, notificationId: string, title: string, body: string, payload: Record<string, unknown>) {
+export async function notifyIncomingShare(ownerId: string, notificationId: string, title: string, body: string) {
   if (Platform.OS === 'web') return;
   const preferences = await getNotificationPreferences(ownerId);
   if (!preferences.notificationsEnabled || !(await notificationPermissionGranted())) return;
@@ -103,7 +103,7 @@ export async function notifyIncomingShare(ownerId: string, notificationId: strin
       content: {
         title,
         body,
-        data: { ...payload, kind: 'sharing_received', owner: ownerId, eventKey: notificationId },
+        data: { kind: 'sharing_received', owner: ownerId, eventKey: notificationId },
         ...(Platform.OS === 'android' ? { channelId: notificationChannelId } : {}),
       },
       trigger: null,

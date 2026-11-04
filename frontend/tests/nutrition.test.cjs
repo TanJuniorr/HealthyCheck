@@ -11,6 +11,49 @@ const bySource=id=>foods.find(food=>food.catalog_metadata.source_id==='usda-sr:'
 const banana=bySource('173944'),chicken=bySource('171477'),oil=bySource('171413');
 const {uiFixture,elements}=require('./ui-fixture.cjs');
 const boundary=(name)=>path.resolve(__dirname,'../'+name);
+
+test('food photos match the food identity and preparation without borrowing ingredient images', async () => {
+ const prefix = 'https://www.themealdb.com/images/ingredients/';
+ const image = (name, file) => ({ strIngredient: name, strThumb: prefix + file + '.png' });
+ let fetches = 0;
+ const getImages = require('./load-ts.cjs')({
+  '@react-native-async-storage/async-storage': { getItem: async () => null, setItem: async () => {} },
+  __fetch: async () => {
+   fetches++;
+   return { ok: true, json: async () => ({ meals: [
+    image('Banana Pepper', 'banana_pepper'),
+    image('Banana', 'banana'),
+    image('Eggs', 'eggs'),
+    image('Rice', 'rice'),
+    image('Salmon', 'salmon'),
+    image('Apples', 'apples'),
+    image('Chicken Breast', 'chicken_breast'),
+    image('Falafel', 'Falafel'),
+    image('Mango', 'orange'),
+   ] }) };
+  },
+ })('src/services/foodImages');
+ const resolve = getImages.resolveFoodImageUrl;
+ const rows = [
+  banana, bySource('171287'), bySource('173424'), bySource('168878'),
+  bySource('175167'), bySource('175168'), bySource('173933'), chicken,
+  bySource('172455'), bySource('169910'),
+ ];
+ const results = await Promise.all(rows.map(resolve));
+ assert.deepEqual(results, [
+  prefix + 'banana.png/small', prefix + 'eggs.png/small', null, null,
+  prefix + 'salmon.png/small', null, null, null, prefix + 'Falafel.png/small', null,
+ ]);
+ assert.equal(fetches, 1);
+ assert.equal(await resolve({ name: 'Grilled salmon', catalog_metadata: { aliases: ['Salmon'] } }), null);
+ assert.equal(await resolve({ name: 'Salmon', catalog_metadata: { preparation_state: 'cooked' } }), null);
+ assert.equal(await resolve({ name: 'Salmon, raw' }), prefix + 'salmon.png/small');
+ assert.equal(await resolve({
+  ...bySource('173424'),
+  catalog_metadata: { ...bySource('173424').catalog_metadata, image_url: ' https://example.test/boiled-egg.jpg ' },
+ }), 'https://example.test/boiled-egg.jpg');
+ assert.equal(getImages.getSavedFoodImageUrl({ name: 'Rice', catalog_metadata: { image_url: 'http://example.test/rice.jpg' } }), null);
+});
 test('accent-insensitive food search, explicit bilingual labels and all eight category filters',()=>{
  for(const query of ['Chuối','chuoi','CHUOI']) assert.ok(portions.filterFoods(foods,query,null).includes(banana));
  assert.ok(portions.filterFoods(foods,'banana','fruits').includes(banana));
@@ -163,11 +206,25 @@ test('focused Nutrition, Calories and Dashboard queries refresh only for their o
   blur();events.notifyNutritionChanged('account');await new Promise(resolve=>setImmediate(resolve));assert.equal(loads,2);
  }
 });
-test('macro UI shows consumed grams without inferred goals or progress while real calorie goals remain',async()=>{
+test('nutrition shows real goals and gives each empty meal card one accessible action',async()=>{
  const summary={calories:100,protein:10,carbs:12,fat:3,calorieGoal:2000,progressPercent:5,recordCount:0,byMealType:{breakfast:{calories:0},lunch:{calories:0},dinner:{calories:0},snack:{calories:0}}};
- const f=uiFixture({[boundary('src/services/healthGoalsService.ts')]:{getCurrentGoals:async()=>null},'expo-router':{useRouter:()=>({push(){}})},[boundary('src/hooks/useHealthQuery.ts')]:{useHealthQuery:()=>({data:{rows:[],summary},isLoading:false,error:null,refresh:async()=>{}})},[boundary('src/components/common/AppHeader.tsx')]:{AppHeader:'AppHeader',SectionHeader:'SectionHeader'},[boundary('src/components/common/ScreenContainer.tsx')]:{ScreenContainer:'ScreenContainer'},[boundary('src/components/charts/ProgressRing.tsx')]:{ProgressRing:'ProgressRing',ProgressBar:'ProgressBar'},[boundary('src/services/mealsService.ts')]:{getMealsByDate:async()=>[]}});
+ let destination;
+ const f=uiFixture({[boundary('src/services/healthGoalsService.ts')]:{getCurrentGoals:async()=>null},'expo-router':{useRouter:()=>({push(route){destination=route;}})},[boundary('src/hooks/useHealthQuery.ts')]:{useHealthQuery:()=>({data:{rows:[],summary},isLoading:false,error:null,refresh:async()=>{}})},[boundary('src/components/common/AppHeader.tsx')]:{AppHeader:'AppHeader',SectionHeader:'SectionHeader'},[boundary('src/components/common/ScreenContainer.tsx')]:{ScreenContainer:'ScreenContainer'},[boundary('src/components/charts/ProgressRing.tsx')]:{ProgressRing:'ProgressRing',ProgressBar:'ProgressBar'},[boundary('src/services/mealsService.ts')]:{getMealsByDate:async()=>[]}});
  const Screen=f.load('app/health/nutrition').default;
- for(const language of ['en','vi']){const i18n=f.load('src/i18n/index').default;await i18n.changeLanguage(language);const tree=f.render(()=>Screen());assert.equal(elements(tree).filter(e=>e.type==='ProgressBar').length,0);assert.equal(elements(tree).find(e=>e.type==='ProgressRing').props.progress,.05);assert.ok(!JSON.stringify(tree).includes(i18n.t('nutrition.noMacroTarget')));}
+ for(const language of ['en','vi']){
+  const i18n=f.load('src/i18n/index').default;await i18n.changeLanguage(language);
+  const tree=f.render(()=>Screen());
+  const nodes=elements(tree);
+  assert.equal(nodes.filter(e=>e.type==='ProgressBar').length,0);
+  assert.equal(nodes.find(e=>e.type==='ProgressRing').props.progress,.05);
+  assert.ok(!JSON.stringify(tree).includes(i18n.t('nutrition.noMacroTarget')));
+  const cards=nodes.filter(e=>e.props.accessibilityRole==='button' && e.props.accessibilityLabel?.startsWith(i18n.t('nutrition.log')+' '));
+  assert.equal(cards.length,4);
+  for(const card of cards)assert.equal(elements(card).filter(e=>e.props.accessibilityRole==='button').length,1);
+  cards[0].props.onPress();
+  assert.equal(destination.pathname,'/meals/add');
+  assert.equal(destination.params.mealType,'breakfast');
+ }
 });
 
 test('meal editor saves a multi-food cart atomically, keeps old rows separate and confirms deletion',async()=>{
