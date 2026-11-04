@@ -1,14 +1,20 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const load=require('./load-ts.cjs')(),editing=load('src/lib/healthGoalEditing'),personal=load('src/lib/profileHealthEditing');
-test('only successful calorie/step values become applicable changes; water and candidates never do',()=>{
+test('only successful estimates are applicable and water requires its own acknowledgment',()=>{
  const recommendations={calories:{status:'success',recommendedCalories:1850.4},steps:{status:'success',recommendedSteps:7000},water:{status:'success',recommendedWaterMl:2250,limitations:{canApplyDirectlyToWaterOnlyGoal:false}}};
  assert.deepEqual({...editing.applicableGoalChanges(['calories'],recommendations)},{daily_calories:1850});
  assert.deepEqual({...editing.applicableGoalChanges(['calories','steps'],recommendations)},{daily_calories:1850,daily_steps:7000});
- for(const selected of [['water'],['unknown'],[],['calories','calories']])assert.throws(()=>editing.applicableGoalChanges(selected,recommendations),e=>e.message==='goals.notApplicable');
+ assert.deepEqual({...editing.applicableGoalChanges(['water'],recommendations,true)},{daily_water_ml:2250});
+ assert.throws(()=>editing.applicableGoalChanges(['water'],recommendations),e=>e.message==='goals.waterConfirmationRequired');
+ assert.throws(()=>editing.applicableGoalChanges(['water','steps'],recommendations,true),e=>e.message==='goals.waterConfirmationRequired');
+ for(const selected of [['unknown'],[],['calories','calories']])assert.throws(()=>editing.applicableGoalChanges(selected,recommendations),e=>e.message==='goals.notApplicable');
  for(const status of ['missing_data','needs_review','out_of_scope','query_error']){
   const unsafe={status,candidateCalories:1800,recommendedCalories:1800};assert.equal(editing.recommendationValue('calories',unsafe),null);
   assert.throws(()=>editing.applicableGoalChanges(['calories'],{...recommendations,calories:unsafe}));
  }
+ assert.throws(()=>editing.applicableGoalChanges(['water'],{
+  ...recommendations,water:{...recommendations.water,fluidRestrictionAssessment:'reported_required'},
+ },true),e=>e.message==='goals.notApplicable');
 });
 test('manual changes validate whole positive values and never invent a complete snapshot',()=>{
  assert.equal(editing.goalValues(null),null);

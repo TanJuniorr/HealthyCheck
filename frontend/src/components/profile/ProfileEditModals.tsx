@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Colors } from '../../constants/colors';
@@ -42,18 +43,29 @@ export function PersonalProfileModal({ visible, initial, onClose, onSave }: Pers
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState(initial);
-  const pending=useRef(false);
+  const pending = useRef(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [confirmingExit, setConfirmingExit] = useState(false);
+  const formDisabled = saving || confirmingExit;
+  const hasChanges = (Object.keys(initial) as (keyof PersonalProfileDraft)[])
+    .some(field => initial[field] !== draft[field]);
 
-  const close = () => {
-    if (!saving) {
+  const requestClose = () => {
+    if (pending.current) return;
+    if (confirmingExit) {
+      setConfirmingExit(false);
+    } else if (hasChanges) {
+      Keyboard.dismiss();
+      setConfirmingExit(true);
+    } else {
       onClose();
     }
   };
 
   const save = async () => {
-    if(pending.current)return;pending.current=true;
+    if (pending.current) return;
+    pending.current = true;
     setSaving(true);
     setError('');
     try {
@@ -63,26 +75,59 @@ export function PersonalProfileModal({ visible, initial, onClose, onSave }: Pers
     } catch (failure) {
       setError(dataError(failure).message);
       setSaving(false);
-    } finally {pending.current=false;}
+    } finally {
+      pending.current = false;
+    }
   };
 
-
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={close}>
+    <Modal visible={visible} animationType="slide" onRequestClose={requestClose}>
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content, { paddingTop: insets.top + Spacing.lg, paddingBottom: insets.bottom + Spacing.xl }]}>
-          <Text accessibilityRole="header" style={styles.title}>{t('profile.editPersonal')}</Text>
-          <AppTextInput editable={!saving} label={t('profile.fullName')} value={draft.fullName} onChangeText={fullName => setDraft(previous => ({ ...previous, fullName }))} autoCapitalize="words" />
-          <BirthDateField value={draft.dateOfBirth} disabled={saving} onChange={dateOfBirth=>setDraft(previous=>({...previous,dateOfBirth}))}/>
-          <GenderField value={draft.gender} disabled={saving} onChange={gender=>setDraft(previous=>({...previous,gender}))}/>
-          <AppTextInput editable={!saving} label={`${t('health.height')} (cm)`} value={draft.heightCm} onChangeText={heightCm => setDraft(previous => ({ ...previous, heightCm }))} keyboardType="decimal-pad" />
-          <AppTextInput editable={!saving} label={`${t('health.weight')} (kg)`} value={draft.weightKg} onChangeText={weightKg => setDraft(previous => ({ ...previous, weightKg }))} keyboardType="decimal-pad" />
-          <HealthPreferenceField field="activityLevel" options={ACTIVITY_LEVELS} value={draft.activityLevel} disabled={saving} onChange={activityLevel=>setDraft(previous=>({...previous,activityLevel}))}/>
-          <HealthPreferenceField field="weightGoal" options={WEIGHT_GOALS} value={draft.weightGoal} disabled={saving} onChange={weightGoal=>setDraft(previous=>({...previous,weightGoal}))}/>
-          {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
-          <PrimaryButton title={t(saving ? 'profile.saving' : 'common.save')} onPress={save} loading={saving} />
-          <TextButton title={t('common.cancel')} onPress={close} disabled={saving} />
-        </ScrollView>
+        <View style={styles.container} accessibilityElementsHidden={confirmingExit} importantForAccessibility={confirmingExit ? 'no-hide-descendants' : 'auto'}>
+          <View style={[styles.editorHeader, { paddingTop: insets.top + Spacing.sm }]}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('profile.back')}
+              accessibilityState={{ disabled: formDisabled }}
+              disabled={formDisabled}
+              style={styles.backButton}
+              onPress={requestClose}
+            >
+              <Ionicons name="arrow-back" size={24} color={styles.title.color} />
+            </Pressable>
+            <Text accessibilityRole="header" style={[styles.title, styles.editorTitle]}>{t('profile.editPersonal')}</Text>
+            <View style={styles.backButton} />
+          </View>
+          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.xl }]}>
+            <AppTextInput editable={!formDisabled} label={t('profile.fullName')} value={draft.fullName} onChangeText={fullName => setDraft(previous => ({ ...previous, fullName }))} autoCapitalize="words" />
+            <BirthDateField value={draft.dateOfBirth} disabled={formDisabled} onChange={dateOfBirth => setDraft(previous => ({ ...previous, dateOfBirth }))}/>
+            <GenderField value={draft.gender} disabled={formDisabled} onChange={gender => setDraft(previous => ({ ...previous, gender }))}/>
+            <AppTextInput editable={!formDisabled} label={`${t('health.height')} (cm)`} value={draft.heightCm} onChangeText={heightCm => setDraft(previous => ({ ...previous, heightCm }))} keyboardType="decimal-pad" />
+            <AppTextInput editable={!formDisabled} label={`${t('health.weight')} (kg)`} value={draft.weightKg} onChangeText={weightKg => setDraft(previous => ({ ...previous, weightKg }))} keyboardType="decimal-pad" />
+            <HealthPreferenceField field="activityLevel" options={ACTIVITY_LEVELS} value={draft.activityLevel} disabled={formDisabled} onChange={activityLevel => setDraft(previous => ({ ...previous, activityLevel }))}/>
+            <HealthPreferenceField field="weightGoal" options={WEIGHT_GOALS} value={draft.weightGoal} disabled={formDisabled} onChange={weightGoal => setDraft(previous => ({ ...previous, weightGoal }))}/>
+            {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
+            <PrimaryButton title={t(saving ? 'profile.saving' : 'common.save')} onPress={save} loading={saving} disabled={confirmingExit} />
+            <TextButton title={t('common.cancel')} onPress={requestClose} disabled={formDisabled} />
+          </ScrollView>
+        </View>
+        {confirmingExit ? (
+          <View style={[styles.exitBackdrop, { paddingTop: insets.top + Spacing.md, paddingBottom: insets.bottom + Spacing.md }]}>
+            <View accessibilityViewIsModal style={styles.exitDialog}>
+              <ScrollView style={styles.exitScroll} contentContainerStyle={styles.exitContent}>
+                <Text accessibilityRole="header" style={styles.title}>{t('profile.saveChangesPrompt')}</Text>
+                {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
+                <PrimaryButton title={t('profile.saveAndBack')} loading={saving} onPress={save} />
+                <TextButton title={t('profile.discardChanges')} color={styles.error.color} disabled={saving} onPress={() => {
+                  if (!pending.current) onClose();
+                }}/>
+                <TextButton title={t('profile.keepEditing')} disabled={saving} onPress={() => {
+                  if (!pending.current) setConfirmingExit(false);
+                }}/>
+              </ScrollView>
+            </View>
+          </View>
+        ) : null}
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -159,6 +204,20 @@ const baseStyles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { padding: Spacing.screenPadding, gap: Spacing.lg, width: '100%', maxWidth: 640, alignSelf: 'center' },
   title: { ...Typography.sectionTitle, color: Colors.textPrimary },
+  editorHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingHorizontal: Spacing.screenPadding,
+    paddingBottom: Spacing.sm, borderBottomWidth: 1, borderBottomColor: Colors.border,
+  },
+  editorTitle: { flex: 1, textAlign: 'center' },
+  backButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  exitBackdrop: {
+    position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,
+    justifyContent: 'center', alignItems: 'center', paddingHorizontal: Spacing.screenPadding,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  exitDialog: { width: '100%', maxWidth: 460, flexShrink: 1, borderRadius: Radius.lg, backgroundColor: Colors.white },
+  exitScroll: { flexGrow: 0, flexShrink: 1 },
+  exitContent: { padding: Spacing.lg, gap: Spacing.sm },
   hint: { ...Typography.bodySmall, color: Colors.textSecondary },
   label: { ...Typography.label, color: Colors.textSecondary, marginBottom: Spacing.sm },
   field: { gap: Spacing.xs },

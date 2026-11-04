@@ -5,6 +5,11 @@ export const EDITABLE_GOAL_KEYS = ['daily_steps','daily_calories','daily_water_m
 export type GoalValues = Record<(typeof EDITABLE_GOAL_KEYS)[number],number>;
 export type GoalChanges = Partial<GoalValues>;
 export type RecommendationKind = keyof HealthRecommendations;
+export const RECOMMENDATION_GOAL_FIELDS = {
+ calories: 'daily_calories',
+ steps: 'daily_steps',
+ water: 'daily_water_ml',
+} as const satisfies Record<RecommendationKind, keyof GoalValues>;
 export function goalValues(row: HealthGoalRow | null): GoalValues | null {
  if(!row)return null;
  if(EDITABLE_GOAL_KEYS.some(key=>row[key]==null||!Number.isInteger(row[key])||row[key]!<0))throw new DataAccessError('INVALID_INPUT','goals.completeFirst');
@@ -16,22 +21,34 @@ export function validateGoalChanges(changes: GoalChanges): GoalChanges {
  return {...changes};
 }
 export function recommendationValue(kind: RecommendationKind, result: HealthRecommendations[RecommendationKind] | null | undefined): number | null {
- if(!result||result.status!=='success')return null;
- const value=kind==='calories'&&'recommendedCalories' in result?Math.round(result.recommendedCalories)
-  :kind==='steps'&&'recommendedSteps' in result?result.recommendedSteps
-  :kind==='water'&&'recommendedWaterMl' in result?result.recommendedWaterMl:null;
- return value!==null&&Number.isSafeInteger(value)&&value>0&&value<=2147483647?value:null;
+ if (!result || result.status !== 'success') return null;
+ let value: number;
+ if (kind === 'calories' && 'recommendedCalories' in result) {
+  value = Math.round(result.recommendedCalories);
+ } else if (kind === 'steps' && 'recommendedSteps' in result) {
+  value = result.recommendedSteps;
+ } else if (kind === 'water' && 'recommendedWaterMl' in result && result.fluidRestrictionAssessment !== 'reported_required') {
+  value = result.recommendedWaterMl;
+ } else {
+  return null;
+ }
+ return Number.isSafeInteger(value) && value > 0 && value <= 2147483647 ? value : null;
 }
-export function applicableGoalChanges(selected: readonly RecommendationKind[], recommendations: Partial<HealthRecommendations>): GoalChanges {
+export function applicableGoalChanges(
+ selected: readonly RecommendationKind[],
+ recommendations: Partial<HealthRecommendations>,
+ waterAcknowledged = false,
+): GoalChanges {
  if(!Array.isArray(selected)||!selected.length||new Set(selected).size!==selected.length)throw new DataAccessError('INVALID_INPUT','goals.notApplicable');
+ if(selected.includes('water') && (selected.length !== 1 || waterAcknowledged !== true)) {
+  throw new DataAccessError('INVALID_INPUT', 'goals.waterConfirmationRequired');
+ }
  const changes:GoalChanges={};
  for(const kind of selected as readonly RecommendationKind[]){
-  // The fluid estimate has a different measurement scope. Manual editing is a
-  // separate, explicit decision; never relabel it as an automatic water target.
-  if(kind!=='calories'&&kind!=='steps')throw new DataAccessError('INVALID_INPUT','goals.notApplicable');
+  if(!Object.hasOwn(RECOMMENDATION_GOAL_FIELDS, kind))throw new DataAccessError('INVALID_INPUT','goals.notApplicable');
   const value=recommendationValue(kind,recommendations[kind]);
   if(value===null)throw new DataAccessError('INVALID_INPUT','goals.notApplicable');
-  changes[kind==='calories'?'daily_calories':'daily_steps']=value;
+  changes[RECOMMENDATION_GOAL_FIELDS[kind]]=value;
  }
  return changes;
 }

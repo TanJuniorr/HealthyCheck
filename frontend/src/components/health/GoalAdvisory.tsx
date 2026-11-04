@@ -7,14 +7,20 @@ import { lowGoalNotes } from '../../lib/healthGoalPresentation';
 import type { GoalValues } from '../../lib/healthGoalEditing';
 import type { ProfileGender } from '../../types/database';
 
-export function GoalAdvisory({ values, gender }: { values: Partial<Record<keyof GoalValues,number|null>>; gender?: ProfileGender | null }) {
+type Props = {
+  values: Partial<Record<keyof GoalValues, number | null>>;
+  gender?: ProfileGender | null;
+  compact?: boolean;
+};
+
+export function GoalAdvisory({ values, gender, compact = false }: Props) {
   const { t } = useTranslation(), styles = useThemedStyles(baseStyles);
   const notes = lowGoalNotes(values, gender);
   if (!notes.length) return null;
   return <View testID="goal-advisory" style={styles.box}>
-    <Text style={styles.title}>{t('goals.advisoryTitle')}</Text>
-    {notes.map(kind => <Text key={kind} style={styles.text}>{t(`goals.lowTarget.${kind}`)}</Text>)}
-    <Text style={styles.text}>{t('goals.advisoryContext')}</Text>
+    {!compact ? <Text style={styles.title}>{t('goals.advisoryTitle')}</Text> : null}
+    {notes.map(kind => <Text key={kind} style={styles.text}>{t(compact ? `goals.lowTargetShort.${kind}` : `goals.lowTarget.${kind}`)}</Text>)}
+    {!compact ? <Text style={styles.text}>{t('goals.advisoryContext')}</Text> : null}
   </View>;
 }
 const baseStyles = StyleSheet.create({

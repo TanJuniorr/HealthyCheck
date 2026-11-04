@@ -2,11 +2,12 @@ import { supabase } from '../lib/supabase';
 import { DataAccessError, dataError } from '../lib/dataErrors';
 import { normalizeRow } from '../lib/dataValidation';
 import { toLocalDateKey } from '../lib/dateUtils';
-import { EDITABLE_GOAL_KEYS, applicableGoalChanges, goalValues, recommendationValue, validateGoalChanges, type GoalChanges, type RecommendationKind } from '../lib/healthGoalEditing';
+import { EDITABLE_GOAL_KEYS, RECOMMENDATION_GOAL_FIELDS, applicableGoalChanges, goalValues, recommendationValue, validateGoalChanges, type GoalChanges, type RecommendationKind } from '../lib/healthGoalEditing';
 import type { HealthGoalRow } from '../types/database';
 import type { HealthRecommendations } from './healthRecommendationService';
 import { getMyCalorieRecommendation } from './calorieRecommendationService';
 import { getMyStepRecommendation } from './stepRecommendationService';
+import { getMyWaterRecommendation } from './waterRecommendationService';
 import { HealthRecommendationSources } from './healthRecommendationSources';
 import { assertIdentity, requireAuthenticatedUserId } from './queryCore';
 import { notifyGoalsChanged } from '../lib/healthQueryEvents';
@@ -38,15 +39,30 @@ async function locked<T>(context:GoalSaveContext,action:(owner:string)=>Promise<
  pending.add(owner);try{return await action(owner);}finally{pending.delete(owner);}
 }
 export function saveManualHealthGoals(context:GoalSaveContext,changes:GoalChanges){return locked(context,owner=>save(context,changes,owner));}
-export function applyHealthGoalRecommendation(context:GoalSaveContext,selected:readonly RecommendationKind[],preview:Partial<HealthRecommendations>){
- return locked(context,async owner=>{
-  const changes=applicableGoalChanges(selected,preview);
-  if(!context.expectedGoal)throw new DataAccessError('INVALID_INPUT','goals.completeFirst');
-  const sources=await HealthRecommendationSources.create();
-  if(sources.ownerId!==owner)throw new DataAccessError('AUTH_CHANGED','errors.accountChangedReload');
-  const fresh=await Promise.all(selected.map(async kind=>({key:kind==='calories'?'daily_calories':'daily_steps',value:recommendationValue(kind,kind==='calories'?await getMyCalorieRecommendation(sources):await getMyStepRecommendation(sources))})));
+const recommendationLoaders = {
+ calories: getMyCalorieRecommendation,
+ steps: getMyStepRecommendation,
+ water: getMyWaterRecommendation,
+};
+
+export function applyHealthGoalRecommendation(
+ context: GoalSaveContext,
+ selected: readonly RecommendationKind[],
+ preview: Partial<HealthRecommendations>,
+ waterAcknowledged = false,
+) {
+ return locked(context, async owner => {
+  const changes = applicableGoalChanges(selected, preview, waterAcknowledged);
+  if (!context.expectedGoal) throw new DataAccessError('INVALID_INPUT', 'goals.completeFirst');
+  const sources = await HealthRecommendationSources.create();
+  if (sources.ownerId !== owner) throw new DataAccessError('AUTH_CHANGED', 'errors.accountChangedReload');
+
+  const matches = await Promise.all(selected.map(async kind => {
+   const result = await recommendationLoaders[kind](sources);
+   return recommendationValue(kind, result) === changes[RECOMMENDATION_GOAL_FIELDS[kind]];
+  }));
   await assertIdentity(owner);
-  if(fresh.some(({key,value})=>changes[key as keyof GoalChanges]!==value))throw new DataAccessError('CONSTRAINT','goals.recommendationChanged');
-  return save(context,changes,owner);
+  if (matches.includes(false)) throw new DataAccessError('CONSTRAINT', 'goals.recommendationChanged');
+  return save(context, changes, owner);
  });
 }

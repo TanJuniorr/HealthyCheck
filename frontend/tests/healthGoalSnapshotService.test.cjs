@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const {fixture,boundary,dates,A,B}=require('./recommendation-fixture.cjs');
+const {fixture,boundary,dates,table,defaultResponse,weight,A,B}=require('./recommendation-fixture.cjs');
 const old={id:'33333333-3333-4333-8333-333333333333',user_id:A,daily_steps:8000,daily_calories:2000,daily_water_ml:2000,target_sleep_minutes:480,effective_from:'2020-01-01',created_at:'2020-01-01T00:00:00Z'};
 const preview={calories:{status:'success',recommendedCalories:1850.4},steps:{status:'success',recommendedSteps:7000},water:{status:'success',recommendedWaterMl:2250,limitations:{canApplyDirectlyToWaterOnlyGoal:false}}};
 const context=()=>({ownerId:A,expectedGoal:old,date:dates.toLocalDateKey()});
@@ -25,14 +25,91 @@ test('manual overrides are saved explicitly without reading or adopting an algor
  const f=fixture(request=>({data:[row(request)]}),overrides);const result=await service(f).saveManualHealthGoals(context(),{daily_calories:2200});
  assert.equal(result.daily_calories,2200);assert.equal(calculations,0);assert.equal(f.calls.length,1);
 });
-test('incompatible water, unsafe statuses, absent current goals and changed previews do not dispatch a write',async()=>{
+test('unacknowledged water, unsafe statuses, absent current goals and changed previews do not dispatch a write',async()=>{
  const f=fixture(()=>{throw Error('Unexpected write');},mocks);
- await assert.rejects(service(f).applyHealthGoalRecommendation(context(),['water'],preview));
+ await assert.rejects(service(f).applyHealthGoalRecommendation(context(),['water'],preview),e=>e.message==='goals.waterConfirmationRequired');
  for(const status of ['missing_data','needs_review','out_of_scope','query_error'])await assert.rejects(service(f).applyHealthGoalRecommendation(context(),['calories'],{...preview,calories:{status,candidateCalories:1850,recommendedCalories:1850}}));
  await assert.rejects(service(f).applyHealthGoalRecommendation({...context(),expectedGoal:null},['calories'],preview),e=>e.message==='goals.completeFirst');
  await assert.rejects(service(f).saveManualHealthGoals({...context(),expectedGoal:null},{daily_calories:2200}),e=>e.message==='goals.completeFirst');assert.equal(f.calls.length,0);
  const changed=fixture(()=>{throw Error('Unexpected write');},{...mocks,[boundary('services/calorieRecommendationService.ts')]:{getMyCalorieRecommendation:async()=>({status:'success',recommendedCalories:1900})}});
  await assert.rejects(service(changed).applyHealthGoalRecommendation(context(),['calories'],preview),e=>e.message==='goals.recommendationChanged');assert.equal(changed.calls.length,0);
+});
+
+test('confirmed water reuses the real water service and sends only a current-day water patch',async()=>{
+ let kg='65';
+ const f=fixture(request=>{
+  if(table(request)==='weight_records')return {data:[weight(A,kg)]};
+  if(table(request)==='save_health_goal_snapshot')return {data:[row(request)]};
+  return defaultResponse(request);
+ });
+ const water=await f.load('src/services/waterRecommendationService').getMyWaterRecommendation();
+ assert.equal(water.status,'success');
+ assert.equal(water.fluidRestrictionAssessment,'not_assessed');
+ f.calls.length=0;
+ const events=[];
+ f.load('src/lib/healthQueryEvents').subscribeHealthChanges((owner,kind)=>events.push([owner,kind]));
+
+ kg='75';
+ await assert.rejects(service(f).applyHealthGoalRecommendation(context(),['water'],{water},true),
+  error=>error.message==='goals.recommendationChanged');
+ assert.deepEqual(f.calls.map(table).sort(),['profiles','weight_records']);
+ assert.deepEqual(events,[]);
+
+ kg='65';
+ f.calls.length=0;
+ const saved=await service(f).applyHealthGoalRecommendation(context(),['water'],{water},true);
+ assert.deepEqual(f.calls.map(table).sort(),['profiles','save_health_goal_snapshot','weight_records']);
+ const write=f.calls.find(call=>call.method==='POST');
+ assert.deepEqual(write.body.p_changes,{daily_water_ml:water.recommendedWaterMl});
+ assert.equal(write.body.p_local_date,dates.toLocalDateKey());
+ assert.equal(write.body.p_expected_id,old.id);
+ assert.equal(write.body.p_expected_owner,A);
+ assert.equal(saved.daily_water_ml,water.recommendedWaterMl);
+ for(const field of ['daily_calories','daily_steps','target_sleep_minutes'])assert.equal(saved[field],old[field]);
+ assert.equal(old.effective_from,'2020-01-01');
+ assert.equal(old.daily_water_ml,2000);
+ assert.deepEqual(events,[[A,'goals']]);
+});
+
+test('a water estimate that becomes restricted or unavailable is rejected before writing',async()=>{
+ for(const fresh of [
+  {status:'needs_review',reason:'fluid_restriction'},
+  {status:'missing_data'},
+  {status:'out_of_scope'},
+  {...preview.water,fluidRestrictionAssessment:'reported_required'},
+ ]){
+  const f=fixture(()=>{throw Error('Unexpected write');},{
+   ...mocks,[boundary('services/waterRecommendationService.ts')]:{getMyWaterRecommendation:async()=>fresh},
+  });
+  await assert.rejects(service(f).applyHealthGoalRecommendation(context(),['water'],preview,true),
+   error=>error.message==='goals.recommendationChanged');
+  assert.equal(f.calls.length,0);
+ }
+});
+
+test('water save failures and account changes during recheck never publish a goal update',async()=>{
+ for(const [response,code] of [
+  [{status:409,data:{code:'40001',message:'goals.conflict'}},'CONSTRAINT'],
+  [{status:400,data:{message:'Network unavailable'}},'NETWORK'],
+  [{status:400,data:{message:'Database error'}},'DATABASE'],
+ ]){
+  const f=fixture(()=>response,{
+   ...mocks,[boundary('services/waterRecommendationService.ts')]:{getMyWaterRecommendation:async()=>preview.water},
+  });
+  let events=0;
+  f.load('src/lib/healthQueryEvents').subscribeHealthChanges(()=>events++);
+  await assert.rejects(service(f).applyHealthGoalRecommendation(context(),['water'],preview,true),error=>error.code===code);
+  assert.equal(f.calls.length,1);
+  assert.equal(events,0);
+ }
+ const switched=fixture(()=>{throw Error('Unexpected write');},{
+  ...mocks,[boundary('services/waterRecommendationService.ts')]:{
+   getMyWaterRecommendation:async()=>{switched.setOwner(B);return preview.water;},
+  },
+ });
+ await assert.rejects(service(switched).applyHealthGoalRecommendation(context(),['water'],preview,true),
+  error=>error.code==='AUTH_CHANGED');
+ assert.equal(switched.calls.length,0);
 });
 test('initial goals require all four explicit values and never rely on database defaults',async()=>{
  const f=fixture(request=>({data:[row(request)]}),mocks),values={daily_steps:6000,daily_calories:2200,daily_water_ml:1700,target_sleep_minutes:420};

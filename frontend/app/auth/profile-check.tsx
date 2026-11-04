@@ -18,4 +18,4 @@ export default function ProfileCheckScreen() {
   <TextButton title={t('auth.signOut')} loading={busy} onPress={logout}/>
  </View></View>;
 }
-const baseStyles=StyleSheet.create({screen:{flex:1,backgroundColor:Colors.background,justifyContent:'center',padding:24},content:{width:'100%',maxWidth:520,alignSelf:'center',gap:20},title:{fontSize:24,fontWeight:'700',color:Colors.textPrimary},error:{color:Colors.error,lineHeight:22}});
+const baseStyles=StyleSheet.create({screen:{flex:1,backgroundColor:Colors.background,justifyContent:'center',padding:24},content:{width:'100%',maxWidth:520,alignSelf:'center',gap:20},title:{fontSize:24,fontWeight:'700',color:Colors.textPrimary,textAlign:'center'},error:{color:Colors.error,lineHeight:22}});

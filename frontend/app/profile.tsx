@@ -219,29 +219,6 @@ function ProfileContent() {
         </View>
         <HealthRecommendationsSection goalsQuery={{data:records.data?.goals??null,isLoading:records.isLoading,error:records.error,refresh:records.refresh}} onEditProfile={()=>setPersonalEditor(personalDraft)}/>
 
-        {/* Preferences & Quick Links */}
-        <SectionHeader title={t("profile.preferences")} />
-        <View style={styles.card}>
-          <SettingsRow
-            title={t("navigation.settings")}
-            value={t("profile.config")}
-            icon="options-outline"
-            onPress={() => router.push('/settings')}
-          />
-          <SettingsRow
-            title={t("schedule.title")}
-            value={t("common.preview")}
-            icon="alarm-outline"
-            onPress={() => router.push('/sleep-schedule')}
-          />
-          <SettingsRow
-            title={t("sharing.setup")}
-            value={t("common.preview")}
-            icon="people-outline"
-            onPress={() => router.push('/sharing-setup')}
-          />
-        </View>
-
         {/* About Section */}
         <SectionHeader title={t("common.about")} />
         <View style={styles.card}>
