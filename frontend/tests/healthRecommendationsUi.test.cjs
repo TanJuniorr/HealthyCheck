@@ -27,7 +27,7 @@ test('cards distinguish estimate, saved goal and actual; progress always uses th
  assert.ok(text(tree).includes('1,850'));assert.ok(text(tree).includes('2,000'));assert.ok(text(tree).includes('1,200'));
  const bars=elements(tree).filter(e=>e.props.accessibilityRole==='progressbar');assert.equal(bars[0].props.accessibilityValue.now,60);assert.equal(bars[1].props.accessibilityValue.now,43.75);assert.equal(bars[2].props.accessibilityValue.now,50);
  assert.equal(elements(tree).filter(e=>e.props.title?.startsWith('Apply ')&&e.props.title.includes('ml')).length,0);
- assert.ok(text(tree).includes('Drinking fluids and logged water are different scopes'));
+ assert.ok(text(tree).includes(i18n.t('goals.waterScope')));
  assert.equal(s.stats().applied,0);assert.equal(s.stats().manual.length,0);s.f.unmount();
 });
 test('independent missing/review/out-of-scope/query-error states do not expose candidates or enable automatic application',async()=>{
@@ -45,7 +45,13 @@ test('independent missing/review/out-of-scope/query-error states do not expose c
 test('confirmation shows exact selected fields and preserved fields; opening, cancelling and refreshing never apply',async()=>{
  const s=setup(),i18n=s.f.load('src/i18n/index').default;await i18n.changeLanguage('en');let tree=s.render();
  button(tree,i18n.t('goals.applyEligible')).props.onPress();tree=s.render();assert.equal(s.stats().applied,0);
- assert.ok(text(tree).includes('1,850'));assert.ok(text(tree).includes('7,000'));assert.ok(text(tree).includes('Kept unchanged:'));
+ const popup=elements(tree).find(e=>e.props.testID==='goal-confirmation');
+ assert.ok(text(popup).includes('2,000 kcal/day'));assert.ok(text(popup).includes('1,850 kcal/day'));
+ assert.ok(text(popup).includes('8,000 steps/day'));assert.ok(text(popup).includes('7,000 steps/day'));
+ assert.ok(text(popup).includes(i18n.t('goals.keptSame')));
+ assert.ok(text(popup).includes('2,000 ml/day'));assert.ok(text(popup).includes('8 hr'));assert.ok(!text(popup).includes('480'));
+ assert.equal(elements(popup).filter(e=>e.props.testID?.startsWith('goal-unchanged-')).length,2);
+ assert.ok(!/Snapshot|baseline/.test(text(popup)));
  button(tree,i18n.t('common.cancel')).props.onPress();tree=s.render();assert.equal(s.stats().applied,0);
  button(tree,i18n.t('goals.applyEligible')).props.onPress();tree=s.render();await button(tree,i18n.t('goals.confirmApply')).props.onPress();tree=s.render();assert.equal(s.stats().applied,1);assert.ok(text(tree).includes(i18n.t('goals.saved')));s.f.unmount();
 });
@@ -68,16 +74,45 @@ test('a failed confirmation retains the preview, never reports success, and guar
 });
 test('low-confidence step details and energy estimates remain explicit; language changes preserve the open manual draft',async()=>{
  const s=setup(),i18n=s.f.load('src/i18n/index').default;await i18n.changeLanguage('en');let tree=s.render();assert.ok(text(tree).includes('Low confidence'));
- const card=elements(tree).find(e=>e.props.testID==='recommendation-calories');button(card,i18n.t('goals.details')).props.onPress();tree=s.render();assert.ok(text(tree).includes('BMR estimate: 1,500'));assert.ok(text(tree).includes('not sensor-measured'));
+ const card=elements(tree).find(e=>e.props.testID==='recommendation-calories');button(card,i18n.t('goals.details')).props.onPress();tree=s.render();assert.ok(text(tree).includes(i18n.t('goals.energyEstimates',{bmr:'1,500',tdee:'2,000'})));
  button(tree,i18n.t('common.done')).props.onPress();tree=s.render();button(tree,i18n.t('goals.editManually')).props.onPress();tree=s.render();elements(tree).filter(e=>e.type==='AppTextInput')[0].props.onChangeText('6000');
  await i18n.changeLanguage('vi');tree=s.render();assert.equal(elements(tree).filter(e=>e.type==='AppTextInput')[0].props.value,'6000');assert.ok(text(tree).includes('Mục tiêu sức khỏe dành cho bạn'));s.f.unmount();
 });
-test('responsive cards fit small phones and use themed surfaces in both modes',()=>{
+test('responsive cards and scrollable confirmation use themed surfaces on small phones in both modes',async()=>{
  let dark=false;const themeLoad=require('./load-ts.cjs')({react:{...require('react'),useContext:()=>({isDark:dark}),useMemo:fn=>fn()},'@react-native-async-storage/async-storage':{},'react-native':{StyleSheet:{create:x=>x,flatten:x=>x}}});
  const theme=themeLoad('src/contexts/ThemeContext'),colors=themeLoad('src/constants/colors');
  const s=setup({__dimensions:{width:320,height:700},[boundary('src/contexts/ThemeContext.tsx')]:theme});let tree=s.render(),card=elements(tree).find(e=>e.props.testID==='recommendation-calories');assert.equal(card.props.style[1].width,'100%');assert.equal(card.props.style[0].backgroundColor,colors.LightColors.surface);
- dark=true;tree=s.render();card=elements(tree).find(e=>e.props.testID==='recommendation-calories');assert.equal(card.props.style[0].backgroundColor,colors.DarkColors.surface);s.f.unmount();
+ const i18n=s.f.load('src/i18n/index').default;await i18n.changeLanguage('vi');
+ tree=s.render();button(tree,i18n.t('goals.applyEligible')).props.onPress();tree=s.render();
+ let dialog=elements(tree).find(e=>e.props.testID==='goal-confirmation');
+ assert.equal(dialog.props.style.width,'100%');assert.equal(dialog.props.style.maxHeight,'90%');assert.equal(dialog.props.style.backgroundColor,colors.LightColors.surface);
+ const scroll=elements(dialog).find(e=>e.type==='ScrollView');assert.equal(scroll.props.style.flexShrink,1);
+ assert.equal(button(scroll,i18n.t('goals.confirmApply')),undefined);assert.ok(button(dialog,i18n.t('goals.confirmApply')));
+ dark=true;tree=s.render();card=elements(tree).find(e=>e.props.testID==='recommendation-calories');assert.equal(card.props.style[0].backgroundColor,colors.DarkColors.surface);
+ dialog=elements(tree).find(e=>e.props.testID==='goal-confirmation');assert.equal(dialog.props.style.backgroundColor,colors.DarkColors.surface);s.f.unmount();
  const wide=setup({__dimensions:{width:1280,height:900}});card=elements(wide.render()).find(e=>e.props.testID==='recommendation-calories');assert.equal(card.props.style[1].width,'31.8%');assert.equal(card.props.style[1].minWidth,240);wide.f.unmount();
+});
+
+test('low-goal notes are advisory, use saved values, and do not block or rewrite manual entries',async()=>{
+ const s=setup(),i18n=s.f.load('src/i18n/index').default;await i18n.changeLanguage('vi');
+ const low=Object.freeze({...old,daily_calories:910,daily_steps:650,target_sleep_minutes:455});s.setSaved(low);
+ let tree=s.render();assert.ok(text(tree).includes(i18n.t('goals.lowTarget.calories')));assert.ok(text(tree).includes(i18n.t('goals.lowTarget.steps')));
+ assert.ok(text(tree).includes(i18n.t('goals.advisoryContext')));assert.equal(s.stats().manual.length,0);assert.equal(s.stats().applied,0);
+ button(tree,i18n.t('goals.editManually')).props.onPress();tree=s.render();
+ const input=elements(tree).find(e=>e.type==='AppTextInput'&&e.props.label===i18n.t('fields.daily_calories'));
+ input.props.onChangeText('930');tree=s.render();assert.ok(text(tree).includes('7 giờ 35 phút'));
+ await button(tree,i18n.t('settings.saveGoals')).props.onPress();
+ assert.deepEqual({...s.stats().manual[0].changes},{daily_calories:930});assert.equal(low.daily_calories,910);s.f.unmount();
+});
+
+test('confirmation keeps captured values and localizes full units, sleep and date in both languages',async()=>{
+ const s=setup(),i18n=s.f.load('src/i18n/index').default;await i18n.changeLanguage('vi');
+ s.setSaved({...old,daily_water_ml:2175,target_sleep_minutes:451});let tree=s.render();
+ button(tree,i18n.t('goals.applyEligible')).props.onPress();s.setSaved({...old,daily_water_ml:3020});tree=s.render();
+ let popup=elements(tree).find(e=>e.props.testID==='goal-confirmation');assert.ok(text(popup).includes('2.175 ml/ngày'));assert.ok(text(popup).includes('7 giờ 31 phút'));assert.ok(!text(popup).includes('3.020'));
+ const date=s.f.load('src/lib/dateUtils').toLocalDateKey(),formatting=s.f.load('src/i18n/formatting');assert.ok(text(popup).includes(formatting.formatDate(date)));
+ await i18n.changeLanguage('en');tree=s.render();popup=elements(tree).find(e=>e.props.testID==='goal-confirmation');
+ assert.ok(text(popup).includes('2,175 ml/day'));assert.ok(text(popup).includes('7h 31m'));assert.ok(text(popup).includes(formatting.formatDate(date)));s.f.unmount();
 });
 test('account changes remount the connected section and discard open confirmation and edit state',async()=>{
  const s=setup(),Section=s.f.load('src/components/health/HealthRecommendationsSection').HealthRecommendationsSection,i18n=s.f.load('src/i18n/index').default;await i18n.changeLanguage('en');

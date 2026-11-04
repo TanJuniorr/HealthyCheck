@@ -15,6 +15,8 @@ import { ACTIVITY_LEVELS, WEIGHT_GOALS } from '../../lib/healthPreferences';
 import { AppTextInput } from '../common/AppTextInput';
 import { PrimaryButton, TextButton } from '../common/Buttons';
 import { useThemedStyles } from '../../contexts/ThemeContext';
+import { GoalAdvisory } from '../health/GoalAdvisory';
+import { formatGoalDuration } from '../../lib/healthGoalPresentation';
 
 export type PersonalProfileDraft = {
   fullName: string;
@@ -91,12 +93,13 @@ type GoalsModalProps = {
   initial: HealthGoalInsert;
   onClose: () => void;
   onSave: (goals: EditableHealthGoals) => Promise<void>;
+  gender?: ProfileGender | null;
 };
 
 const goalKeys = ['daily_steps', 'daily_calories', 'daily_water_ml', 'target_sleep_minutes'] as const;
 export type EditableHealthGoals = Required<Pick<HealthGoalInsert, (typeof goalKeys)[number]>>;
 
-export function HealthGoalsModal({ visible, initial, onClose, onSave }: GoalsModalProps) {
+export function HealthGoalsModal({ visible, initial, onClose, onSave, gender }: GoalsModalProps) {
   const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -138,6 +141,11 @@ export function HealthGoalsModal({ visible, initial, onClose, onSave }: GoalsMod
           <Text style={styles.hint}>{t('goals.manualIntro')}</Text>
           <Text style={styles.hint}>{t('goals.waterScope')}</Text>
           {goalKeys.map(key => <AppTextInput key={key} editable={!saving} label={t(`fields.${key}`)} value={values[key]} onChangeText={value => setValues(previous => ({ ...previous, [key]: value }))} keyboardType="numeric" />)}
+          {values.target_sleep_minutes.trim() && Number.isInteger(Number(values.target_sleep_minutes)) && Number(values.target_sleep_minutes) >= 0 ?
+            <Text style={styles.hint}>{t('goals.sleepEquivalent', { value: formatGoalDuration(Number(values.target_sleep_minutes)) })}</Text> : null}
+          <GoalAdvisory gender={gender} values={Object.fromEntries(goalKeys
+            .filter(key => values[key].trim() && Number.isFinite(Number(values[key])))
+            .map(key => [key, Number(values[key])]))}/>
           {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
           <PrimaryButton title={t(saving ? 'profile.saving' : 'settings.saveGoals')} onPress={save} loading={saving} />
           <TextButton title={t('common.cancel')} onPress={close} disabled={saving} />
