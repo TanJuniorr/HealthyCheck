@@ -7,11 +7,11 @@ const vm = require('node:vm');
 const ts = require('typescript');
 
 // Run the actual TypeScript service code with external I/O replaced, without a device.
-function load(relative, dependencies = {}) {
+function load(relative, dependencies = {}, globals = {}) {
   const source = fs.readFileSync(path.join(__dirname, '..', relative), 'utf8');
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
   const module = { exports: {} };
-  vm.runInNewContext(compiled, { module, exports: module.exports, require(name) {
+  vm.runInNewContext(compiled, { module, exports: module.exports, ...globals, require(name) {
     if (!(name in dependencies)) throw new Error(`Unexpected import: ${name}`);
     return dependencies[name];
   }, Date, Promise, Error });
@@ -41,12 +41,12 @@ test('missing profile uses metadata or neutral identity without fabricated perso
   assert.equal(displayName({ user_metadata: {} }, { full_name: 'Lan' }), 'Lan');
 });
 
-function recovery(auth, configurationError = null, platform = 'android') {
+function recovery(auth, configurationError = null, platform = 'android', globals = {}) {
   return load('src/lib/authRecovery.ts', {
     'react-native': { Platform: { OS: platform } },
     'expo-linking': { createURL: route => `https://app.example${route}` },
     './supabase': { supabase: { auth }, authConfigurationError: configurationError },
-  });
+  }, globals);
 }
 
 test('recovery sends a real request with the mobile callback and throttles duplicates', async () => {
@@ -96,5 +96,6 @@ test('PKCE callback exchanges with the flow ID returned by Supabase OAuth', asyn
 });
 
 test('web recovery uses the current web origin', () => {
-  assert.equal(recovery({}, null, 'web').recoveryRedirectUrl(), 'https://app.example/auth/callback');
+  const browserWindow = { location: { origin: 'https://app.example' } };
+  assert.equal(recovery({}, null, 'web', { window: browserWindow }).recoveryRedirectUrl(), 'https://app.example/auth/callback');
 });

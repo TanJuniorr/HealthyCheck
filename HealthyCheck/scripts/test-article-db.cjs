@@ -1,8 +1,8 @@
 /* global __dirname */
-// npm exec --yes --package=@electric-sql/pglite -- node scripts/test-article-db.cjs
+// Run from frontend: npm run test:db
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {PGlite}=require(require.resolve('@electric-sql/pglite',{paths:process.env.PATH.split(path.delimiter).map(p=>path.resolve(p,'..'))}));
-const folder=path.resolve(__dirname,'../../supabase/migrations');
+const folder=path.resolve(__dirname,'../supabase/migrations');
 const migration=()=>fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(p=>p.endsWith('_article_library_and_admin.sql'))),'utf8');
 const admin='11111111-1111-4111-8111-111111111111',user='22222222-2222-4222-8222-222222222222',other='33333333-3333-4333-8333-333333333333';
 async function setup(withAdmin=true){
@@ -17,7 +17,10 @@ async function setup(withAdmin=true){
  INSERT INTO auth.users VALUES('${user}','user@example.test',now(),'{}'),('${other}','other@example.test',now(),'{}');`);
  if(withAdmin)await db.query('INSERT INTO auth.users VALUES($1,$2,now(),$3)',[admin,'phapsutan@gmail.com',{}]);
  await db.exec(migration());await db.exec(fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(p=>p.endsWith('_restrict_article_table_privileges.sql'))),'utf8'));
- await db.exec(fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(p=>p.endsWith('_protect_referenced_article_images.sql'))),'utf8'));return db;
+ const imageProtectionMigrations=fs.readdirSync(folder).filter(p=>p.endsWith('_protect_referenced_article_images.sql')).sort();
+ assert.ok(imageProtectionMigrations.length>0,'article image protection migration should exist');
+ for(const name of imageProtectionMigrations)await db.exec(fs.readFileSync(path.join(folder,name),'utf8'));
+ return db;
 }
 async function as(db,id,role='authenticated'){await db.exec('RESET ROLE');await db.query("SELECT set_config('request.jwt.claim.sub',$1,false)",[id||'']);await db.exec('SET ROLE '+role);}
 const tr={language:'vi',title:'Giấc ngủ đều đặn',summary:'Những bước nhỏ giúp duy trì giờ ngủ.',content:'## Bắt đầu từ lịch sinh hoạt\n\n'+('Duy trì giờ ngủ phù hợp và trao đổi với chuyên viên y tế khi khó ngủ kéo dài. ').repeat(3),reading_time_minutes:2,source_name:'CDC',source_url:'https://www.cdc.gov/sleep/about/index.html',reference_links:[]};
@@ -84,7 +87,7 @@ test('pending admin invitation requires confirmed email, ignores metadata and bi
 });
 test('verified editorial seed publishes twenty sourced articles and never overwrites CMS edits on reimport',async()=>{
  const db=await setup();try{
-  const source=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../../supabase/seeds/articles_vi.json'),'utf8'));
+  const source=JSON.parse(fs.readFileSync(path.resolve(__dirname,'../supabase/seeds/articles_vi.json'),'utf8'));
   const seedSql=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(p=>p.endsWith('_seed_verified_health_articles.sql'))),'utf8');
   await db.exec('BEGIN;'+seedSql+'COMMIT;');
   assert.equal((await db.query("SELECT count(*)::int n FROM articles WHERE status='published'")).rows[0].n,20);

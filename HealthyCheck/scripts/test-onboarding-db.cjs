@@ -1,5 +1,5 @@
 /* global __dirname */
-// Run without an app dependency: npm exec --yes --package=@electric-sql/pglite -- node scripts/test-onboarding-db.cjs
+// Run from frontend: npm run test:db
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const modulePath=require.resolve('@electric-sql/pglite',{paths:process.env.PATH.split(path.delimiter).map(bin=>path.resolve(bin,'..'))});
 const {PGlite}=require(modulePath);
@@ -24,7 +24,7 @@ test('real PostgreSQL onboarding: RLS, atomic rollback, retries, existing profil
  INSERT INTO profiles(id,date_of_birth,gender,height_cm) VALUES('${C}','1990-01-01','prefer_not_to_say',170),('${B}',NULL,NULL,NULL),('${D}','1990-01-01','male',170);
  INSERT INTO weight_records(user_id,weight_kg) VALUES('${C}',65);
  `);
- const folder=path.resolve(__dirname,'../../supabase/migrations');
+ const folder=path.resolve(__dirname,'../supabase/migrations');
  const migration=suffix=>fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(name=>name.endsWith(suffix))),'utf8');
  await db.exec(migration('_add_health_onboarding.sql'));
  let rows=(await db.query('SELECT id,health_onboarding_completed_at FROM profiles')).rows;
