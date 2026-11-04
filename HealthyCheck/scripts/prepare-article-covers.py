@@ -11,7 +11,7 @@ from pathlib import Path
 import urllib.request
 from PIL import Image, ImageDraw
 
-ROOT=Path(__file__).resolve().parents[2]
+ROOT=Path(__file__).resolve().parents[1]
 MANIFEST=ROOT/'supabase/seeds/article-covers.json'
 ASSETS=ROOT/'supabase/seeds/article-covers'
 
@@ -43,7 +43,7 @@ def main():
         with Image.open(ASSETS/(cover['slug']+'.jpg')) as image:
             image.thumbnail((312,176));x=(i%4)*320;y=(i//4)*210
             sheet.paste(image,(x,y));draw.text((x+5,y+180),f"{i+1}. {cover['photo_id']}",fill='#172e29')
-    temp=ROOT/'frontend/.expo/article-covers-work';temp.mkdir(parents=True,exist_ok=True)
+    temp=ROOT/'.expo/article-covers-work';temp.mkdir(parents=True,exist_ok=True)
     sheet.save(temp/'contact-sheet.jpg',quality=90)
     print(f"Verified {len(manifest['covers'])} distinct JPEGs; total {sum(c['bytes'] for c in manifest['covers'])} bytes.")
 
