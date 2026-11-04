@@ -1,5 +1,5 @@
 /* global __dirname */
-// npm exec --yes --package=@electric-sql/pglite -- node scripts/test-health-goal-snapshots-db.cjs
+// Run from frontend: npm run test:db
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const modulePath=require.resolve('@electric-sql/pglite',{paths:process.env.PATH.split(path.delimiter).map(bin=>path.resolve(bin,'..'))});
 const {PGlite}=require(modulePath);
@@ -25,7 +25,7 @@ test('goal snapshots in PostgreSQL: owner RLS, immutable history, conflicts, no-
   `);
   const before=(await db.query('SELECT * FROM health_goals ORDER BY effective_from')).rows,old=before[0];
   const today=(await db.query('SELECT current_date AS d')).rows[0].d.toISOString().slice(0,10);
-  const folder=path.resolve(__dirname,'../../supabase/migrations'),name=fs.readdirSync(folder).find(name=>name.endsWith('_add_safe_health_goal_snapshots.sql'));
+  const folder=path.resolve(__dirname,'../supabase/migrations'),name=fs.readdirSync(folder).find(name=>name.endsWith('_add_safe_health_goal_snapshots.sql'));
   await db.exec(fs.readFileSync(path.join(folder,name),'utf8'));
   assert.deepEqual((await db.query('SELECT * FROM health_goals ORDER BY effective_from')).rows,before);
   const acl=(await db.query("SELECT has_function_privilege('anon',oid,'EXECUTE') AS anon,has_function_privilege('authenticated',oid,'EXECUTE') AS authenticated,prosecdef FROM pg_proc WHERE proname='save_health_goal_snapshot'")).rows[0];

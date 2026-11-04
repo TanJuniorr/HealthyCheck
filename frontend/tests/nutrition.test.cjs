@@ -5,7 +5,7 @@ const path=require('node:path');
 const fs=require('node:fs');
 const load=require('./load-ts.cjs')();
 const portions=load('src/lib/foodPortions'),calc=load('src/lib/healthCalculations');
-const seed=require('../../supabase/seeds/nutrition_usda.json');
+const seed=require('../supabase/seeds/nutrition_usda.json');
 const foods=seed.foods.map((food,index)=>({...food,id:String(index)}));
 const bySource=id=>foods.find(food=>food.catalog_metadata.source_id==='usda-sr:'+id);
 const banana=bySource('173944'),chicken=bySource('171477'),oil=bySource('171413');
@@ -122,7 +122,7 @@ test('one selectable boiled chicken egg supports edible grams and verified whole
  const before=calc.aggregateNutrition([oldRow],'2020-10-27','2020-10-27');
  portions.filterFoods(catalogue,'trứng gà',null);
  assert.deepEqual(calc.aggregateNutrition([oldRow],'2020-10-27','2020-10-27'),before);assert.equal(oldRow.food.id,'legacy-egg');
- const folder=path.resolve(__dirname,'../../supabase/migrations'),sql=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(name=>name.endsWith('_expand_curated_vietnam_foods.sql'))),'utf8');
+ const folder=path.resolve(__dirname,'../supabase/migrations'),sql=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(name=>name.endsWith('_expand_curated_vietnam_foods.sql'))),'utf8');
  assert.match(sql,/old_values IS DISTINCT FROM new_values/);assert.doesNotMatch(sql,/\b(?:UPDATE|DELETE FROM|INSERT INTO)\s+public\.meal_records/i);assert.doesNotMatch(sql,/DELETE FROM public\.foods/i);
  const manifest=require('../scripts/nutrition-foods.json');assert.equal(manifest.find(food=>food.fdc_id==='173424').name_vi,egg.name);
 });
@@ -168,7 +168,7 @@ test('verified USDA seed has complete nonnegative nutrients, distinct source IDs
  assert.match(seed.archive_sha256,/^[a-f0-9]{64}$/);
  for(const food of foods){assert.ok(food.catalog_metadata.name_en&&food.catalog_metadata.name_vi);assert.equal(food.catalog_metadata.base_unit,'g');for(const key of ['calories','protein','carbs','fat'])assert.ok(Number.isFinite(food[key+'_per_100g'])&&food[key+'_per_100g']>=0);}
  assert.equal(portions.pieceWeight(banana),118);assert.equal(portions.pieceWeight(bySource('171688')),182);assert.equal(portions.pieceWeight(bySource('171287')),50);
- const folder=path.resolve(__dirname,'../../supabase/migrations');const sql=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(name=>name.endsWith('_expand_curated_vietnam_foods.sql'))),'utf8');
+ const folder=path.resolve(__dirname,'../supabase/migrations');const sql=fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(name=>name.endsWith('_expand_curated_vietnam_foods.sql'))),'utf8');
  assert.match(sql,/ON CONFLICT/);assert.match(sql,/Nutrient revision needs manual review/);assert.match(sql,/old_values IS DISTINCT FROM new_values/);assert.doesNotMatch(sql,/UPDATE public\.meal_records|DELETE FROM public\.foods/);assert.ok(foods.every(food=>food.catalog_metadata.source_license==='CC0-1.0'));assert.equal(new Set(foods.map(food=>food.catalog_metadata.selection_key)).size,foods.length);
 });
 test('portion form previews decimal input, preserves canonical grams while switching and omits unverified piece units',async()=>{

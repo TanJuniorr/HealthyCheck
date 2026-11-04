@@ -340,7 +340,7 @@ test('sleep rejects unconfirmed INSERT/UPDATE responses and expired or changed o
 const scheduleInput={bedtime:'23:00',wake_time:'07:00',active_days:[1,2,3,4,5],reminder_enabled:true,reminder_minutes_before:15};
 
 test('nutrition CRUD updates all four daily totals and Dashboard, preserves fractional grams and isolates accounts',async()=>{
- const catalogue=require('../../supabase/seeds/nutrition_usda.json').foods;
+ const catalogue=require('../supabase/seeds/nutrition_usda.json').foods;
  const chicken={...catalogue.find(food=>food.catalog_metadata.source_id==='usda-sr:171477'),id:B},oil={...catalogue.find(food=>food.catalog_metadata.source_id==='usda-sr:171413'),id:A};
  let records=[],sequence=0,notifications=0;
  const matches=(row,params)=>[...params].every(([key,filter])=>{

@@ -11,7 +11,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('migration',type=Path)
     args=parser.parse_args()
-    data=json.loads((Path(__file__).resolve().parents[2]/'supabase/seeds/articles_vi.json').read_text(encoding='utf-8'))
+    data=json.loads((Path(__file__).resolve().parents[1]/'supabase/seeds/articles_vi.json').read_text(encoding='utf-8'))
     assert len({a['slug'] for a in data['articles']})==len(data['articles'])
     assert len(data['articles'])>=20
     for a in data['articles']:

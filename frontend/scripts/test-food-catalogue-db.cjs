@@ -1,8 +1,8 @@
 /* global __dirname */
-// npm exec --yes --package=@electric-sql/pglite -- node scripts/test-food-catalogue-db.cjs
+// Run from frontend: npm run test:db
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const {PGlite}=require(require.resolve('@electric-sql/pglite',{paths:process.env.PATH.split(path.delimiter).map(p=>path.resolve(p,'..'))}));
-const folder=path.resolve(__dirname,'../../supabase/migrations'),seed=require('../../supabase/seeds/nutrition_usda.json').foods;
+const folder=path.resolve(__dirname,'../supabase/migrations'),seed=require('../supabase/seeds/nutrition_usda.json').foods;
 const sql=suffix=>fs.readFileSync(path.join(folder,fs.readdirSync(folder).find(name=>name.endsWith(suffix))),'utf8');
 test('PostgreSQL catalogue import is repeatable, preserves history, ranks names and denies catalogue writes',async()=>{
  const db=new PGlite();try {

@@ -1,6 +1,6 @@
 /* global __dirname */
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{pathToFileURL}=require('node:url'),{createHash}=require('node:crypto');
-const root=path.resolve(__dirname,'../..'),owner='11111111-1111-4111-8111-111111111111',id='22222222-2222-4222-8222-222222222222';
+const root=path.resolve(__dirname,'..'),owner='11111111-1111-4111-8111-111111111111',id='22222222-2222-4222-8222-222222222222';
 const token='scoped-local-test-token-'.repeat(3),bytes=Buffer.from([255,216,255,224,1,2,3]),hash=b=>createHash('sha256').update(b).digest('hex');
 async function fixture({admin=true,existing=null,race=false,expired=false}={}){
  const {createCoverImportHandler}=await import(pathToFileURL(path.join(root,'supabase/functions/import-article-covers/importer.mjs')).href);
