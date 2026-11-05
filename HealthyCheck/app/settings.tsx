@@ -164,10 +164,10 @@ export default function SettingsScreen() {
             description={t("settings.analyticsHint")}
           />
           <SettingsRow
-            title={t("settings.export")}
-            value="JSON / CSV"
-            icon="download-outline"
-            onPress={() => Alert.alert(t("common.comingSoon"), t("settings.exportNotice"))}
+            title={t('report.title')}
+            description={t('report.settingsHint')}
+            icon="document-text-outline"
+            onPress={() => router.push('/health/report')}
           />
         </View>
 

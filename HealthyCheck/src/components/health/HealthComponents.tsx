@@ -160,13 +160,14 @@ export function CategoryChip({
 
 interface SettingsRowProps {
   title: string;
+  description?: string;
   value?: string;
   icon: string;
   onPress?: () => void;
   showChevron?: boolean;
 }
 
-export function SettingsRow({ title, value, icon, onPress, showChevron = true }: SettingsRowProps) {
+export function SettingsRow({ title, description, value, icon, onPress, showChevron = true }: SettingsRowProps) {
   const styles = useThemedStyles(baseStyles);
   return (
     <TouchableOpacity
@@ -177,7 +178,10 @@ export function SettingsRow({ title, value, icon, onPress, showChevron = true }:
     >
       <View style={styles.settingsLeft}>
         <Ionicons name={icon as any} size={20} color={Colors.textSecondary} />
-        <Text style={styles.settingsTitle}>{title}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.settingsTitle}>{title}</Text>
+          {description ? <Text style={{ ...Typography.supporting, color: Colors.textSecondary, marginTop: 4 }}>{description}</Text> : null}
+        </View>
       </View>
       <View style={styles.settingsRight}>
         {value ? <Text style={styles.settingsValue}>{value}</Text> : null}
