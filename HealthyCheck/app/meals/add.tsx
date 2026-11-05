@@ -82,7 +82,7 @@ export function MealEditor({date,mealType}:{date?:string;mealType?:string}) {
   <Text style={[styles.foodServing,{padding:12}]}>{formatDate(mealDate)}</Text>
   <View style={styles.mealTypeBar}>{MEAL_TYPES.map(type=><TouchableOpacity key={type} accessibilityRole="button" accessibilityState={{selected:type===selectedMealType,disabled:busy}} disabled={busy} onPress={()=>setSelectedMealType(type)} style={[styles.mealTypeTab,type===selectedMealType&&styles.mealTypeTabSelected]}><Text style={styles.mealTypeLabel}>{t(`meals.${type}`)}</Text></TouchableOpacity>)}</View>
   <View style={styles.searchSection}><View style={styles.searchBox}><Ionicons name="search-outline" size={20} color={Colors.textMuted}/><TextInput accessibilityLabel={t('meals.search')} style={styles.searchInput} placeholder={t('meals.search')} placeholderTextColor={Colors.textMuted} value={search} onChangeText={setSearch} autoCapitalize="none" clearButtonMode="while-editing" maxLength={160}/></View></View>
-  <View><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{paddingHorizontal:16,gap:8,paddingVertical:8}}>{[null,...FOOD_GROUPS].map(value=><TouchableOpacity key={value??'all'} accessibilityRole="button" accessibilityState={{selected:group===value}} onPress={()=>setGroup(value)} style={[styles.mealTypeTab,{flexGrow:0,flexShrink:0},group===value&&styles.mealTypeTabSelected]}><Text style={styles.mealTypeLabel}>{t(value?`meals.groups.${value}`:'meals.allGroups')}</Text></TouchableOpacity>)}</ScrollView><Text style={styles.imageCredit}>{t('meals.foodImageCredit')}</Text></View>
+  <View style={styles.foodFilters}><ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.groupScroll} contentContainerStyle={styles.groupContent}>{[null,...FOOD_GROUPS].map(value=><TouchableOpacity key={value??'all'} accessibilityRole="button" accessibilityState={{selected:group===value}} onPress={()=>setGroup(value)} style={[styles.groupTab,group===value&&styles.mealTypeTabSelected]}><Text style={styles.mealTypeLabel}>{t(value?`meals.groups.${value}`:'meals.allGroups')}</Text></TouchableOpacity>)}</ScrollView><Text style={styles.imageCredit}>{t('meals.foodImageCredit')}</Text></View>
   <FlatList data={foods} keyExtractor={item=>item.id} keyboardShouldPersistTaps="handled" initialNumToRender={12} windowSize={7} contentContainerStyle={[styles.listContent,{paddingBottom:20}]} extraData={[drafts,language,busy]} onEndReached={()=>{if(catalogue.hasMore&&!catalogue.error)void catalogue.loadMore();}} onEndReachedThreshold={0.4}
    ListFooterComponent={catalogue.hasMore?<TextButton title={t('meals.loadMore')} onPress={catalogue.loadMore} loading={catalogue.loadingMore}/>:undefined}
    ListHeaderComponent={<View>
@@ -144,6 +144,30 @@ const baseStyles = StyleSheet.create({
   mealTypeLabelSelected: {
     color: Colors.primaryDark,
     fontWeight: '700',
+  },
+  foodFilters: {
+    flexShrink: 0,
+  },
+  groupScroll: {
+    flexGrow: 0,
+  },
+  groupContent: {
+    paddingHorizontal: Spacing.screenPadding,
+    paddingVertical: Spacing.sm,
+    gap: Spacing.sm,
+    alignItems: 'center',
+  },
+  groupTab: {
+    // Intrinsic width: flex: 1 gives these scrollable chips a zero basis on web.
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: 'auto',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 10,
+    borderRadius: Radius.md,
+    backgroundColor: Colors.background,
   },
   searchSection: {
     backgroundColor: Colors.white,
