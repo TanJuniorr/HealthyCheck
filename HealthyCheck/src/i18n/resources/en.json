@@ -1027,8 +1027,6 @@
     "privacyData": "Privacy & Data",
     "sharing": "Data Sharing",
     "configure": "Configure",
-    "analytics": "Share Analytics",
-    "analyticsHint": "Help improve Healthy Check with anonymous usage data",
     "export": "Export Health Data",
     "exportNotice": "Health data export is not implemented yet.",
     "termsNotice": "Standard terms and conditions apply.",

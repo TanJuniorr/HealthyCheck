@@ -63,11 +63,11 @@ export default function NutritionScreen() {
                   {summary ? formatNumber(nutritionData.caloriesConsumed,0) : '—'}
                 </Text>
                 <Text style={styles.ringSubtext}>{t("nutrition.consumedUnit")}</Text>
-                <View style={styles.goalPill}>
-                  <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={styles.ringGoal}>{t("nutrition.goalPrefix")}{' '}{formatNumber(nutritionData.caloriesGoal)} kcal</Text>
-                </View>
               </View>
             </ProgressRing>
+            <View style={styles.goalPill}>
+              <Text style={styles.ringGoal}>{t("nutrition.goalPrefix")}{' '}{formatNumber(nutritionData.caloriesGoal)} kcal</Text>
+            </View>
           </View>
 
           {/* Calorie Breakdown Metrics */}
@@ -258,6 +258,7 @@ const baseStyles = StyleSheet.create({
     borderColor: Colors.border,
   },
   ringSection: {
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.sm,
@@ -281,18 +282,20 @@ const baseStyles = StyleSheet.create({
     marginTop: 2,
   },
   goalPill: {
+    alignSelf: 'center',
+    maxWidth: '100%',
     marginTop: 6,
     backgroundColor: Colors.orangeLight,
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
+    paddingVertical: 4,
     borderRadius: Radius.full,
   },
   ringGoal: {
     ...Typography.labelSmall,
-    fontSize: 10,
+    fontSize: 11,
+    lineHeight: 16,
     color: Colors.orange,
     fontWeight: '600',
-    maxWidth: 112,
     textAlign: 'center',
   },
   metricsRow: {

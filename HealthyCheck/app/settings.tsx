@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '../src/components/common/LanguageSelector';
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -70,8 +70,6 @@ export default function SettingsScreen() {
   const { notificationsEnabled, dailyRemindersEnabled, setNotificationsEnabled, setDailyRemindersEnabled } = useNotificationInbox();
 
   const router = useRouter();
-
-  const [analytics, setAnalytics] = useState(false);
 
   const toggleNotifications = async (value: boolean) => {
     const enabled = await setNotificationsEnabled(value);
@@ -155,13 +153,6 @@ export default function SettingsScreen() {
             value={t("settings.configure")}
             icon="share-social-outline"
             onPress={() => router.push('/sharing-setup')}
-          />
-          <SettingsSwitchRow
-            title={t("settings.analytics")}
-            icon="analytics-outline"
-            value={analytics}
-            onValueChange={setAnalytics}
-            description={t("settings.analyticsHint")}
           />
           <SettingsRow
             title={t('report.title')}
