@@ -114,16 +114,6 @@ export const healthMetrics = [
     route: '/health/sleep',
   },
   {
-    id: 'heart',
-    name: "health.heart",
-    value: '72',
-    unit: 'bpm',
-    icon: 'heart-outline',
-    color: '#EA777A',
-    bgColor: '#FFF0F0',
-    route: '/health/heart',
-  },
-  {
     id: 'calories',
     name: 'calories.burned',
     value: '487',
@@ -162,15 +152,5 @@ export const healthMetrics = [
     color: '#EA777A',
     bgColor: '#FFF0F0',
     route: '/health/cycle',
-  },
-  {
-    id: 'double-support',
-    name: "health.doubleSupport",
-    value: '28.4',
-    unit: '%',
-    icon: 'accessibility-outline',
-    color: '#0EA5A4',
-    bgColor: '#EAF8F7',
-    route: '/health/steps',
   },
 ];

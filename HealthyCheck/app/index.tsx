@@ -33,16 +33,6 @@ export default function WelcomeScreen() {
           </View>
 
           {/* Floating Health Badges */}
-          <View style={[styles.floatingBadge, styles.badgeTopRight]}>
-            <View style={[styles.badgeIconBg, { backgroundColor: Colors.coralLight }]}>
-              <Ionicons name="heart" size={16} color={Colors.coral} />
-            </View>
-            <View>
-              <Text style={styles.badgeLabel}>{t("health.heart")}</Text>
-              <Text style={styles.badgeValue}>72 bpm</Text>
-            </View>
-          </View>
-
           <View style={[styles.floatingBadge, styles.badgeBottomLeft]}>
             <View style={[styles.badgeIconBg, { backgroundColor: Colors.orangeLight }]}>
               <Ionicons name="flame" size={16} color={Colors.orange} />
@@ -160,10 +150,6 @@ const baseStyles = StyleSheet.create({
     ...Shadows.sm,
     borderWidth: 1,
     borderColor: Colors.border,
-  },
-  badgeTopRight: {
-    top: 24,
-    right: 18,
   },
   badgeBottomLeft: {
     bottom: 24,

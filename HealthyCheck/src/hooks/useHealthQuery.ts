@@ -3,6 +3,7 @@ import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 import { assertIdentity } from '../services/queryCore';
 import { dataError } from '../lib/dataErrors';
+import { dependsOnCycle, subscribeCycleSettingsChanges } from '../lib/menstrualCycleEvents';
 import { dependsOnNutrition, subscribeNutritionChanges, dependsOnSleep, subscribeSleepChanges, dependsOnWater, subscribeWaterChanges, dependsOnHealthChange, subscribeHealthChanges } from '../lib/healthQueryEvents';
 export type QueryState<T> = { data: T | null; isLoading: boolean; error: string | null; refresh: () => Promise<void> };
 // No global cache or auth listener; state is bound to the existing AuthProvider user.
@@ -21,6 +22,7 @@ export function useHealthQuery<T>(loader: () => Promise<T>, key: string): QueryS
  },[owner,key]);
  useFocusEffect(useCallback(() => {
   loaderRef.current = loader;
+  const unsubscribeCycle = dependsOnCycle(key) ? subscribeCycleSettingsChanges((changedOwner, kind) => { if (changedOwner === owner && dependsOnCycle(key, kind)) void refresh(); }) : () => {};
   const unsubscribe = dependsOnSleep(key) ? subscribeSleepChanges(changedOwner => {
    if (changedOwner === owner) void refresh();
   }) : () => {};
@@ -28,7 +30,7 @@ export function useHealthQuery<T>(loader: () => Promise<T>, key: string): QueryS
   const unsubscribeNutrition = dependsOnNutrition(key) ? subscribeNutritionChanges(changedOwner => { if(changedOwner===owner) void refresh(); }) : () => {};
   const unsubscribeHealth=subscribeHealthChanges((changedOwner,kind)=>{if(changedOwner===owner&&dependsOnHealthChange(key,kind))void refresh();});
   void refresh();
-  return () => { unsubscribeHealth(); unsubscribeNutrition(); unsubscribeWater(); unsubscribe(); generation.current++; };
+  return () => { unsubscribeCycle(); unsubscribeHealth(); unsubscribeNutrition(); unsubscribeWater(); unsubscribe(); generation.current++; };
   // loader is intentionally keyed by its serialized query parameters, not function identity.
   // eslint-disable-next-line react-hooks/exhaustive-deps
  },[refresh,key]));

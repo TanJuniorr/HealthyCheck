@@ -29,8 +29,8 @@ import { useThemedStyles } from '../../src/contexts/ThemeContext';
 import { useNotificationInbox } from '../../src/contexts/NotificationInboxContext';
 import { calculateHealthScore, HEALTH_SCORE_LOW_NOTIFICATION_MINIMUM_METRICS, HEALTH_SCORE_LOW_THRESHOLD, HEALTH_SCORE_MINIMUM_METRICS } from '../../src/lib/healthScore';
 import { notifyLowHealthScore } from '../../src/services/healthNotifications';
-import { getCyclePrediction } from '../../src/lib/menstrualCycleCalculations';
-import { getMyMenstrualCycleSettings } from '../../src/services/menstrualCycleService';
+import { getCyclePrediction, cycleSummaryKey } from '../../src/lib/menstrualCycleCalculations';
+import { getMyMenstrualCycleOverview } from '../../src/services/menstrualCycleService';
 
 export default function OverviewScreen() {
   const styles = useThemedStyles(baseStyles);
@@ -65,10 +65,10 @@ export default function OverviewScreen() {
   const insets = useSafeAreaInsets();
   const today = useLocalToday();
   const cycleSettingsQuery = useHealthQuery(
-    () => profile?.gender === 'female' ? getMyMenstrualCycleSettings() : Promise.resolve(null),
-    `overview-cycle:${profile?.gender ?? 'unknown'}`,
+    () => profile?.gender === 'female' ? getMyMenstrualCycleOverview() : Promise.resolve(null),
+    `overview-cycle:${profile?.gender ?? 'unknown'}:${today}`,
   );
-  const cyclePrediction = profile?.gender === 'female' ? getCyclePrediction(today, cycleSettingsQuery.data) : null;
+  const cyclePrediction = profile?.gender === 'female' ? getCyclePrediction(today, cycleSettingsQuery.data?.settings ?? null, cycleSettingsQuery.data?.periods ?? []) : null;
   const week = useWeeklyOverview(today); const query = week; const summary = week.data?.find(day => day.date === today) ?? null;
   const healthScoreResult = calculateHealthScore(summary);
   const scoreBand = healthScoreResult.score === null ? null
@@ -103,7 +103,7 @@ export default function OverviewScreen() {
       const progress = (current: number | null | undefined, goal: number | null | undefined) => goal != null && goal > 0 && current != null ? current / goal * 100 : undefined;
       const cycleValue = cycleSettingsQuery.error
         ? t('common.unavailable')
-        : cyclePrediction ? t('cycle.daysUntil', { count: cyclePrediction.daysUntilNextPeriod }) : t('cycle.notSet');
+        : t(cycleSummaryKey(cyclePrediction), { count: cyclePrediction?.overdueDays || cyclePrediction?.daysUntilNextPeriod || 0 });
       return {
         ...item,
         detail:undefined,

@@ -14,16 +14,24 @@ import { Typography } from '../../src/constants/typography';
 import { Spacing, Radius, Shadows } from '../../src/constants/spacing';
 import { useThemedStyles } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { useHealthQuery } from '../../src/hooks/useHealthQuery';
+import { useLocalToday } from '../../src/hooks/useLocalToday';
+import { getMyMenstrualCycleOverview } from '../../src/services/menstrualCycleService';
+import { cycleSummaryKey, getCyclePrediction } from '../../src/lib/menstrualCycleCalculations';
 
 export default function HealthDataScreen() {
   const styles = useThemedStyles(baseStyles);
   const { t } = useTranslation();
   const { profile } = useAuth();
+  const today = useLocalToday();
+  const cycleQuery = useHealthQuery(() => profile?.gender === 'female' ? getMyMenstrualCycleOverview() : Promise.resolve(null), `overview-cycle:${profile?.gender}:${today}`);
+  const cyclePrediction = getCyclePrediction(today, cycleQuery.data?.settings ?? null, cycleQuery.data?.periods ?? []);
+  const cycleValue = cycleQuery.error ? t('common.unavailable') : t(cycleSummaryKey(cyclePrediction), { count: cyclePrediction?.overdueDays || cyclePrediction?.daysUntilNextPeriod || 0 });
   const metricDefinitions = localizeStaticData(rawMetricDefinitions).filter(metric => metric.id !== 'cycle' || profile?.gender === 'female');
 
   const query = useHealthOverview(); const summary = query.data;
-  const values: Record<string,string> = { steps:summary ? formatNumber(summary.steps.total) : '—',sleep:summary?.sleep.minutes != null ? t('units.hourValue',{value:formatNumber(summary.sleep.minutes/60,1)}) : '—',bmi:(summary?.weight.bmi == null ? undefined : formatNumber(summary?.weight.bmi,1)) ?? '—',nutrition:summary ? formatNumber(summary.nutrition.calories,0) : '—',calories:t("common.unavailable"),heart:t("common.comingSoon"),cycle:t("common.comingSoon"),'double-support':t("common.unavailable") };
-  const healthMetrics = metricDefinitions.map(metric => ({ ...metric,value:values[metric.id] ?? '—',unit:['heart','cycle','calories','double-support'].includes(metric.id) ? '' : metric.unit }));
+  const values: Record<string,string> = { steps:summary ? formatNumber(summary.steps.total) : '—',sleep:summary?.sleep.minutes != null ? t('units.hourValue',{value:formatNumber(summary.sleep.minutes/60,1)}) : '—',bmi:(summary?.weight.bmi == null ? undefined : formatNumber(summary?.weight.bmi,1)) ?? '—',nutrition:summary ? formatNumber(summary.nutrition.calories,0) : '—',calories:t("common.unavailable"),cycle:cycleValue };
+  const healthMetrics = metricDefinitions.map(metric => ({ ...metric,value:values[metric.id] ?? '—',unit:['cycle','calories'].includes(metric.id) ? '' : metric.unit }));
   return (
     <View style={styles.container}>
       <AppHeader title={t("health.data")} showBack={true} />

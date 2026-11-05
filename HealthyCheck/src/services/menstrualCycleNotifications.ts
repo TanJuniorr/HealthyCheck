@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { AndroidImportance } from 'expo-notifications';
-import type { MenstrualCycleSettingsRow } from '../types/database';
+import type { MenstrualCycleSettingsRow, MenstrualCyclePeriodRow } from '../types/database';
 import { getNextPeriodReminderDates, localDateAtHour } from '../lib/menstrualCycleCalculations';
 import { getNotificationPreferences } from './notificationPreferencesService';
 import { notificationChannelId } from './healthNotifications';
@@ -34,8 +34,10 @@ export function reconcileMenstrualCycleReminder(
   settings: MenstrualCycleSettingsRow | null,
   title: string,
   body: (expectedDate: string) => string,
+  periods: MenstrualCyclePeriodRow[] = [],
+  isCurrent: () => boolean = () => true,
 ): Promise<CycleReminderStatus> {
-  return enqueueReminderWork(() => reconcileMenstrualCycleReminderNow(ownerId, settings, title, body));
+  return enqueueReminderWork(() => reconcileMenstrualCycleReminderNow(ownerId, settings, title, body, periods, isCurrent));
 }
 
 async function reconcileMenstrualCycleReminderNow(
@@ -43,33 +45,39 @@ async function reconcileMenstrualCycleReminderNow(
   settings: MenstrualCycleSettingsRow | null,
   title: string,
   body: (expectedDate: string) => string,
+  periods: MenstrualCyclePeriodRow[],
+  isCurrent: () => boolean,
 ): Promise<CycleReminderStatus> {
+  if (!isCurrent()) return 'off';
   if (Platform.OS === 'web') return 'unsupported';
   const scheduled = (await Notifications.getAllScheduledNotificationsAsync()).filter(item => item.content.data?.kind === menstrualCycleReminderKind);
   const cancelAll = async () => {
     for (const item of scheduled) await Notifications.cancelScheduledNotificationAsync(item.identifier);
   };
-  if (!ownerId || !settings?.reminder_enabled || !settings.last_period_start) {
+  if (!isCurrent()) return 'off';
+  if (!ownerId || !settings?.reminder_enabled) {
     await cancelAll();
     return 'off';
   }
   const preferences = await getNotificationPreferences(ownerId);
+  if (!isCurrent()) return 'off';
   if (!preferences.notificationsEnabled) {
     await cancelAll();
     return 'off';
   }
   const permission = await Notifications.getPermissionsAsync();
+  if (!isCurrent()) return 'off';
   if (!permission.granted) {
     await cancelAll();
     return 'denied';
   }
 
-  const dates = getNextPeriodReminderDates(settings);
+  const dates = getNextPeriodReminderDates(settings, periods);
   if (!dates) {
     await cancelAll();
     return 'off';
   }
-  const signature = `${ownerId}:${dates.expectedPeriodStart}:${settings.reminder_days_before}`;
+  const signature = `${ownerId}:${dates.expectedPeriodStart}:${settings.reminder_days_before}:${Intl.DateTimeFormat().resolvedOptions().timeZone}:${title}:${body(dates.expectedPeriodStart)}`;
   const current = scheduled.filter(item => item.content.data?.owner === ownerId && item.content.data?.signature === signature);
   if (current.length === 1 && scheduled.length === 1) return 'ready';
 
@@ -79,9 +87,9 @@ async function reconcileMenstrualCycleReminderNow(
       name: 'Healthy Check reminders', importance: AndroidImportance.DEFAULT,
     });
   }
-  let triggerDate = localDateAtHour(dates.reminderDate, 9, 0);
-  if (triggerDate.getTime() <= Date.now() + 60_000) triggerDate = new Date(Date.now() + 10 * 60_000);
-  await Notifications.scheduleNotificationAsync({
+  const triggerDate = localDateAtHour(dates.reminderDate, 9, 0);
+  if (triggerDate.getTime() <= Date.now() + 60_000 || !isCurrent()) return 'off';
+  const identifier = await Notifications.scheduleNotificationAsync({
     content: {
       title,
       body: body(dates.expectedPeriodStart),
@@ -100,5 +108,6 @@ async function reconcileMenstrualCycleReminderNow(
       ...(Platform.OS === 'android' ? { channelId: notificationChannelId } : {}),
     },
   });
+  if (!isCurrent()) { await Notifications.cancelScheduledNotificationAsync(identifier); return 'off'; }
   return 'ready';
 }

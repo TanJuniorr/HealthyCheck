@@ -11,7 +11,7 @@ import { getMySleepSchedule } from '../services/sleepScheduleService';
 import { subscribeSleepChanges } from '../lib/healthQueryEvents';
 import { supabase } from '../lib/supabase';
 import { notificationPresentation } from '../services/notificationPresentation';
-import { getMyMenstrualCycleSettings, subscribeCycleSettingsChanges } from '../services/menstrualCycleService';
+import { getMyMenstrualCycleOverview, subscribeCycleSettingsChanges } from '../services/menstrualCycleService';
 import { cancelMenstrualCycleReminder, reconcileMenstrualCycleReminder } from '../services/menstrualCycleNotifications';
 import { formatDate } from '../i18n/formatting';
 
@@ -100,6 +100,7 @@ export function NotificationInboxProvider({ children }: React.PropsWithChildren)
     const previousOwner = previousOwnerId.current;
     inboxRequest.current++;
     if (previousOwner && previousOwner !== ownerId) void cancelUserHealthReminders(previousOwner);
+    if (previousOwner && previousOwner !== ownerId) void cancelMenstrualCycleReminder(previousOwner);
     previousOwnerId.current = ownerId;
   }, [ownerId]);
 
@@ -143,27 +144,34 @@ export function NotificationInboxProvider({ children }: React.PropsWithChildren)
   useEffect(() => {
     if (!ownerId || !profileChecked || preferencesOwnerId !== ownerId) return;
     let alive = true;
+    let cycleRequest = 0;
     const reconcileCycle = async () => {
+      const request = ++cycleRequest;
       try {
         if (profile?.gender !== 'female') {
           await cancelMenstrualCycleReminder(ownerId);
           return;
         }
-        const settings = await getMyMenstrualCycleSettings();
-        if (!alive) return;
+        const overview = await getMyMenstrualCycleOverview();
+        if (!alive || request !== cycleRequest) return;
         await reconcileMenstrualCycleReminder(
           ownerId,
-          settings,
+          overview.settings,
           t('cycle.notificationTitle'),
           expectedDate => t('cycle.notificationBody', { date: formatDate(expectedDate) }),
+          overview.periods,
+          () => alive && request === cycleRequest && previousOwnerId.current === ownerId,
         );
       } catch {
         // Keep an existing reminder if a cycle settings refresh fails temporarily.
       }
     };
     void reconcileCycle();
-    const unsubscribe = subscribeCycleSettingsChanges(changedOwner => {
-      if (changedOwner === ownerId) void reconcileCycle();
+    const unsubscribe = subscribeCycleSettingsChanges((changedOwner, kind) => {
+      if (changedOwner === ownerId && kind !== 'logs') {
+        // Invalidate the old estimate even if the subsequent database refresh fails.
+        void cancelMenstrualCycleReminder(ownerId).then(reconcileCycle).catch(() => {});
+      }
     });
     const appState = AppState.addEventListener('change', state => {
       if (state === 'active') void reconcileCycle();

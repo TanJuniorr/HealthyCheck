@@ -59,9 +59,11 @@ export type AIChatMessage = { id: string; role: 'user' | 'assistant'; content: s
 export type AIChatConversationRow = { id: string; user_id: string; title: string; messages: AIChatMessage[]; created_at: string; updated_at: string };
 export type AIChatConversationSummaryRow = Omit<AIChatConversationRow, 'messages'>;
 export type MenstrualCycleSettingsRow = { user_id: string; last_period_start: string | null; cycle_length: number; period_length: number; reminder_enabled: boolean; reminder_days_before: number; updated_at: string };
+export type MenstrualCyclePeriodRow = { id: string; user_id: string; start_date: string; end_date: string | null; notes: string | null; recorded_timezone: string; created_at: string; updated_at: string };
+export type MenstrualCyclePeriodInput = Pick<MenstrualCyclePeriodRow, 'id' | 'start_date' | 'end_date' | 'notes'>;
 export type CycleFlowStatus = 'none' | 'spotting' | 'light' | 'medium' | 'heavy';
 export type CycleMood = 'happy' | 'okay' | 'low' | 'tired' | 'stressed';
-export type MenstrualCycleLogRow = { id: string; user_id: string; log_date: string; flow_status: CycleFlowStatus; mood: CycleMood | null; symptoms: string[]; created_at: string; updated_at: string };
+export type MenstrualCycleLogRow = { id: string; user_id: string; log_date: string; flow_status: CycleFlowStatus | null; mood: CycleMood | null; symptoms: string[]; created_at: string; updated_at: string };
 export type Rows = { profiles: ProfileRow; health_goals: HealthGoalRow; step_records: StepRecordRow; sleep_records: SleepRecordRow; foods: FoodRow; meal_records: MealRecordRow; weight_records: WeightRecordRow; water_records: WaterRecordRow };
 export type PersonalTable = Exclude<keyof Rows, 'profiles' | 'foods'>;
 export type Inputs = { health_goals: HealthGoalInsert; step_records: StepRecordInsert; sleep_records: SleepRecordInsert; meal_records: MealRecordInsert; weight_records: WeightRecordInsert; water_records: WaterRecordInsert };
@@ -87,6 +89,7 @@ export type Database = { public: { Tables: {
   app_notifications: Table<AppNotificationRow, Omit<AppNotificationRow, 'id' | 'created_at' | 'read_at'> & Partial<Pick<AppNotificationRow, 'id' | 'created_at' | 'read_at'>>, Partial<Pick<AppNotificationRow, 'read_at'>>>;
   ai_chat_conversations: Table<AIChatConversationRow, Pick<AIChatConversationRow, 'user_id'> & Partial<Pick<AIChatConversationRow, 'title' | 'messages'>>, Partial<Pick<AIChatConversationRow, 'title' | 'messages' | 'updated_at'>>>;
   menstrual_cycle_settings: Table<MenstrualCycleSettingsRow, Omit<MenstrualCycleSettingsRow, 'updated_at'> & Partial<Pick<MenstrualCycleSettingsRow, 'updated_at'>>, Partial<Omit<MenstrualCycleSettingsRow, 'user_id'>>>;
+  menstrual_cycle_periods: Table<MenstrualCyclePeriodRow, MenstrualCyclePeriodInput & { user_id: string; recorded_timezone: string }>;
   menstrual_cycle_logs: Table<MenstrualCycleLogRow, Omit<MenstrualCycleLogRow, 'id' | 'created_at' | 'updated_at'> & Partial<Pick<MenstrualCycleLogRow, 'id' | 'created_at' | 'updated_at'>>, Partial<Omit<MenstrualCycleLogRow, 'id' | 'user_id' | 'log_date' | 'created_at'>>>;
 }; Views: { [_ in never]: never }; Functions: {
  save_health_goal_snapshot:{Args:{p_expected_owner:string;p_expected_id:string|null;p_expected_values:Record<string,number>|null;p_changes:Record<string,number>;p_local_date:string;p_time_zone:string};Returns:HealthGoalRow[]};

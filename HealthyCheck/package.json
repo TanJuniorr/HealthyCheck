@@ -53,7 +53,7 @@
     "typecheck": "tsc --noEmit",
     "test:auth": "node --test tests/auth.test.cjs",
     "test": "node --test tests/*.test.cjs",
-    "test:db": "node --test scripts/test-onboarding-db.cjs scripts/test-food-catalogue-db.cjs scripts/test-article-db.cjs scripts/test-health-goal-snapshots-db.cjs",
+    "test:db": "node --test scripts/test-onboarding-db.cjs scripts/test-food-catalogue-db.cjs scripts/test-article-db.cjs scripts/test-health-goal-snapshots-db.cjs scripts/test-menstrual-cycle-db.cjs",
     "test:all": "npm test && npm run test:db",
     "lint": "expo lint"
   },

@@ -193,7 +193,6 @@ function getIonIcon(icon: string): any {
     moon: 'moon-outline',
     nutrition: 'restaurant-outline',
     flower: 'flower-outline',
-    heart: 'heart-outline',
     flame: 'flame-outline',
     body: 'body-outline',
   };

@@ -26,7 +26,7 @@ function localizeStaticString(value: string,field?: string): string {
  const time = /^(\d{1,2}):(\d{2}) (AM|PM)$/.exec(value);
  if (time) { const date = new Date(2026,0,1,(Number(time[1])%12)+(time[3]==='PM'?12:0),Number(time[2])); return formatTime(date); }
  if (field === 'date') { const date = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d+), (\d{4})$/.exec(value); if (date) return formatDate(new Date(Number(date[3]),['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(date[1]),Number(date[2]))); }
- const quantity = /^([\d,]+(?:\.\d+)?)\s*(kcal|kg|cm|ml|L|bpm)?$/.exec(value);
+ const quantity = /^([\d,]+(?:\.\d+)?)\s*(kcal|kg|cm|ml|L)?$/.exec(value);
  if (quantity) return formatNumber(Number(quantity[1].replaceAll(',',''))) + (quantity[2] ? ` ${quantity[2]}` : '');
  return value;
 }
