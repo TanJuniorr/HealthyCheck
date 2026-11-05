@@ -101,7 +101,7 @@ test('birth date is unset until selection, uses a cross-platform picker and bloc
  const f=uiFixture(),Field=f.load('src/components/profile/PersonalHealthFields').BirthDateField;let chosen=null;
  const render=()=>f.render(()=>Field({value:'',onChange:value=>{chosen=value;}}));let tree=render();assert.equal(chosen,null);
  elements(tree).find(e=>e.type==='TouchableOpacity').props.onPress();tree=render();const picker=elements(tree).find(e=>e.type?.name==='CalendarDatePicker');
- assert.equal(picker.props.maxDate,load('src/lib/dateUtils').toLocalDateKey());assert.equal(chosen,null);picker.props.onSelect('1995-05-02');assert.equal(chosen,'1995-05-02');
+ assert.equal(picker.props.allowYearSelection,true);assert.equal(picker.props.maxDate,load('src/lib/dateUtils').toLocalDateKey());assert.equal(chosen,null);picker.props.onSelect('1995-05-02');assert.equal(chosen,'1995-05-02');
 });
 test('field validation feedback renders the specific translated error in both languages',async()=>{
  const f=uiFixture(),Input=f.load('src/components/common/AppTextInput').AppTextInput,i18n=f.load('src/i18n/index').default;

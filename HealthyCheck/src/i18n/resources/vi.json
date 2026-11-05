@@ -185,6 +185,11 @@
   },
   "calendar": {
     "chooseDate": "Chọn ngày",
+    "chooseYear": "Chọn năm",
+    "year": "Năm {{year}}",
+    "previousYears": "Nhóm năm trước",
+    "nextYears": "Nhóm năm sau",
+    "backToCalendar": "Quay lại lịch",
     "selectedDate": "{{date}}",
     "previousMonth": "Tháng trước",
     "nextMonth": "Tháng sau",

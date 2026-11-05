@@ -14,7 +14,7 @@ export function BirthDateField({value,onChange,disabled=false,error}:{value:stri
   <Text style={styles.label}>{t('profile.birthDate')}</Text>
   <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('profile.chooseBirthDate')} disabled={disabled} onPress={()=>setOpen(true)} style={styles.date}><Text style={styles.text}>{value?formatDate(value):t('profile.chooseBirthDate')}</Text></TouchableOpacity>
   {error ? <Text accessibilityRole="alert" style={styles.error}>{t(error)}</Text> : null}
-  {open&&<CalendarDatePicker key={value||'empty'} visible date={value||toLocalDateKey()} maxDate={toLocalDateKey()} title={t('profile.chooseBirthDate')} onClose={()=>setOpen(false)} onSelect={date=>{if(!disabled){onChange(date);setOpen(false);}}}/>}
+  {open&&<CalendarDatePicker key={value||'empty'} visible allowYearSelection date={value||toLocalDateKey()} maxDate={toLocalDateKey()} title={t('profile.chooseBirthDate')} onClose={()=>setOpen(false)} onSelect={date=>{if(!disabled){onChange(date);setOpen(false);}}}/>}
  </View>;
 }
 export function GenderField({value,onChange,disabled=false,error}:{value:ProfileGender|'';onChange:(value:ProfileGender)=>void;disabled?:boolean;error?:string}) {

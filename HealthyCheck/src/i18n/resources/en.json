@@ -185,6 +185,11 @@
   },
   "calendar": {
     "chooseDate": "Choose a date",
+    "chooseYear": "Choose a year",
+    "year": "Year {{year}}",
+    "previousYears": "Previous years",
+    "nextYears": "Next years",
+    "backToCalendar": "Back to calendar",
     "selectedDate": "{{date}}",
     "previousMonth": "Previous month",
     "nextMonth": "Next month",
