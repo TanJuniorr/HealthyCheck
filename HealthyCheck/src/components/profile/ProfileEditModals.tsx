@@ -135,7 +135,7 @@ export function PersonalProfileModal({ visible, initial, onClose, onSave }: Pers
 
 type GoalsModalProps = {
   visible: boolean;
-  initial: HealthGoalInsert;
+  initial: Partial<Record<keyof EditableHealthGoals, number | null>>;
   onClose: () => void;
   onSave: (goals: EditableHealthGoals) => Promise<void>;
   gender?: ProfileGender | null;

@@ -13,6 +13,11 @@ test('real PostgreSQL onboarding: RLS, atomic rollback, retries, existing profil
  INSERT INTO auth.users VALUES('${A}'),('${B}'),('${C}'),('${D}');
  CREATE TABLE public.profiles(id uuid PRIMARY KEY REFERENCES auth.users,full_name text,date_of_birth date,gender text,height_cm numeric(5,2),avatar_url text,created_at timestamptz NOT NULL DEFAULT now(),updated_at timestamptz NOT NULL DEFAULT now());
  CREATE TABLE public.weight_records(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid NOT NULL REFERENCES auth.users,weight_kg numeric(5,2) NOT NULL CHECK(weight_kg>0),recorded_at timestamptz NOT NULL DEFAULT now(),created_at timestamptz NOT NULL DEFAULT now());
+ CREATE TABLE public.health_goals(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid NOT NULL REFERENCES auth.users,
+ daily_steps integer NOT NULL DEFAULT 8000 CHECK(daily_steps>=0),daily_calories integer NOT NULL DEFAULT 2000 CHECK(daily_calories>=0),daily_water_ml integer NOT NULL DEFAULT 2000 CHECK(daily_water_ml>=0),target_sleep_minutes integer NOT NULL DEFAULT 480 CHECK(target_sleep_minutes>=0),effective_from date NOT NULL DEFAULT current_date,created_at timestamptz NOT NULL DEFAULT now(),UNIQUE(user_id,effective_from));
+ ALTER TABLE health_goals ENABLE ROW LEVEL SECURITY;
+ CREATE POLICY goals_owner ON health_goals FOR ALL TO authenticated USING(auth.uid()=user_id) WITH CHECK(auth.uid()=user_id);
+ GRANT SELECT,INSERT,UPDATE,DELETE ON health_goals TO authenticated;
  ALTER TABLE profiles ENABLE ROW LEVEL SECURITY; ALTER TABLE weight_records ENABLE ROW LEVEL SECURITY;
  CREATE POLICY profiles_read ON profiles FOR SELECT TO authenticated USING(auth.uid()=id);
  CREATE POLICY profiles_insert ON profiles FOR INSERT TO authenticated WITH CHECK(auth.uid()=id);
@@ -43,11 +48,24 @@ test('real PostgreSQL onboarding: RLS, atomic rollback, retries, existing profil
  const metadata=(await db.query(`SELECT prosecdef,pronargdefaults,has_function_privilege('anon',oid,'EXECUTE') AS anon,has_function_privilege('authenticated',oid,'EXECUTE') AS authenticated FROM pg_proc WHERE oid='${signature}'::regprocedure`)).rows[0];
  assert.equal(metadata.prosecdef,false);assert.equal(metadata.pronargdefaults,0);assert.equal(metadata.anon,false);assert.equal(metadata.authenticated,true);
  assert.ok((await db.query("SELECT relrowsecurity FROM pg_class WHERE oid IN ('profiles'::regclass,'weight_records'::regclass)")).rows.every(row=>row.relrowsecurity));
+ await db.exec(migration('_add_safe_health_goal_snapshots.sql'));
+ await db.exec(migration('_apply_initial_recommended_goals.sql'));
+ // Signup creates only a profile, so no fixed goals can leak onto the dashboard.
+ await db.exec(`ALTER TABLE auth.users ADD COLUMN raw_user_meta_data jsonb DEFAULT '{}'::jsonb;
+  CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+  BEGIN; INSERT INTO auth.users(id) VALUES('55555555-5555-4555-8555-555555555555');`);
+ assert.equal((await db.query("SELECT count(*)::int AS n FROM profiles WHERE id='55555555-5555-4555-8555-555555555555'")).rows[0].n,1);
+ assert.equal((await db.query("SELECT count(*)::int AS n FROM health_goals WHERE user_id='55555555-5555-4555-8555-555555555555'")).rows[0].n,0);
+ await db.exec('ROLLBACK');
+ const acl=(await db.query("SELECT prosecdef,has_function_privilege('anon',oid,'EXECUTE') AS anon,has_function_privilege('authenticated',oid,'EXECUTE') AS authenticated FROM pg_proc WHERE proname='complete_health_onboarding'")).rows;
+ assert.equal(acl.length,1);assert.deepEqual(acl[0],{prosecdef:false,anon:false,authenticated:true});
  const asOwner=async id=>{await db.exec('RESET ROLE');await db.query("SELECT set_config('request.jwt.claim.sub',$1,false)",[id??'']);await db.exec('SET ROLE authenticated');};
- const complete=(activity='moderately_active',goal='maintain')=>db.query("SELECT * FROM complete_health_onboarding('1995-05-02','prefer_not_to_say',170.5,65.5,$1,$2)",[activity,goal]);
+ const complete=(activity='moderately_active',goal='maintain',goals={daily_steps:7000,daily_calories:null})=>db.query("SELECT * FROM complete_health_onboarding('1995-05-02','prefer_not_to_say',170.5,65.5,$1,$2,$3::jsonb,'Asia/Ho_Chi_Minh')",[activity,goal,JSON.stringify(goals)]);
  await db.exec('SET ROLE anon');await assert.rejects(complete(),e=>e.code==='42501');
  await asOwner(null);await assert.rejects(complete(),e=>e.code==='42501');
  await asOwner(A);
+ await assert.rejects(db.query("SELECT * FROM complete_health_onboarding('1995-05-02','male',170,65,'sedentary','maintain','{}','UTC',$1)",[B]),e=>e.code==='42501');
+ for(const goals of [[],null,{daily_steps:0},{daily_calories:1.5},{daily_calories:'2000'},{daily_steps:2147483648},{daily_water_ml:2200},{user_id:B}])await assert.rejects(complete('sedentary','maintain',goals),e=>e.code==='22023');
  for(const args of ["'2999-01-01','male',170,65","'1990-01-01','invalid',170,65","'1990-01-01','male',0,65","'1990-01-01','male',170,0","'1990-01-01','male',170,501","'1990-01-01','male','NaN',65"]){
   await assert.rejects(db.query('SELECT * FROM complete_health_onboarding('+args+",'sedentary','maintain')"),e=>e.code==='22023');
  }
@@ -59,9 +77,19 @@ test('real PostgreSQL onboarding: RLS, atomic rollback, retries, existing profil
   await db.exec('BEGIN');const row=(await complete(activity,goal)).rows[0];assert.equal(row.activity_level,activity);assert.equal(row.weight_goal,goal);await db.exec('ROLLBACK');
  }
  const first=(await complete()).rows[0];assert.ok(first.health_onboarding_completed_at);assert.equal(Number(first.height_cm),170.5);assert.equal(first.gender,'prefer_not_to_say');
+ const savedGoals=(await db.query('SELECT * FROM health_goals')).rows;
+ assert.equal(savedGoals.length,1);assert.equal(savedGoals[0].daily_steps,7000);assert.equal(savedGoals[0].daily_calories,null);
+ const localDay=(await db.query("SELECT (now() AT TIME ZONE 'Asia/Ho_Chi_Minh')::date AS d")).rows[0].d;
+ assert.equal(savedGoals[0].effective_from.toISOString(),localDay.toISOString());
+ // A subsequent valid estimate can update one target while another is unset.
+ const expected={daily_steps:7000,daily_calories:null,daily_water_ml:2000,target_sleep_minutes:480};
+ const amended=(await db.query('SELECT * FROM save_health_goal_snapshot($1,$2,$3::jsonb,$4::jsonb,$5::date,$6)',[A,savedGoals[0].id,JSON.stringify(expected),JSON.stringify({daily_steps:5000}),localDay,'Asia/Ho_Chi_Minh'])).rows[0];
+ assert.equal(amended.daily_steps,5000);assert.equal(amended.daily_calories,null);
  assert.equal(first.date_of_birth.toISOString().slice(0,10),'1995-05-02');assert.equal(first.activity_level,'moderately_active');assert.equal(first.weight_goal,'maintain');
  await Promise.all([complete(),complete(),complete()]);
  const retry=(await complete('extremely_active','gain_weight')).rows[0];assert.deepEqual(retry,first);
+ assert.equal((await db.query('SELECT count(*)::int AS n FROM health_goals')).rows[0].n,2);
+ assert.equal((await db.query('SELECT daily_steps FROM health_goals ORDER BY created_at DESC,id DESC LIMIT 1')).rows[0].daily_steps,5000);
  assert.equal((await db.query('SELECT count(*)::int AS n FROM weight_records')).rows[0].n,1);
  assert.equal(Number((await db.query('SELECT weight_kg FROM weight_records')).rows[0].weight_kg),65.5);
  assert.equal((await db.query(`SELECT count(*)::int AS n FROM profiles WHERE id='${C}'`)).rows[0].n,0);
@@ -82,7 +110,14 @@ test('real PostgreSQL onboarding: RLS, atomic rollback, retries, existing profil
  assert.equal(unchanged.activity_level,null);assert.equal(unchanged.weight_goal,null);
  assert.equal((await db.query('SELECT count(*)::int AS n FROM weight_records')).rows[0].n,0);
  await assert.rejects(db.exec('UPDATE profiles SET health_onboarding_completed_at=now()'),e=>e.code==='23514');
- await db.exec('RESET ROLE; DROP TRIGGER test_weight_failure ON weight_records;');await asOwner(B);await complete();assert.equal((await db.query('SELECT count(*)::int AS n FROM weight_records')).rows[0].n,1);
+ await db.exec(`RESET ROLE; DROP TRIGGER test_weight_failure ON weight_records;
+ CREATE TRIGGER test_goal_failure AFTER INSERT ON health_goals FOR EACH ROW EXECUTE FUNCTION fail_test_weight();`);
+ await asOwner(B);await assert.rejects(complete(),e=>e.code==='23514');
+ assert.equal((await db.query('SELECT health_onboarding_completed_at FROM profiles')).rows[0].health_onboarding_completed_at,null);
+ assert.equal((await db.query('SELECT count(*)::int AS n FROM weight_records')).rows[0].n,0);
+ assert.equal((await db.query('SELECT count(*)::int AS n FROM health_goals')).rows[0].n,0);
+ await db.exec('RESET ROLE; DROP TRIGGER test_goal_failure ON health_goals;');await asOwner(B);await complete('sedentary','maintain',{daily_steps:4000,daily_calories:1881});assert.equal((await db.query('SELECT count(*)::int AS n FROM weight_records')).rows[0].n,1);
+ assert.equal((await db.query('SELECT daily_calories FROM health_goals')).rows[0].daily_calories,1881);
  await asOwner(D);await assert.rejects(db.exec('UPDATE profiles SET health_onboarding_completed_at=now()'),e=>e.code==='23514');
  // A pre-existing identical latest weight is reused when a partial profile finishes.
  await db.query('INSERT INTO weight_records(user_id,weight_kg) VALUES($1,65.5)',[D]);

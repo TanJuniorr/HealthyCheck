@@ -235,6 +235,7 @@
     "personalStep": "Personal details",
     "bodyStep": "Body measurements",
     "lifestyleStep": "Lifestyle and goals",
+    "automaticGoals": "When you finish, HealthyCheck will automatically apply step and calorie goals recommended from your profile. If a suitable estimate is unavailable, that goal will remain unset. You can adjust your goals later in Profile.",
     "activityLevel": "Activity level",
     "weightGoal": "Weight goal",
     "requiredActivityLevel": "Please select a valid activity level.",

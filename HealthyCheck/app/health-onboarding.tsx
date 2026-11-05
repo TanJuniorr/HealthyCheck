@@ -57,6 +57,7 @@ export function HealthOnboardingForm() {
    </>:<>
     <HealthPreferenceField field="activityLevel" options={ACTIVITY_LEVELS} value={draft.activityLevel} onChange={value=>change('activityLevel',value)} disabled={busy} error={touched.activityLevel?errors.activityLevel:undefined}/>
     <HealthPreferenceField field="weightGoal" options={WEIGHT_GOALS} value={draft.weightGoal} onChange={value=>change('weightGoal',value)} disabled={busy} error={touched.weightGoal?errors.weightGoal:undefined}/>
+    <Text style={styles.text}>{t('onboarding.automaticGoals')}</Text>
    </>}
    {error ? <Text accessibilityRole="alert" style={styles.error}>{localizeMessage(error)}</Text> : null}
    {step<3?<PrimaryButton title={t('common.continue')} disabled={busy} onPress={next}/>:<PrimaryButton title={t('onboarding.finish')} loading={busy} disabled={busy||!complete} onPress={save}/>}

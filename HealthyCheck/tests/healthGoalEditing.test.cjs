@@ -18,6 +18,7 @@ test('only successful estimates are applicable and water requires its own acknow
 });
 test('manual changes validate whole positive values and never invent a complete snapshot',()=>{
  assert.equal(editing.goalValues(null),null);
+ assert.deepEqual({...editing.goalValues({daily_steps:4000,daily_calories:null,daily_water_ml:2000,target_sleep_minutes:480})},{daily_steps:4000,daily_calories:null,daily_water_ml:2000,target_sleep_minutes:480});
  assert.deepEqual({...editing.validateGoalChanges({daily_calories:2200})},{daily_calories:2200});
  for(const changes of [{},{daily_steps:0},{daily_water_ml:1.5},{daily_calories:'2000'},{target_sleep_minutes:Infinity},{daily_steps:2147483648},{user_id:'spoof'}])assert.throws(()=>editing.validateGoalChanges(changes));
 });

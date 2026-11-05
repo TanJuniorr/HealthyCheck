@@ -235,6 +235,7 @@
     "personalStep": "Thông tin cá nhân",
     "bodyStep": "Chỉ số cơ thể",
     "lifestyleStep": "Lối sống và mục tiêu",
+    "automaticGoals": "Khi hoàn tất, HealthyCheck sẽ tự áp dụng mục tiêu bước chân và calo đề xuất từ hồ sơ của bạn. Nếu chưa thể đưa ra đề xuất phù hợp, mục tiêu đó sẽ để trống. Bạn có thể chỉnh lại sau trong Hồ sơ.",
     "activityLevel": "Cường độ vận động",
     "weightGoal": "Mục tiêu cân nặng",
     "requiredActivityLevel": "Vui lòng chọn một cường độ vận động hợp lệ.",

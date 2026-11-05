@@ -10,10 +10,10 @@ export const RECOMMENDATION_GOAL_FIELDS = {
  steps: 'daily_steps',
  water: 'daily_water_ml',
 } as const satisfies Record<RecommendationKind, keyof GoalValues>;
-export function goalValues(row: HealthGoalRow | null): GoalValues | null {
+export function goalValues(row: HealthGoalRow | null): Record<keyof GoalValues, number | null> | null {
  if(!row)return null;
- if(EDITABLE_GOAL_KEYS.some(key=>row[key]==null||!Number.isInteger(row[key])||row[key]!<0))throw new DataAccessError('INVALID_INPUT','goals.completeFirst');
- return Object.fromEntries(EDITABLE_GOAL_KEYS.map(key=>[key,row[key]])) as GoalValues;
+ if(EDITABLE_GOAL_KEYS.some(key=>row[key]!==null&&(!Number.isInteger(row[key])||row[key]!<0)))throw new DataAccessError('INVALID_INPUT','goals.completeFirst');
+ return Object.fromEntries(EDITABLE_GOAL_KEYS.map(key=>[key,row[key]])) as Record<keyof GoalValues, number | null>;
 }
 export function validateGoalChanges(changes: GoalChanges): GoalChanges {
  if(!changes||typeof changes!=='object'||Array.isArray(changes)||!Object.keys(changes).length||Object.keys(changes).some(key=>!EDITABLE_GOAL_KEYS.includes(key as keyof GoalValues)))throw new DataAccessError('INVALID_INPUT','goals.invalid');

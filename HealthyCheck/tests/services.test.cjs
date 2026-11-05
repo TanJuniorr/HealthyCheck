@@ -165,7 +165,7 @@ test('onboarding service sends one authenticated RPC, rejects owner spoofing and
  const f=fixture(request=>({data:[completed]})),service=f.load('src/services/healthOnboardingService');
  const row=await service.completeHealthOnboarding(input);assert.equal(row.height_cm,170.5);
  assert.equal(f.calls.length,1);assert.ok(f.calls[0].url.pathname.endsWith('/rpc/complete_health_onboarding'));
- assert.deepEqual(f.calls[0].body,{p_date_of_birth:input.date_of_birth,p_gender:input.gender,p_height_cm:170.5,p_weight_kg:65.5,p_activity_level:'moderately_active',p_weight_goal:'maintain'});
+ assert.deepEqual(f.calls[0].body,{p_date_of_birth:input.date_of_birth,p_gender:input.gender,p_height_cm:170.5,p_weight_kg:65.5,p_activity_level:'moderately_active',p_weight_goal:'maintain',p_initial_goals:{daily_steps:7000,daily_calories:null},p_time_zone:Intl.DateTimeFormat().resolvedOptions().timeZone,p_expected_owner:A});
  assert.equal(row.activity_level,input.activity_level);assert.equal(row.weight_goal,input.weight_goal);
  await assert.rejects(service.completeHealthOnboarding({...input,user_id:B}),e=>e.code==='INVALID_INPUT');assert.equal(f.calls.length,1);
  for(const response of [[],[{...completed,health_onboarding_completed_at:null}],[{...completed,id:B}]]){
@@ -181,7 +181,7 @@ test('onboarding service sends one authenticated RPC, rejects owner spoofing and
  const changed=fixture(()=>{changed.setOwner(B);return {data:[completed]};});
  await assert.rejects(changed.load('src/services/healthOnboardingService').completeHealthOnboarding(input),e=>e.code==='AUTH_CHANGED');
 });
-test('confirmed onboarding appears in Profile and Dashboard BMI using the real height/weight without creating goals',async()=>{
+test('confirmed onboarding appears in Profile and Dashboard BMI with no separate goal write',async()=>{
  let profile=null,weights=[];
  const input={date_of_birth:'1995-05-02',gender:'prefer_not_to_say',height_cm:170.5,weight_kg:65.5,activity_level:'lightly_active',weight_goal:'gain_weight_slow'};
  const f=fixture(request=>{
