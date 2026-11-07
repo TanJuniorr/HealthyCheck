@@ -62,26 +62,29 @@ export default function SystemMonitoringScreen() {
     if (requestLock.current) return;
     requestLock.current = true;
     if (active.current) setRefreshing(true);
-    const [snapshotResult, eventsResult] = await Promise.allSettled([
-      getSystemMonitorSnapshot(),
-      getRecentMonitorEvents(),
-    ]);
-    if (active.current) {
-      if (snapshotResult.status === 'fulfilled') {
-        setSnapshot(snapshotResult.value);
-        setSnapshotError(null);
-      } else {
-        setSnapshotError(localizeMessage(snapshotResult.reason));
+    try {
+      const [snapshotResult, eventsResult] = await Promise.allSettled([
+        getSystemMonitorSnapshot(),
+        getRecentMonitorEvents(),
+      ]);
+      if (active.current) {
+        if (snapshotResult.status === 'fulfilled') {
+          setSnapshot(snapshotResult.value);
+          setSnapshotError(null);
+        } else {
+          setSnapshotError(localizeMessage(snapshotResult.reason));
+        }
+        if (eventsResult.status === 'fulfilled') {
+          setEvents(eventsResult.value);
+          setEventsError(null);
+        } else {
+          setEventsError(localizeMessage(eventsResult.reason));
+        }
       }
-      if (eventsResult.status === 'fulfilled') {
-        setEvents(eventsResult.value);
-        setEventsError(null);
-      } else {
-        setEventsError(localizeMessage(eventsResult.reason));
-      }
-      setRefreshing(false);
+    } finally {
+      if (active.current) setRefreshing(false);
+      requestLock.current = false;
     }
-    requestLock.current = false;
   }, []);
 
   useFocusEffect(useCallback(() => {
@@ -95,6 +98,9 @@ export default function SystemMonitoringScreen() {
   }, [refresh]));
 
   const errorsLastDay = snapshot?.errors_last_24h ?? '—';
+  const requestMetrics = snapshot?.request_metrics_available ? Object.values(snapshot.request_metrics) : null;
+  const totalRequests = requestMetrics?.reduce((sum, metrics) => sum + metrics.total_requests, 0) ?? '—';
+  const failedRequests = requestMetrics?.reduce((sum, metrics) => sum + metrics.failed_requests, 0) ?? '—';
   const locale = i18n.resolvedLanguage?.startsWith('en') ? 'en-US' : 'vi-VN';
 
   const renderStatus = (
@@ -213,6 +219,14 @@ export default function SystemMonitoringScreen() {
 
       <View style={styles.summary}>
         <View style={styles.summaryItem}>
+          <Text style={styles.summaryValue}>{totalRequests}</Text>
+          <Text style={styles.muted}>{t('monitor.requestsLastDay')}</Text>
+        </View>
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryValue}>{failedRequests}</Text>
+          <Text style={styles.muted}>{t('monitor.failedRequestsLastDay')}</Text>
+        </View>
+        <View style={styles.summaryItem}>
           <Text style={styles.summaryValue}>{errorsLastDay}</Text>
           <Text style={styles.muted}>{t('monitor.errorsLastDay')}</Text>
         </View>
@@ -243,7 +257,7 @@ export default function SystemMonitoringScreen() {
       ) : null}
 
       <View style={styles.eventsHeader}>
-        <Text style={styles.sectionTitle}>{t('monitor.realRequests')}</Text>
+        <Text style={styles.sectionTitle}>{t('monitor.requestsLastDay')}</Text>
         <Text style={styles.muted}>{t('monitor.realRequestsWindow')}</Text>
       </View>
       <View style={styles.metricGrid}>

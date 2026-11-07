@@ -11,6 +11,7 @@ export type MonitoredFunctionMetrics = {
   success_rate_percent: number | null;
   average_duration_ms: number | null;
   p95_duration_ms: number | null;
+  demo_requests: number;
 };
 export type SystemMonitorSnapshot = {
   checked_at: string;
@@ -26,20 +27,23 @@ export type SystemMonitorSnapshot = {
     food_scan: MonitoredFunctionMetrics;
   };
   errors_last_24h: number | null;
+  demo_errors_last_24h: number | null;
 };
 
-export async function getSystemMonitorSnapshot(): Promise<SystemMonitorSnapshot> {
+export async function getSystemMonitorSnapshot(includeDemo = true): Promise<SystemMonitorSnapshot> {
   const { data, error } = await supabase.functions.invoke('system-monitor', {
-    body: { action: 'snapshot' },
+    body: { action: 'snapshot', include_demo: includeDemo },
   });
   if (error) throw error;
   return data as SystemMonitorSnapshot;
 }
 
-export async function getRecentMonitorEvents(): Promise<AppMonitorEventRow[]> {
-  const { data, error } = await supabase
+export async function getRecentMonitorEvents(includeDemo = true): Promise<AppMonitorEventRow[]> {
+  let query = supabase
     .from('app_monitor_events')
-    .select('id,user_id,source,severity,event_code,platform,app_version,created_at')
+    .select('id,user_id,source,severity,event_code,platform,app_version,created_at,is_demo');
+  if (!includeDemo) query = query.eq('is_demo', false);
+  const { data, error } = await query
     .order('created_at', { ascending: false })
     .limit(50);
   if (error) throw error;
@@ -50,7 +54,8 @@ const reportedRecently = new Map<string, number>();
 const REPORT_DEDUPE_MS = 60_000;
 
 function eventCodeFor(error: unknown): AppMonitorEventCode {
-  const name = error instanceof Error ? error.name : '';
+  // Errors from another browser realm are not necessarily instanceof Error.
+  const name = error && typeof error === 'object' && 'name' in error ? error.name : '';
   if (name === 'TypeError') return 'unhandled_type_error';
   if (name === 'ReferenceError') return 'unhandled_reference_error';
   if (name === 'SyntaxError') return 'unhandled_syntax_error';
@@ -70,10 +75,11 @@ export async function reportUnhandledAppError(error: unknown, isFatal = false): 
   if (now - (reportedRecently.get(dedupeKey) ?? 0) < REPORT_DEDUPE_MS) return;
   reportedRecently.set(dedupeKey, now);
 
+  let saved = false;
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user.id) return;
-    await supabase.from('app_monitor_events').insert({
+    const { error: insertError } = await supabase.from('app_monitor_events').insert({
       user_id: session.user.id,
       source: 'app',
       severity: isFatal ? 'fatal' : 'error',
@@ -81,8 +87,12 @@ export async function reportUnhandledAppError(error: unknown, isFatal = false): 
       platform: platformForEvent(),
       app_version: (Constants.expoConfig?.version ?? 'unknown').slice(0, 32),
     });
+    saved = !insertError;
   } catch {
     // Monitoring must never cause or replace an application error.
+  } finally {
+    // A missing session or failed write must not suppress the next valid report.
+    if (!saved && reportedRecently.get(dedupeKey) === now) reportedRecently.delete(dedupeKey);
   }
 }
 
@@ -96,6 +106,18 @@ let globalHandlerInstalled = false;
 
 export function installGlobalAppErrorReporter(): void {
   if (globalHandlerInstalled) return;
+  if (Platform.OS === 'web') {
+    if (typeof window === 'undefined') return;
+    window.addEventListener('error', event => {
+      // Resource-load errors are not JavaScript exceptions.
+      if (event instanceof ErrorEvent) void reportUnhandledAppError(event.error ?? new Error('Unhandled JavaScript error'));
+    });
+    window.addEventListener('unhandledrejection', event => {
+      void reportUnhandledAppError(event.reason);
+    });
+    globalHandlerInstalled = true;
+    return;
+  }
   const errorUtils = (globalThis as typeof globalThis & { ErrorUtils?: ErrorUtilsApi }).ErrorUtils;
   if (!errorUtils?.setGlobalHandler) return;
 

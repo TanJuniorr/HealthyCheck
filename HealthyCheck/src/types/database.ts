@@ -56,8 +56,8 @@ export type SharedMetrics = {
 };
 export type AppNotificationRow = { id: string; recipient_user_id: string; kind: string; payload: Record<string, unknown>; reference_id: string | null; created_at: string; read_at: string | null };
 export type AppMonitorEventCode = 'unhandled_js_error' | 'unhandled_type_error' | 'unhandled_reference_error' | 'unhandled_syntax_error' | 'unhandled_unknown_error';
-export type AppMonitorEventRow = { id: string; user_id: string; source: 'app'; severity: 'error' | 'fatal'; event_code: AppMonitorEventCode; platform: 'android' | 'ios' | 'web' | 'other'; app_version: string; created_at: string };
-export type AppMonitorRequestMetricRow = { id: string; function_name: 'ai-chat' | 'food-scan'; succeeded: boolean; status_code: number; duration_ms: number; created_at: string };
+export type AppMonitorEventRow = { id: string; user_id: string; source: 'app'; severity: 'error' | 'fatal'; event_code: AppMonitorEventCode; platform: 'android' | 'ios' | 'web' | 'other'; app_version: string; created_at: string; is_demo: boolean };
+export type AppMonitorRequestMetricRow = { id: string; function_name: 'ai-chat' | 'food-scan'; succeeded: boolean; status_code: number; duration_ms: number; created_at: string; is_demo: boolean };
 export type AIChatMessage = { id: string; role: 'user' | 'assistant'; content: string; created_at: string };
 export type AIChatConversationRow = { id: string; user_id: string; title: string; messages: AIChatMessage[]; created_at: string; updated_at: string };
 export type AIChatConversationSummaryRow = Omit<AIChatConversationRow, 'messages'>;
@@ -90,8 +90,8 @@ export type Database = { public: { Tables: {
   water_records: Table<WaterRecordRow, WaterRecordInsert & { user_id: string }>;
   sharing_invites: Table<SharingInviteRow, never, never>;
   app_notifications: Table<AppNotificationRow, Omit<AppNotificationRow, 'id' | 'created_at' | 'read_at'> & Partial<Pick<AppNotificationRow, 'id' | 'created_at' | 'read_at'>>, Partial<Pick<AppNotificationRow, 'read_at'>>>;
-  app_monitor_events: Table<AppMonitorEventRow, Omit<AppMonitorEventRow, 'id' | 'created_at'>, never>;
-  app_monitor_request_metrics: Table<AppMonitorRequestMetricRow, Omit<AppMonitorRequestMetricRow, 'id' | 'created_at'>, never>;
+  app_monitor_events: Table<AppMonitorEventRow, Omit<AppMonitorEventRow, 'id' | 'created_at' | 'is_demo'>, never>;
+  app_monitor_request_metrics: Table<AppMonitorRequestMetricRow, Omit<AppMonitorRequestMetricRow, 'id' | 'created_at' | 'is_demo'>, never>;
   ai_chat_conversations: Table<AIChatConversationRow, Pick<AIChatConversationRow, 'user_id'> & Partial<Pick<AIChatConversationRow, 'title' | 'messages'>>, Partial<Pick<AIChatConversationRow, 'title' | 'messages' | 'updated_at'>>>;
   menstrual_cycle_settings: Table<MenstrualCycleSettingsRow, Omit<MenstrualCycleSettingsRow, 'updated_at'> & Partial<Pick<MenstrualCycleSettingsRow, 'updated_at'>>, Partial<Omit<MenstrualCycleSettingsRow, 'user_id'>>>;
   menstrual_cycle_periods: Table<MenstrualCyclePeriodRow, MenstrualCyclePeriodInput & { user_id: string; recorded_timezone: string }>;

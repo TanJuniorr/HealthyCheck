@@ -5,10 +5,15 @@ function leaves(value: unknown,prefix=''): [string,string][] {
  if (!value || typeof value !== 'object') return [];
  return Object.entries(value).flatMap(([key,child]) => leaves(child,prefix ? `${prefix}.${key}` : key));
 }
-// Only application-controlled feedback is passed here. Never process names, notes or DB text.
+// Only known application feedback is translated; unknown server details stay hidden.
 const messageKeys = new Map([...leaves(en),...leaves(vi)].filter(([key]) => /^(errors|validation|auth|profile)\./.test(key)).map(([key,value]) => [value,key]));
-export function localizeMessage(message: string | null | undefined): string {
- if (!message) return '';
+export function localizeMessage(message: unknown): string {
+ if (message === null || message === undefined || message === '') return '';
+ if (typeof message !== 'string') {
+  // Error instances and API rejection objects are not valid i18next keys.
+  const detail = typeof message === 'object' && 'message' in message ? message.message : undefined;
+  return typeof detail === 'string' && detail ? localizeMessage(detail) : String(i18n.t('errors.general'));
+ }
  if (i18n.exists(message)) return String(i18n.t(message));
  const key = messageKeys.get(message);
  if (key) return String(i18n.t(key));

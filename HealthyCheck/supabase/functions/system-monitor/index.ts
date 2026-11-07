@@ -68,6 +68,7 @@ type RequestStats = {
   success_rate_percent: number | null;
   average_duration_ms: number | null;
   p95_duration_ms: number | null;
+  demo_requests: number;
 };
 
 function emptyRequestStats(): RequestStats {
@@ -78,6 +79,7 @@ function emptyRequestStats(): RequestStats {
     success_rate_percent: null,
     average_duration_ms: null,
     p95_duration_ms: null,
+    demo_requests: 0,
   };
 }
 
@@ -111,6 +113,10 @@ Deno.serve(async request => {
     return jsonResponse({ error: 'invalid_request' }, 400);
   }
   if (body.action !== 'snapshot') return jsonResponse({ error: 'invalid_action' }, 400);
+  if (body.include_demo !== undefined && typeof body.include_demo !== 'boolean') {
+    return jsonResponse({ error: 'invalid_request' }, 400);
+  }
+  const includeDemo = body.include_demo !== false;
 
   const authClient = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: `Bearer ${bearer}` } },
@@ -131,7 +137,10 @@ Deno.serve(async request => {
   if (role?.role !== 'admin') return jsonResponse({ error: 'admin_required' }, 403);
 
   const metricsWindowStart = new Date(Date.now() - 86_400_000).toISOString();
-  const [databaseResult, aiChat, foodScan, requestMetricsResult, errorCountResult] = await Promise.all([
+  let errorsQuery = serviceClient.from('app_monitor_events').select('id', { count: 'exact', head: true })
+    .gte('created_at', metricsWindowStart);
+  if (!includeDemo) errorsQuery = errorsQuery.eq('is_demo', false);
+  const [databaseResult, aiChat, foodScan, requestMetricsResult, errorCountResult, demoErrorCountResult] = await Promise.all([
     (async () => {
       const dbStarted = performance.now();
       const { error } = await serviceClient.from('user_roles').select('user_id').limit(1);
@@ -142,9 +151,12 @@ Deno.serve(async request => {
     })(),
     checkFunction(supabaseUrl, serviceRoleKey, 'ai-chat'),
     checkFunction(supabaseUrl, serviceRoleKey, 'food-scan'),
-    serviceClient.rpc('app_monitor_request_stats', { p_since: metricsWindowStart }),
+    serviceClient.rpc('app_monitor_request_stats_with_demo', {
+      p_since: metricsWindowStart, p_include_demo: includeDemo,
+    }),
+    errorsQuery,
     serviceClient.from('app_monitor_events').select('id', { count: 'exact', head: true })
-      .gte('created_at', metricsWindowStart),
+      .gte('created_at', metricsWindowStart).eq('is_demo', true),
   ]);
 
   const requestMetrics = { ai_chat: emptyRequestStats(), food_scan: emptyRequestStats() };
@@ -157,6 +169,7 @@ Deno.serve(async request => {
       success_rate_percent: numericValue(row.success_rate_percent),
       average_duration_ms: numericValue(row.average_duration_ms),
       p95_duration_ms: numericValue(row.p95_duration_ms),
+      demo_requests: numericValue(row.demo_requests) ?? 0,
     };
     requestMetrics[row.function_name === 'ai-chat' ? 'ai_chat' : 'food_scan'] = stats;
   }
@@ -169,5 +182,6 @@ Deno.serve(async request => {
     request_metrics_available: !requestMetricsResult.error,
     request_metrics: requestMetrics,
     errors_last_24h: errorCountResult.error ? null : errorCountResult.count ?? 0,
+    demo_errors_last_24h: demoErrorCountResult.error ? null : includeDemo ? demoErrorCountResult.count ?? 0 : 0,
   });
 });

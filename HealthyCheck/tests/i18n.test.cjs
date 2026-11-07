@@ -66,6 +66,23 @@ test('live language changes update translations, plurals and pre-existing error 
  assert.equal(localizeMessage('unknown private server detail'),vi.errors.general);
  await i18n.changeLanguage('en');assert.equal(i18n.t('navigation.overview'),'Overview');
 });
+
+test('error feedback accepts Error and API objects without passing non-string keys to i18next',async()=>{
+ for (const language of ['vi','en']) {
+  await initialization;await i18n.changeLanguage(language);
+  const general=language==='vi'?vi.errors.general:en.errors.general;
+  const expected=String(i18n.t('validation.passwordMatch'));
+  assert.equal(localizeMessage(new Error('validation.passwordMatch')),expected);
+  assert.equal(localizeMessage({message:'validation.passwordMatch',code:'test'}),expected);
+  for (const value of [new Error('private server detail'),{message:'private SQL detail',code:'42703'},
+   {message:42},{message:{}},{},['validation.passwordMatch'],42,true,false,0]) {
+   assert.equal(localizeMessage(value),general);
+  }
+  assert.equal(localizeMessage(null),'');
+  assert.equal(localizeMessage(undefined),'');
+  assert.equal(localizeMessage(''),'');
+ }
+});
 test('number/date/time display follows the language without changing underlying data',async()=>{
  const stamp='2026-10-27T14:30:00Z';const original={steps:11857,weight:68.5,recorded_at:stamp};
  await i18n.changeLanguage('en');assert.equal(formatting.formatNumber(original.steps),'11,857');assert.equal(formatting.formatDate('2026-10-27'),'October 27, 2026');

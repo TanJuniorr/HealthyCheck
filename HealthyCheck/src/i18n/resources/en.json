@@ -1375,7 +1375,7 @@
   "exploreUi": {"menu": "Explore options", "clearFilters": "Clear filters", "noCategories": "No categories yet. You can still browse all articles.", "noFeatured": "No featured articles yet. Browse the latest below.", "noRecommended": "New articles will appear here when available.", "noSearch": "No articles match your search.", "noCategory": "No articles in this category yet.", "refresh": "Refresh articles"},
   "monitor": {
     "title": "System monitoring",
-    "description": "Monitor the database, endpoints, and real request performance.",
+    "description": "Monitor the database, endpoints, and request performance.",
     "refresh": "Check again",
     "services": "Service status",
     "appVersion": "Version · {{platform}}",
@@ -1394,6 +1394,8 @@
     "lastChecked": "Last checked: {{time}}",
     "snapshotFailed": "Could not load system status:",
     "errorsLastDay": "App errors in the last 24 hours",
+    "requestsLastDay": "Requests in the last 24 hours",
+    "failedRequestsLastDay": "Failed requests in the last 24 hours",
     "realRequests": "Real requests in the last 24 hours",
     "realRequestsWindow": "Processing time is measured from Edge Function receipt until the response is created.",
     "requestTotal": "{{count}} total requests",

@@ -1375,7 +1375,7 @@
   "exploreUi": {"menu": "Tiện ích Khám phá", "clearFilters": "Xóa bộ lọc", "noCategories": "Chưa có danh mục. Bạn vẫn có thể xem tất cả bài viết.", "noFeatured": "Chưa có bài nổi bật. Khám phá các bài mới bên dưới.", "noRecommended": "Các bài mới sẽ xuất hiện tại đây khi có nội dung phù hợp.", "noSearch": "Không tìm thấy bài phù hợp với từ khóa.", "noCategory": "Chưa có bài viết trong danh mục này.", "refresh": "Làm mới bài viết"},
   "monitor": {
     "title": "Giám sát hệ thống",
-    "description": "Theo dõi database, endpoint và hiệu suất yêu cầu thực tế.",
+    "description": "Theo dõi database, endpoint và hiệu suất yêu cầu.",
     "refresh": "Kiểm tra lại",
     "services": "Trạng thái dịch vụ",
     "appVersion": "Phiên bản · {{platform}}",
@@ -1394,6 +1394,8 @@
     "lastChecked": "Kiểm tra gần nhất: {{time}}",
     "snapshotFailed": "Không lấy được trạng thái hệ thống:",
     "errorsLastDay": "Lỗi ứng dụng trong 24 giờ qua",
+    "requestsLastDay": "Yêu cầu trong 24 giờ qua",
+    "failedRequestsLastDay": "Yêu cầu thất bại trong 24 giờ qua",
     "realRequests": "Yêu cầu thực tế trong 24 giờ",
     "realRequestsWindow": "Thời gian xử lý được đo từ lúc Edge Function nhận yêu cầu đến khi tạo phản hồi.",
     "requestTotal": "Tổng {{count}} yêu cầu",
