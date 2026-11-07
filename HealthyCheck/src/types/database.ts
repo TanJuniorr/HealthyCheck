@@ -55,6 +55,9 @@ export type SharedMetrics = {
   nutrition: { calories: number; protein: number | null; carbs: number | null; fat: number | null } | null;
 };
 export type AppNotificationRow = { id: string; recipient_user_id: string; kind: string; payload: Record<string, unknown>; reference_id: string | null; created_at: string; read_at: string | null };
+export type AppMonitorEventCode = 'unhandled_js_error' | 'unhandled_type_error' | 'unhandled_reference_error' | 'unhandled_syntax_error' | 'unhandled_unknown_error';
+export type AppMonitorEventRow = { id: string; user_id: string; source: 'app'; severity: 'error' | 'fatal'; event_code: AppMonitorEventCode; platform: 'android' | 'ios' | 'web' | 'other'; app_version: string; created_at: string };
+export type AppMonitorRequestMetricRow = { id: string; function_name: 'ai-chat' | 'food-scan'; succeeded: boolean; status_code: number; duration_ms: number; created_at: string };
 export type AIChatMessage = { id: string; role: 'user' | 'assistant'; content: string; created_at: string };
 export type AIChatConversationRow = { id: string; user_id: string; title: string; messages: AIChatMessage[]; created_at: string; updated_at: string };
 export type AIChatConversationSummaryRow = Omit<AIChatConversationRow, 'messages'>;
@@ -87,6 +90,8 @@ export type Database = { public: { Tables: {
   water_records: Table<WaterRecordRow, WaterRecordInsert & { user_id: string }>;
   sharing_invites: Table<SharingInviteRow, never, never>;
   app_notifications: Table<AppNotificationRow, Omit<AppNotificationRow, 'id' | 'created_at' | 'read_at'> & Partial<Pick<AppNotificationRow, 'id' | 'created_at' | 'read_at'>>, Partial<Pick<AppNotificationRow, 'read_at'>>>;
+  app_monitor_events: Table<AppMonitorEventRow, Omit<AppMonitorEventRow, 'id' | 'created_at'>, never>;
+  app_monitor_request_metrics: Table<AppMonitorRequestMetricRow, Omit<AppMonitorRequestMetricRow, 'id' | 'created_at'>, never>;
   ai_chat_conversations: Table<AIChatConversationRow, Pick<AIChatConversationRow, 'user_id'> & Partial<Pick<AIChatConversationRow, 'title' | 'messages'>>, Partial<Pick<AIChatConversationRow, 'title' | 'messages' | 'updated_at'>>>;
   menstrual_cycle_settings: Table<MenstrualCycleSettingsRow, Omit<MenstrualCycleSettingsRow, 'updated_at'> & Partial<Pick<MenstrualCycleSettingsRow, 'updated_at'>>, Partial<Omit<MenstrualCycleSettingsRow, 'user_id'>>>;
   menstrual_cycle_periods: Table<MenstrualCyclePeriodRow, MenstrualCyclePeriodInput & { user_id: string; recorded_timezone: string }>;
@@ -101,6 +106,7 @@ export type Database = { public: { Tables: {
  search_foods: { Args: { p_query?:string; p_category?:string|null; p_offset?:number; p_limit?:number }; Returns:{data:FoodRow[];total:number} }; complete_health_onboarding: { Args: { p_date_of_birth:string; p_gender:string; p_height_cm:number; p_weight_kg:number; p_activity_level:ActivityLevel; p_weight_goal:WeightGoal; p_initial_goals?:{daily_steps:number|null;daily_calories:number|null}; p_time_zone?:string; p_expected_owner?:string }; Returns:ProfileRow[] }; create_private_sharing_invite: { Args: { p_actor: string; p_email: string; p_steps: boolean; p_sleep: boolean; p_nutrition: boolean }; Returns: SharingInviteRow[] };
  change_private_sharing_invite: { Args: { p_actor: string; p_id: string; p_version: number; p_action: SharingAction; p_steps?: boolean; p_sleep?: boolean; p_nutrition?: boolean; p_confirm_expansion?: boolean }; Returns: SharingInviteRow[] };
  list_private_sharing_invitations: { Args: { p_actor: string }; Returns: IncomingSharingInvite[] };
- get_private_shared_metrics: { Args: { p_actor: string; p_id: string; p_version: number; p_time_zone: string }; Returns: SharedMetrics | null } }; Enums:
+ get_private_shared_metrics: { Args: { p_actor: string; p_id: string; p_version: number; p_time_zone: string }; Returns: SharedMetrics | null };
+ app_monitor_request_stats: { Args: { p_since: string }; Returns: { function_name: string; total_requests: number; successful_requests: number; failed_requests: number; success_rate_percent: number; average_duration_ms: number; p95_duration_ms: number }[] } }; Enums:
  { [_ in never]: never }; CompositeTypes: { [_ in never]: never } } };
  

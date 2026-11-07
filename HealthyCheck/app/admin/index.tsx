@@ -125,6 +125,10 @@ export default function AdminDashboard() {
                 title={t('cms.categories')}
                 onPress={() => router.push('/admin/categories')}
               />
+              <TextButton
+                title={t('monitor.title')}
+                onPress={() => router.push('/admin/monitoring')}
+              />
             </View>
             <AdminArticleSearch value={search} onChange={setSearch} />
             <AdminArticleStatusFilter value={status} onChange={setStatus} />

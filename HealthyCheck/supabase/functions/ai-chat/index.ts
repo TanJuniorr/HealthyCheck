@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { withRequestMetrics } from '../_shared/requestMetrics.ts';
 
 const MODEL = 'gemini-3.5-flash-lite';
 const MAX_USER_MESSAGE_LENGTH = 1600;
@@ -209,8 +210,18 @@ function isUuid(value: unknown): value is string {
   return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
-Deno.serve(async (request: Request) => {
+async function handleRequest(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (request.method === 'GET') {
+    const configured = Boolean(
+      Deno.env.get('GEMINI_API_KEY')?.trim()
+      && Deno.env.get('SUPABASE_URL')
+      && publishableKey(),
+    );
+    return configured
+      ? jsonResponse({ status: 'ok' })
+      : jsonResponse({ status: 'not_configured' }, 503);
+  }
   if (request.method !== 'POST') return jsonResponse({ error: 'method_not_allowed' }, 405);
 
   const geminiKey = Deno.env.get('GEMINI_API_KEY');
@@ -403,4 +414,6 @@ Deno.serve(async (request: Request) => {
   }
 
   return jsonResponse({ conversation_id: conversationId, title: title ?? message.slice(0, 96), user_message: userMessage, reply: assistantMessage });
-});
+}
+
+Deno.serve(withRequestMetrics('ai-chat', handleRequest));

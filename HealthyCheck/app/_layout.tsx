@@ -13,6 +13,9 @@ import { NotificationInboxProvider } from '../src/contexts/NotificationInboxCont
 import { Colors } from '../src/constants/colors';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
 import { authGate, gateDestination } from '../src/lib/authGate';
+import { installGlobalAppErrorReporter } from '../src/services/systemMonitorService';
+
+installGlobalAppErrorReporter();
 
 function ThemedStatusBar() {
   const { isDark } = useTheme();

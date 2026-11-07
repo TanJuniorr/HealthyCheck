@@ -1,6 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { getLocales } from 'expo-localization';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import i18n, { initialization } from './index';
 import { isAppLanguage, persistLanguage, readLanguage, type AppLanguage } from './languageStorage';
@@ -12,9 +11,7 @@ let bootstrap: Promise<void> | null = null;
 function initializeLanguage() {
  if (!bootstrap) bootstrap = (async () => {
   await initialization;
-  let deviceLanguage: string | null = null;
-  try { deviceLanguage = getLocales()[0]?.languageCode ?? null; } catch { /* English fallback. */ }
-  await i18n.changeLanguage(await readLanguage(deviceLanguage));
+  await i18n.changeLanguage(await readLanguage());
  })();
  return bootstrap;
 }
@@ -30,7 +27,7 @@ export function LanguageProvider({ children }: React.PropsWithChildren) {
   setPersistenceError(false);
   try { await persistLanguage(language); if (selection.current === request) setPersistenceError(false); } catch { if (selection.current === request) setPersistenceError(true); }
  },[]);
- useEffect(() => { let active = true; void initializeLanguage().catch(async () => { await i18n.changeLanguage('en'); }).finally(() => { if (active) setReady(true); }); return () => { active=false; }; },[]);
+ useEffect(() => { let active = true; void initializeLanguage().catch(async () => { await i18n.changeLanguage('vi'); }).finally(() => { if (active) setReady(true); }); return () => { active=false; }; },[]);
  useEffect(() => {
   const update = () => { if (typeof document !== 'undefined') document.documentElement.lang = i18n.resolvedLanguage === 'vi' ? 'vi' : 'en'; };
   update(); i18n.on('languageChanged',update); return () => { i18n.off('languageChanged',update); };

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Healthy Check",
     "slug": "HealthyCheck",
-    "owner": "nhattan1104",
+    "owner": "nvtan107",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -28,7 +28,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-sqlite",
       "expo-font",
       [
         "expo-sensors",
@@ -65,7 +64,7 @@
         }
       },
       "eas": {
-        "projectId": "7a79b643-9ea6-4d95-969a-8c932041ed7a"
+        "projectId": "aa0dba9e-491c-4356-95ce-919f225153fa"
       }
     }
   }

@@ -1,6 +1,5 @@
 
 import "react-native-url-polyfill/auto";
-import "expo-sqlite/localStorage/install";
 
 import type { Database } from "../types/database";
 import { createClient } from "@supabase/supabase-js";
@@ -77,31 +76,15 @@ const webAuthStorage = {
 
 const nativeAuthStorage = {
   async getItem(key: string): Promise<string | null> {
-    const current = await AsyncStorage.getItem(key);
-
-    if (current !== null) {
-      return current;
-    }
-
-    // Migrate legacy values from expo-sqlite localStorage.
-    const legacy = globalThis.localStorage?.getItem(key) ?? null;
-
-    if (legacy !== null) {
-      await AsyncStorage.setItem(key, legacy);
-      globalThis.localStorage?.removeItem(key);
-    }
-
-    return legacy;
+    return AsyncStorage.getItem(key);
   },
 
   async setItem(key: string, value: string): Promise<void> {
     await AsyncStorage.setItem(key, value);
-    globalThis.localStorage?.removeItem(key);
   },
 
   async removeItem(key: string): Promise<void> {
     await AsyncStorage.removeItem(key);
-    globalThis.localStorage?.removeItem(key);
   },
 };
 

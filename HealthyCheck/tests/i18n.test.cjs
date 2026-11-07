@@ -26,11 +26,11 @@ test('English and Vietnamese resource keys and interpolation variables match',()
   assert.deepEqual(variables(value),variables(vietnamese.get(key)),key);
  }
 });
-test('first launch detects Vietnamese and otherwise falls back to English',async()=>{
+test('first launch defaults to Vietnamese regardless of device locale',async()=>{
  const f=storageFixture(null);
  assert.equal(await f.api.readLanguage('vi'),'vi');assert.equal(await f.api.readLanguage('vi-VN'),'vi');
- assert.equal(await f.api.readLanguage('en-US'),'en');assert.equal(await f.api.readLanguage('fr-FR'),'en');
- assert.equal(await f.api.readLanguage(null),'en');
+ assert.equal(await f.api.readLanguage('en-US'),'vi');assert.equal(await f.api.readLanguage('fr-FR'),'vi');
+ assert.equal(await f.api.readLanguage(null),'vi');
 });
 test('saved preference overrides device locale and survives unrelated session/data values',async()=>{
  const f=storageFixture('vi');

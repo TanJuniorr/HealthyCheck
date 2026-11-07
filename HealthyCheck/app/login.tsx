@@ -25,6 +25,7 @@ import { PrimaryButton } from '../src/components/common/Buttons';
 import { useThemedStyles } from '../src/contexts/ThemeContext';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
+import { isRunningInExpoGo } from 'expo';
 import { supabase } from '../src/lib/supabase';
 import { oauthRedirectUrl } from '../src/lib/authRecovery';
 
@@ -60,6 +61,12 @@ export default function LoginScreen() {
 
   const handleGoogleSignIn = async () => {
     if (submittingRef.current) return;
+    // Expo Go cannot reliably complete native OAuth callbacks for local projects.
+    // Use the project's EAS development build (custom `healthycheck://` scheme).
+    if (Platform.OS !== 'web' && isRunningInExpoGo()) {
+      setFeedback('auth.googleExpoGoUnsupported');
+      return;
+    }
     submittingRef.current = true;
     setFeedback('');
     setIsGoogleSubmitting(true);
@@ -80,13 +87,17 @@ export default function LoginScreen() {
       const sentRedirectTo = new URL(data.url).searchParams.get('redirect_to');
       if (__DEV__) console.info('[auth] OAuth redirect diagnostics', {
         platform: Platform.OS,
+        runtime: isRunningInExpoGo() ? 'expo-go' : 'native-build',
         target: redirectTo,
         sent: sentRedirectTo,
       });
 
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
       if (__DEV__) console.info('[auth] OAuth browser result', { type: result.type });
-      if (result.type !== 'success') return;
+      if (result.type !== 'success') {
+        setFeedback('auth.googleCancelled');
+        return;
+      }
 
       const params = Linking.parse(result.url).queryParams ?? {};
       const getString = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;

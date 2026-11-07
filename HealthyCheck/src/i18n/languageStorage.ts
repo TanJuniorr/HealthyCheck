@@ -2,13 +2,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export type AppLanguage = 'en' | 'vi';
 export const LANGUAGE_STORAGE_KEY = '@healthycheck:language';
 export const isAppLanguage = (value: unknown): value is AppLanguage => value === 'en' || value === 'vi';
-export function resolveLanguage(saved: unknown, deviceTag: string | null | undefined): AppLanguage {
+export function resolveLanguage(saved: unknown, _deviceTag?: string | null): AppLanguage {
  if (isAppLanguage(saved)) return saved;
- return /^vi(?:[-_]|$)/i.test(deviceTag ?? '') ? 'vi' : 'en';
+ return 'vi';
 }
-export async function readLanguage(deviceTag?: string | null): Promise<AppLanguage> {
- try { return resolveLanguage(await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY),deviceTag); }
- catch { return resolveLanguage(null,deviceTag); }
+export async function readLanguage(_deviceTag?: string | null): Promise<AppLanguage> {
+ try { return resolveLanguage(await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY)); }
+ catch { return 'vi'; }
 }
 let writes: Promise<void> = Promise.resolve();
 export function persistLanguage(language: AppLanguage): Promise<void> {

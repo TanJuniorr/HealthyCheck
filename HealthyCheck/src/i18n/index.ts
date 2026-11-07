@@ -4,7 +4,7 @@ import en from './resources/en.json';
 import vi from './resources/vi.json';
 const i18n = createInstance();
 const initialization = i18n.use(initReactI18next).init({
- resources:{ en:{ translation:en },vi:{ translation:vi } },lng:'en',fallbackLng:'en',
+ resources:{ en:{ translation:en },vi:{ translation:vi } },lng:'vi',fallbackLng:'vi',
  supportedLngs:['en','vi'],load:'languageOnly',returnNull:false,returnEmptyString:false,
  interpolation:{ escapeValue:false },react:{ useSuspense:false },
 });
